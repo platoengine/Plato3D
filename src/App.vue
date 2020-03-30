@@ -1,47 +1,83 @@
 <template>
   <v-app id="inspire">
     <v-navigation-drawer v-model="drawer" app clipped >
-      <v-list dense>
-        <v-list-item link>
-          <v-list-item-action>
-            <v-icon>mdi-view-dashboard</v-icon>
-          </v-list-item-action>
-          <v-list-item-content>
-            <v-list-item-title>Dashboard</v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
-        <v-list-item class="pa-0">
-          <v-list-item-action>
-            <v-icon>mdi-settings</v-icon>
-          </v-list-item-action>
-          <v-list-item-content class="d-flex">
-            <v-menu class="px-0" :close-on-content-click="false" offset-x transition="slide-x-transition">
-              <template v-slot:activator="{ on }">
-                <v-card class="d-flex" v-on="on">Settings</v-card>
-              </template>
-              <v-card>
-                <v-menu :close-on-content-click="false" offset-x transition="slide-x-transition">
-                  <template v-slot:activator="{ on }">
-                    <v-card v-on="on">Grid</v-card>
-                  </template>
-                  <grid-settings/>
-                </v-menu>
-                <v-menu :close-on-content-click="false" offset-x transition="slide-x-transition">
-                  <template v-slot:activator="{ on }">
-                    <v-card v-on="on">Lighting</v-card>
-                  </template>
-                  <lighting-settings/>
-                </v-menu>
-              </v-card>
-            </v-menu>
-          </v-list-item-content>
-        </v-list-item>
-      </v-list>
+      <v-tabs>
+      <v-tab>
+        <v-icon>mdi-shape-outline</v-icon>
+      </v-tab>
+      <v-tab>
+        <v-icon>mdi-wrench-outline</v-icon>
+      </v-tab>
+      <v-tab>
+        <v-icon>mdi-pencil-outline</v-icon>
+      </v-tab>
+      <v-tab>
+        <v-icon>mdi-code-braces</v-icon>
+      </v-tab>
+    </v-tabs>
     </v-navigation-drawer>
 
     <v-app-bar app clipped-left >
       <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
       <v-toolbar-title>Plato3D</v-toolbar-title>
+
+      <v-spacer></v-spacer>
+
+      <v-menu :close-on-content-click="false" offset-x transition="slide-x-transition" bottom left offset-y>
+        <template v-slot:activator="{ on }">
+          <v-btn icon v-on="on">
+            <v-icon>mdi-lightbulb-outline</v-icon>
+          </v-btn>
+        </template>
+        <lighting-settings/>
+      </v-menu>
+
+      <v-menu :close-on-content-click="false" offset-x transition="slide-x-transition" bottom left offset-y>
+        <template v-slot:activator="{ on }">
+          <v-btn icon v-on="on">
+            <v-icon>mdi-border-all</v-icon>
+          </v-btn>
+        </template>
+        <grid-settings/>
+      </v-menu>
+
+      <v-menu :close-on-content-click="false" offset-x transition="slide-x-transition" bottom left offset-y>
+        <template v-slot:activator="{ on }">
+          <v-btn icon v-on="on">
+            <v-icon>mdi-cog-outline</v-icon>
+          </v-btn>
+        </template>
+
+        <v-list>
+          <v-list-item>
+            <v-list-item-icon>
+              <v-icon>mdi-content-save-outline</v-icon>
+            </v-list-item-icon>
+            <v-list-item-content>
+              <v-list-item-text>Save</v-list-item-text>
+            </v-list-item-content>
+          </v-list-item>
+
+          <v-list-item>
+            <v-list-item-icon>
+              <v-icon>mdi-folder-outline</v-icon>
+            </v-list-item-icon>
+            <v-list-item-content>
+              <v-list-item-text>Load</v-list-item-text>
+            </v-list-item-content>
+          </v-list-item>
+
+          <v-list-item>
+            <v-list-item-icon>
+              <v-icon>mdi-information-outline</v-icon>
+            </v-list-item-icon>
+            <v-list-item-content>
+              <v-list-item-text>About</v-list-item-text>
+            </v-list-item-content>
+          </v-list-item>
+        </v-list>
+      </v-menu>
+
     </v-app-bar>
 
     <v-content>
