@@ -1,4 +1,4 @@
-# vuetifyjs-tinker
+# Plato3D
 
 ## Project setup
 ```

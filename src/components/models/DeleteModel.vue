@@ -30,7 +30,10 @@ export default {
   methods: {
     deleteModel () {
       this.dialog = false
-      this.$store.commit('deleteModel', {name: this.model.name})
+      this.$store.commit('deleteModel', {
+        name: this.model.name,
+        graphics: this.$graphics
+      })
     }
   }
 }

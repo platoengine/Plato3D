@@ -11,6 +11,17 @@
 
       <v-spacer></v-spacer>
 
+      <v-btn icon>
+        <v-icon>mdi-help-circle-outline</v-icon>
+      </v-btn>
+
+      <p-menu>
+        <template v-slot:button>
+          <v-icon>mdi-information-outline</v-icon>
+        </template>
+        info panel
+      </p-menu>
+
       <p-menu>
         <template v-slot:button>
           <v-icon>mdi-lightbulb-outline</v-icon>
@@ -24,6 +35,14 @@
         </template>
         <grid-settings/>
       </p-menu>
+
+      <p-menu>
+        <template v-slot:button>
+          <v-icon>mdi-cog-outline</v-icon>
+        </template>
+        <login/>
+      </p-menu>
+
 
     </v-app-bar>
 
@@ -44,6 +63,7 @@
 </template>
 
 <script>
+import Login from './components/Login'
 import GridSettings from './components/settings/GridSettings'
 import ThreeRenderer from './components/ThreeRenderer'
 import LightingSettings from './components/settings/LightingSettings'
@@ -52,7 +72,13 @@ import PMenu from './components/ui/PMenu'
 
 export default {
   name: 'App',
-    components: {GridSettings, LightingSettings, ThreeRenderer, Control, PMenu},
+    components: {
+      GridSettings,
+      LightingSettings,
+      ThreeRenderer,
+      Control,
+      Login,
+      PMenu},
     props: {
       source: String,
     },
