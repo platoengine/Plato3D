@@ -1,5 +1,11 @@
 <template>
   <v-card class="ma-0 pa-0">
+   <v-card v-for="(item,index) in model.primitives" :key="index" @click="select(item)">
+      <v-card-text>
+        <v-btn @click="open(item)"> <v-icon>mdi-information-outline</v-icon></v-btn>
+        {{item.definition.Name}}
+      </v-card-text>
+    </v-card>
     <v-card outlined :class="'d-flex justify-space-around'">
 
       <import-model @load-model="loadModel($event)"/>
@@ -17,18 +23,6 @@
 
     </v-card>
   </v-card>
-<!--
-        <scrollable-component :items=model.primitives>
-          <template v-slot="{ item, index }">
-            <b-card no-body class=bold-sub @click="select(item)">
-              <p class="content">
-                <b-btn size="sm" class="small-button" @click="open(item)"> <octicon name="info"></octicon> </b-btn>
-                name: {{item.definition.Name}} Type: {{item.definition.Type}}
-              </p>
-            </b-card>
-          </template>
-        </scrollable-component>
--->
 </template>
 
 <script>
@@ -136,10 +130,10 @@ export default {
     },
     open: function (primitive) {
       this.$store.commit('setActiveModel', this.model.name)
-      this.$store.dispatch('openSelected', {model: this.model, primitive: primitive, surface: null})
+      this.$store.commit('openSelected', {model: this.model, primitive: primitive, surface: null})
     },
     select: function (primitive) {
-      this.$store.dispatch('showSelected', {model: this.model, primitive: primitive})
+      this.$store.commit('showSelected', {model: this.model, primitive: primitive, graphics: this.$graphics})
     }
   }
 }

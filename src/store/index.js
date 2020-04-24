@@ -37,6 +37,9 @@ export default new Vuex.Store({
     setEventSource ({events}, server) {
       events.setSource(server)
     },
+    setDisplayAttributes (state, {model, payload}) {
+      model.setDisplayAttributes(payload)
+    },
     setModelRemoteData ({activeModel}, payload) {
       activeModel.remote = payload
     },

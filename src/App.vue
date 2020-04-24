@@ -4,6 +4,7 @@
       <control/>
     </v-navigation-drawer>
 
+    <item-detail/>
 
     <v-app-bar app clipped-left >
       <v-app-bar-nav-icon @click.stop="toggleDrawer()" />
@@ -67,6 +68,7 @@ import Login from './components/Login'
 import GridSettings from './components/settings/GridSettings'
 import ThreeRenderer from './components/ThreeRenderer'
 import LightingSettings from './components/settings/LightingSettings'
+import ItemDetail from './components/settings/ItemDetail'
 import Control from './components/Control'
 import PMenu from './components/ui/PMenu'
 
@@ -75,6 +77,7 @@ export default {
     components: {
       GridSettings,
       LightingSettings,
+      ItemDetail,
       ThreeRenderer,
       Control,
       Login,

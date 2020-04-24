@@ -1,22 +1,35 @@
 const state = {
   currentlySelectedPrimitiveIndex: -1,
-  currentlySelectedModelIndex: -1,
   showItemDetail: false,
   showItemDetailModel: null,
   showItemDetailPrimitive: null,
-  showItemDetailSurface: null
+  showItemDetailSurfaceID: null
 }
 
 const actions = {
-  setSelected ({state, rootState}, payload) {
+}
+
+const mutations = {
+  closeItemDetail (state) {
+    state.showItemDetail = false
+  },
+  openSelected (state, payload) {
+    if (payload === null) {
+      return
+    }
+    state.showItemDetailModel = payload.model
+    state.showItemDetailPrimitive = payload.primitive
+    state.showItemDetailSurfaceID = payload.surface == null ? null : payload.surface.id
+    state.showItemDetail = true
+  },
+  setSelected (state, payload) {
     if (payload === null) {
       return
     }
     if (payload.model) {
       state.showItemDetailModel = payload.model
-      state.currentlySelectedModelIndex = rootState.models.findIndex(model => model === payload.model)
 
-      state.currentlySelectedPrimitiveIndex = payload.model.primitives.findIndex(primitive => primitive.primitiveObject.id === payload.group.id)
+      state.currentlySelectedPrimitiveIndex = payload.model.primitives.findIndex(primitive => primitive.primitiveObjectID === payload.group.id)
       if (state.showItemDetailPrimitiveIndex !== -1) {
         state.showItemDetailPrimitive = payload.model.primitives[state.currentlySelectedPrimitiveIndex]
         return
@@ -29,35 +42,31 @@ const actions = {
       }
     }
   },
-  showSelected ({state}, {model, primitive}) {
+  /**
+    @brief highlight selected primitive
+    @param [in] model      The model that contains the primitive
+    @param [in] primitive  The primitive to be higlighted
+    @param [in] graphics   The ThreeRenderer object
+
+    @desc This function 'highlights' the given primitive in the provided ThreeRenderer object.
+  */
+  showSelected (state, {model, primitive, graphics}) {
     if (primitive === null) {
       return
     }
     if (model) {
-      const index = model.primitives.findIndex(p => p.primitiveObject.id === primitive.primitiveObject.id)
+      const index = model.primitives.findIndex(p => p.primitiveObjectID === primitive.primitiveObjectID)
       if (index !== -1 && index !== state.currentlySelectedPrimitiveIndex) {
-        model.primitives[index].primitiveObject.children.forEach(c => c.material.color.setHex(0x999999))
+        const thisPrimitiveObject = graphics.scene.getObjectById(model.primitives[index].primitiveObjectID)
+        thisPrimitiveObject.children.forEach(c => c.material.color.setHex(0x999999))
         if (state.currentlySelectedPrimitiveIndex !== -1) {
-          model.primitives[state.currentlySelectedPrimitiveIndex].primitiveObject.children.forEach(c => c.material.color.setHex(0x00ff00))
+          const currentID = model.primitives[state.currentlySelectedPrimitiveIndex].primitiveObjectID
+          const thatPrimitiveObject = graphics.scene.getObjectById(currentID)
+          thatPrimitiveObject.children.forEach(c => c.material.color.setHex(0x00ff00))
         }
         state.currentlySelectedPrimitiveIndex = index
       }
     }
-  },
-  openSelected ({state}, payload) {
-    if (payload === null) {
-      return
-    }
-    state.showItemDetailModel = payload.model
-    state.showItemDetailPrimitive = payload.primitive
-    state.showItemDetailSurface = payload.surface
-    state.showItemDetail = true
-  }
-}
-
-const mutations = {
-  closeItemDetail (state) {
-    state.showItemDetail = false
   }
 }
 

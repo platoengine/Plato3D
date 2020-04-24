@@ -55,7 +55,7 @@ class ExodusModel extends ParBase {
     let wireframe = itemDisplayAttributes.wireframe
     let visible = itemDisplayAttributes.visible
     var restoreColor = thisPrimitive.definition.Operation === 'add' ? 0x00ff00 : 0xff0000
-    const primitiveObject = graphics.scene.remove(graphics.scene.getObjectById(thisPrimitive.primitiveObjectID))
+    const primitiveObject = graphics.scene.getObjectById(thisPrimitive.primitiveObjectID)
     primitiveObject.children.forEach(function (kid) {
       kid.material = new THREE.MeshPhysicalMaterial({
         color: restoreColor,
