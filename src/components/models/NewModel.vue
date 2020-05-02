@@ -1,11 +1,8 @@
 <template>
   <v-dialog v-model="dialog" persistent max-width="600px">
     <template v-slot:activator="{ on }">
-      <v-btn x-large block v-on="on">
-        <v-card outlined :class="'d-flex justify-space-around'">
-          <div><v-icon x-large>mdi-shape-plus</v-icon></div>
-          <div>Create/Add Model</div>
-        </v-card>
+      <v-btn x-large block v-on="on" raised>
+          Create/Add Model
       </v-btn>
     </template>
     <v-card>

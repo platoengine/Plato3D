@@ -1,6 +1,6 @@
 <template>
   <v-card class="ma-0 pa-0">
-    <v-card outlined :class="'d-flex justify-space-around'">
+    <v-btn-toggle v-model="toggle_one" shaped dense group>
       <import-model @load-model="loadModel($event)"/>
 
       <delete-model :model="model"/>
@@ -10,7 +10,7 @@
       <v-btn small @click="exportModel">
         <v-icon>mdi-folder-download</v-icon>
       </v-btn>
-    </v-card>
+    </v-btn-toggle>
   </v-card>
 <!--
   <b-card no-body class="text-right list-item" v-bind:class="{ 'list-item-open': openModel }">

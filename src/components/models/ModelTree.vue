@@ -1,19 +1,25 @@
 <template>
   <v-card>
     <new-model/>
-    <v-expansion-panels :focusable=true>
+    <v-expansion-panels :focusable=true flat>
       <v-expansion-panel
         v-for="(item,index) in models"
         :key="index"
       >
         <v-expansion-panel-header>{{item.name}}</v-expansion-panel-header>
-        <v-expansion-panel-content class="pa-0 ma-0">
+        <v-expansion-panel-content id="expansion-panel">
           <model :model="item" :displayID="index"/>
         </v-expansion-panel-content>
       </v-expansion-panel>
     </v-expansion-panels>
   </v-card>
 </template>
+
+<style>
+  .v-expansion-panel-content{
+    padding: 0px;
+  }
+</style>
 
 <script>
 import Model from './Model'
