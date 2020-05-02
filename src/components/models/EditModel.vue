@@ -10,17 +10,19 @@
         <span class="headline">Edit Model</span>
       </v-card-title>
       <v-card-text>
+        <v-form ref="form" v-model="valid" lazy-validation>
         <v-container>
             <v-col>
               <v-text-field dense class="ma-0 pa-0" :rules="rules" @change="pending=true" v-model="state.name" label="Name"/>
               <v-textarea outlined dense class="ma-0 pa-0" @input="pending=true" v-model="state.description" label="Description"/>
             </v-col>
         </v-container>
+        </v-form>
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
         <v-btn text @click="dialog = false;">Cancel</v-btn>
-        <v-btn text @click="dialog = false; update()" :disabled="this.type===''">Update</v-btn>
+        <v-btn text @click="dialog = false; update()" :disabled="pending==false || valid==false">Update</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -36,7 +38,9 @@ export default {
       state: {
         name: '', description: ''
       },
-      dialog: false
+      dialog: false,
+      pending: false,
+      valid: true
     }
   },
   computed: {
@@ -56,20 +60,31 @@ export default {
       const modelIndex = this.$store.state.models.findIndex(m => m.name === name)
       if (modelIndex === -1) {
         return true
+      } else {
+        if (name == this.model.name) {
+          return true
+        } else {
+          return false
+        }
       }
-      return false
+    },
+    validate () {
+      this.$refs.form.validate()
     },
     update: function () {
-      this.dialog = false
-      this.pending = false
-      this.$store.commit('setModelAttributes',
-        {
+      this.validate()
+      if( this.valid ) {
+        this.dialog = false
+        this.pending = false
+        this.$store.commit('setModelAttributes', {
           currentName: this.model.name,
-          modelName: this.state.name,
-          modelDesc: this.state.description
-        })
-      this.state.name = this.model.name
-      this.state.description = this.model.description
+          modelAttributes: {
+            name: this.state.name,
+            description: this.state.description
+          }})
+        this.state.name = this.model.name
+        this.state.description = this.model.description
+      } 
     }
   }
 }

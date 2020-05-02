@@ -4,12 +4,24 @@
       <control/>
     </v-navigation-drawer>
 
+    <item-detail/>
 
     <v-app-bar app clipped-left >
       <v-app-bar-nav-icon @click.stop="toggleDrawer()" />
       <v-toolbar-title>Plato3D</v-toolbar-title>
 
       <v-spacer></v-spacer>
+
+      <v-btn icon>
+        <v-icon>mdi-help-circle-outline</v-icon>
+      </v-btn>
+
+      <p-menu>
+        <template v-slot:button>
+          <v-icon>mdi-information-outline</v-icon>
+        </template>
+        info panel
+      </p-menu>
 
       <p-menu>
         <template v-slot:button>
@@ -24,6 +36,14 @@
         </template>
         <grid-settings/>
       </p-menu>
+
+      <p-menu>
+        <template v-slot:button>
+          <v-icon>mdi-cog-outline</v-icon>
+        </template>
+        <login/>
+      </p-menu>
+
 
     </v-app-bar>
 
@@ -44,15 +64,24 @@
 </template>
 
 <script>
+import Login from './components/Login'
 import GridSettings from './components/settings/GridSettings'
 import ThreeRenderer from './components/ThreeRenderer'
 import LightingSettings from './components/settings/LightingSettings'
+import ItemDetail from './components/settings/ItemDetail'
 import Control from './components/Control'
 import PMenu from './components/ui/PMenu'
 
 export default {
   name: 'App',
-    components: {GridSettings, LightingSettings, ThreeRenderer, Control, PMenu},
+    components: {
+      GridSettings,
+      LightingSettings,
+      ItemDetail,
+      ThreeRenderer,
+      Control,
+      Login,
+      PMenu},
     props: {
       source: String,
     },

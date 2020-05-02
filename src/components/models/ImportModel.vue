@@ -14,8 +14,7 @@
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn text @click="dialog = false; clear()">Cancel</v-btn>
-        <v-btn text @click="dialog = false; create()" :disabled="this.type===''">Create</v-btn>
+        <v-btn text @click="dialog = false">Cancel</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
