@@ -1,13 +1,22 @@
 <template>
-  <v-card class="ma-0 pa-0">
-
-   <v-card v-for="(item,index) in model.primitives" :key="index" @click="select(item)">
-      <v-card-text>
-        <v-btn @click="open(item)"> <v-icon>mdi-information-outline</v-icon></v-btn>
-        {{item.definition.Name}}
-      </v-card-text>
-    </v-card>
-    <v-card outlined :class="'d-flex justify-space-around'">
+  <v-card>
+   <v-container class="py-0">
+   <v-row>
+   <v-col class="pa-0 ma-0">
+   <template v-for="(item,index) in model.primitives">
+   <v-hover v-slot:default="{ hover }" :key="index">
+   <v-card @click="select(item)" :elevation="hover ? 12 : 2" :class="{ 'on-hover': hover }">
+      <v-card-actions>
+        <v-btn small @click="open(item)"> <v-icon dense>mdi-information-outline</v-icon></v-btn>
+        <div class="entity-title">{{item.definition.Name}}</div>
+      </v-card-actions>
+   </v-card>
+   </v-hover>
+   </template>
+   </v-col>
+   </v-row>
+   </v-container>
+   <v-card outlined :class="'d-flex justify-space-around'">
 
       <import-model @load-model="loadModel($event)"/>
 
@@ -22,7 +31,7 @@
         <v-icon>mdi-folder-download</v-icon>
       </v-btn>
 
-    </v-card>
+   </v-card>
   </v-card>
 </template>
 
@@ -139,3 +148,21 @@ export default {
   }
 }
 </script>
+<style scoped>
+.entity-title {
+  margin-left: 6px;
+}
+.v-card {
+  transition: opacity .2s ease-in-out;
+}
+
+.v-card .on-hover  {
+  outline-style: solid;
+  outline-width: 1px;
+  outline-color: rgba(55, 55, 55, 1) !important;
+ }
+
+.show-btns {
+  color: rgba(255, 255, 255, 1) !important;
+}
+</style>
