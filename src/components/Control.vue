@@ -1,5 +1,5 @@
 <template>
-      <v-tabs vertical>
+      <v-tabs class="fill-height" color=rgba(59,191,51,0.9) background-color=rgba(90,90,90,0.5) vertical>
         <v-tab class="px-0 mx-0">
           <v-icon dense left>mdi-shape-outline</v-icon>
         </v-tab>

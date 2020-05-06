@@ -1,22 +1,24 @@
 <template>
   <v-card>
-   <v-container class="py-0">
-   <v-row>
-   <v-col class="pa-0 ma-0">
-   <template v-for="(item,index) in model.primitives">
-   <v-hover v-slot:default="{ hover }" :key="index">
-   <v-card @click="select(item)" :elevation="hover ? 12 : 2" :class="{ 'on-hover': hover }">
-      <v-card-actions>
-        <v-btn small @click="open(item)"> <v-icon dense>mdi-information-outline</v-icon></v-btn>
-        <div class="entity-title">{{item.definition.Name}}</div>
-      </v-card-actions>
-   </v-card>
-   </v-hover>
-   </template>
-   </v-col>
-   </v-row>
-   </v-container>
-   <v-card outlined :class="'d-flex justify-space-around'">
+    <load-model v-if="loaded" v-on:load-model='loadModel($event)'>
+    </load-model>
+    <v-container class="py-0" v-else>
+      <v-row>
+        <v-col class="pa-0 ma-0">
+          <template v-for="(item,index) in model.primitives">
+            <v-hover v-slot:default="{ hover }" :key="index">
+              <v-card @click="select(item)" :elevation="hover ? 12 : 2" :class="{ 'on-hover': hover }">
+                <v-card-actions>
+                  <v-btn small @click="open(item)"> <v-icon dense>mdi-information-outline</v-icon></v-btn>
+                  <div class="entity-title">{{item.definition.Name}}</div>
+                </v-card-actions>
+              </v-card>
+            </v-hover>
+          </template>
+        </v-col>
+      </v-row>
+    </v-container>
+    <v-card :class="'d-flex justify-space-between'">
 
       <import-model @load-model="loadModel($event)"/>
 
@@ -24,18 +26,16 @@
 
       <edit-model :model="model"/>
 
-<!--
-      <v-btn small @click="exportModel">
--->
       <v-btn small>
         <v-icon>mdi-folder-download</v-icon>
       </v-btn>
 
-   </v-card>
+    </v-card>
   </v-card>
 </template>
 
 <script>
+import LoadModel from './LoadModel'
 import ImportModel from './ImportModel'
 import DeleteModel from './DeleteModel'
 import EditModel from './EditModel'
@@ -49,6 +49,7 @@ export default {
   name: 'exodus-model',
   props: ['model', 'displayID'],
   components: {
+    LoadModel,
     ImportModel,
     DeleteModel,
     EditModel
@@ -86,6 +87,10 @@ export default {
   computed: {
     selectedPrimitive: function () {
       return this.$store.state.ui.showItemDetailPrimitive
+    },
+    loaded: function () {
+      const tLoaded = this.model.primitives.length===0
+      return tLoaded
     }
   },
   mounted () {

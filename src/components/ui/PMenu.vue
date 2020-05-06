@@ -1,5 +1,5 @@
 <template>
-  <v-menu :close-on-content-click="false" transition="slide-x-transition" bottom left offset-y>
+  <v-menu :eager=true :close-on-content-click="false" transition="slide-x-transition" bottom left offset-y>
     <template v-slot:activator="{ on }">
       <v-btn icon v-on="on">
         <slot name="button"></slot>

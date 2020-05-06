@@ -1,8 +1,5 @@
 <template>
   <v-app id="inspire">
-    <v-navigation-drawer v-model="drawerOpen" app clipped width=350>
-      <control/>
-    </v-navigation-drawer>
 
     <item-detail/>
 
@@ -47,15 +44,17 @@
 
     </v-app-bar>
 
-    <v-content>
-      <v-container class="fill-height" fluid >
-        <v-row align="center" justify="center" >
-          <v-col class="shrink">
-            <three-renderer/>
-          </v-col>
-        </v-row>
-      </v-container>
-    </v-content>
+    <v-container class="px-0 fill-height" fluid >
+      <v-row align="center" justify="center" >
+        <v-col class="shrink">
+          <three-renderer/>
+        </v-col>
+      </v-row>
+    </v-container>
+
+    <v-navigation-drawer v-model="drawerOpen" app clipped width=293>
+      <control/>
+    </v-navigation-drawer>
 
     <v-footer app>
       <span>&copy; 2020</span>
