@@ -17,7 +17,10 @@
         <template v-slot:button>
           <v-icon>mdi-information-outline</v-icon>
         </template>
-        info panel
+          <v-card>
+          <v-textarea outlined class="p-console" style="padding:12px;"
+            :no-resize=true :reverse=true :readonly=true id="error-console"/>
+          </v-card>
       </p-menu>
 
       <p-menu>
@@ -98,3 +101,10 @@ export default {
     }
 };
 </script>
+<style scoped>
+.p-console {
+    font-size: 0.6em;
+    padding: 2px;
+}
+</style>
+
