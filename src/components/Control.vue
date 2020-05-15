@@ -1,14 +1,16 @@
 <template>
-      <v-tabs class="fill-height" color=rgba(59,191,51,0.9) background-color=rgba(90,90,90,0.5) vertical>
+      <v-tabs class="fill-height" color=rgba(59,191,51,0.9) background-color=rgba(90,90,90,0.5) vertical  icons-and-text centered>
         <v-tab class="px-0 mx-0">
-          <v-icon dense left>mdi-shape-outline</v-icon>
+          Objects
+          <v-icon>mdi-shape-outline</v-icon>
         </v-tab>
         <v-tab-item>
           <model-tree/>
         </v-tab-item>
 
         <v-tab class="px-0 mx-0">
-          <v-icon dense left>mdi-wrench-outline</v-icon>
+          Scenarios
+          <v-icon>mdi-wrench-outline</v-icon>
         </v-tab>
         <v-tab-item>
           <v-card flat>
@@ -21,7 +23,8 @@
         </v-tab-item>
 
         <v-tab class="px-0 mx-0">
-          <v-icon dense left>mdi-pencil-outline</v-icon>
+          Realize
+          <v-icon>mdi-pencil-outline</v-icon>
         </v-tab>
         <v-tab-item>
           <v-card flat>
@@ -34,7 +37,8 @@
         </v-tab-item>
 
         <v-tab class="px-0 mx-0">
-          <v-icon dense left>mdi-code-braces</v-icon>
+          Optimize
+          <v-icon>mdi-code-braces</v-icon>
         </v-tab>
         <v-tab-item>
           <v-container class="pa-0 ma-0">
