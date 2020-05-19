@@ -15,7 +15,7 @@
 
       <p-menu>
         <template v-slot:button>
-          <v-icon>mdi-information-outline</v-icon>
+          <v-icon>mdi-console</v-icon>
         </template>
           <v-card>
           <v-textarea outlined class="p-console" style="padding:12px;"
