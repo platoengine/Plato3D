@@ -8,6 +8,8 @@ import {APIService} from './modules/rest-api-module'
 import ErrorHandler from './modules/error-handler-module'
 import EventsContainer from './modules/events-container'
 
+import AnalyzeScenarioFactory from './modules/analyze/analyze-scenario-factory-module'
+
 
 
 const apiService = new APIService()
@@ -24,14 +26,23 @@ export default new Vuex.Store({
   },
   state: {
     models: [],
+    scenarios: [],
     activeModel: null, // refers to the to which requests and modifications are applied
     availableModelTypes: null,
+    availableScenarioTypes: null,
     events: { type: EventsContainer }
   },
   mutations: {
     initialize (state) {
       state.availableModelTypes = ['Exodus', 'OpenCSM (coming soon)', 'Cogent (coming soon)']
       state.events = new EventsContainer()
+
+      state.availableScenarioTypes = new Map()
+
+      // add Analyze scenarios
+      let analyzeScenarioFactory = new AnalyzeScenarioFactory()
+      let analyzeScenarioTypes = analyzeScenarioFactory.availableScenarioTypes()
+      analyzeScenarioTypes.forEach((value, key) => state.availableScenarioTypes.set(key, value))
 
     },
     setEventSource ({events}, server) {
@@ -82,6 +93,63 @@ export default new Vuex.Store({
       } else {
         state.activeModel = null
       }
+    },
+    addScenario ({scenarios, availableScenarioTypes}, {name, description, type}) {
+      let newScenario = null
+      let hostPhysics = availableScenarioTypes.get(type).type
+      let hostCode = availableScenarioTypes.get(type).code
+      if (hostCode === 'Analyze') {
+        let newScenarioFactory = new AnalyzeScenarioFactory()
+        newScenario = newScenarioFactory.create(hostPhysics)
+      }
+      // Scenarios are accessed by name, so if 'name' is empty, change it to 'Scenario N'.
+      if (name === '') {
+        name = 'Scenario ' + scenarios.length.toString()
+      }
+      newScenario.name = name
+      newScenario.description = description
+      newScenario.type = type
+      newScenario.hostPhysics = availableScenarioTypes.get(type).type
+      newScenario.hostCode = availableScenarioTypes.get(type).code
+      scenarios.push(newScenario)
+    },
+    deleteScenario ({scenarios}, {name}) {
+      let scenarioIndex = scenarios.findIndex(scenario => scenario.name === name)
+      if (scenarioIndex !== -1) {
+        scenarios.splice(scenarioIndex, 1)
+      }
+    },
+    setScenarioAttributes ({scenarios}, {currentName, scenarioAttributes}) {
+      let scenarioIndex = scenarios.findIndex(scenario => scenario.name === currentName)
+      if (scenarioIndex !== -1) {
+        scenarios[scenarioIndex].name = scenarioAttributes.name
+        scenarios[scenarioIndex].description = scenarioAttributes.description
+      }
+    },
+    setScenarioModel ({scenarios, models}, {scenarioName, modelName}) {
+      let scenarioIndex = scenarios.findIndex(scenario => scenario.name === scenarioName)
+      if (scenarioIndex !== -1) {
+        scenarios[scenarioIndex].setModel(modelName, models)
+      }
+    },
+    setScenarioOptionData ({scenarios}, {scenarioName, dataName, data}) {
+      let scenarioIndex = scenarios.findIndex(scenario => scenario.name === scenarioName)
+      if (scenarioIndex !== -1) {
+        scenarios[scenarioIndex].setOptionData(dataName, data)
+      }
+    },
+    appendScenarioListData ({scenarios}, {scenarioName, dataName, newEntryName, data}) {
+      let scenarioIndex = scenarios.findIndex(scenario => scenario.name === scenarioName)
+      if (scenarioIndex !== -1) {
+        scenarios[scenarioIndex].appendListData(dataName, newEntryName, data)
+      }
+    },
+    addParameter (state, {parentObject, definition}) {
+      parentObject.parameters.push(definition)
+    },
+    modifyParameter (state, {parentObject, definition}) {
+      const tModIndex = parentObject.parameters.findIndex(p => p.ParameterName === definition.ParameterName)
+      parentObject.parameters[tModIndex] = definition
     }
   },
   actions: {

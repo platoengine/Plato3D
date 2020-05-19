@@ -1,39 +1,33 @@
 <template>
   <v-card>
-    <new-model/>
+    <new-scenario/>
     <v-expansion-panels :focusable=true accordion>
       <v-expansion-panel
-        v-for="(item,index) in models"
+        v-for="(item,index) in scenarios"
         :key="index"
       >
         <v-expansion-panel-header>{{item.name}}</v-expansion-panel-header>
         <v-expansion-panel-content id="expansion-panel">
-          <model :model="item" :displayID="index"/>
+          <scenario :scenario="item" :displayID="index"/>
         </v-expansion-panel-content>
       </v-expansion-panel>
     </v-expansion-panels>
   </v-card>
 </template>
 
-<style>
-  .v-expansion-panel-content{
-    padding: 0px;
-  }
-</style>
-
 <script>
-import Model from './Model'
-import NewModel from './NewModel'
+import Scenario from './Scenario'
+import NewScenario from './NewScenario'
 
 export default {
-  name: 'model-tree',
+  name: 'scenario-tree',
   components: {
-    Model,
-    NewModel
+    Scenario,
+    NewScenario
   },
   computed: {
-    models: function () {
-      return this.$store.state.models
+    scenarios: function () {
+      return this.$store.state.scenarios
     }
   }
 }

@@ -7,7 +7,7 @@
     </template>
     <v-card>
       <v-card-title>
-        <span class="headline">New Model</span>
+        <span class="headline">New Scenario</span>
       </v-card-title>
       <v-card-text>
         <v-container>
@@ -30,14 +30,12 @@
 <script>
 
 export default {
-  name: 'new-model',
+  name: 'new-scenario',
   data: function () {
     return {name: '', description: '', type: '', dialog: false}
   },
-  components: {
-  },
   mounted () {
-    const availableTypes = this.$store.state.availableModelTypes
+    const availableTypes = this.availableTypes()
     if( availableTypes.length > 0 ) {
       this.type = availableTypes[0]
     }
@@ -45,24 +43,25 @@ export default {
   computed: {
     rules () {
       const rules = []
-      const rule = v => (this.isUnique(v)) || 'Model already exists'
+      const rule = v => (this.isUnique(v)) || 'Scenario already exists'
       rules.push(rule)
       return rules
     }
   },
   methods: {
     availableTypes: function () {
-      return this.$store.state.availableModelTypes
+      return Array.from(this.$store.state.availableScenarioTypes.keys())
+
     },
     isUnique (name) {
-      const modelIndex = this.$store.state.models.findIndex(m => m.name === name)
-      if (modelIndex === -1) {
+      const scenarioIndex = this.$store.state.scenarios.findIndex(m => m.name === name)
+      if (scenarioIndex === -1) {
         return true
       }
       return false
     },
     create: function () {
-      this.$store.commit('addModel', {name: this.name, description: this.description, type: this.type})
+      this.$store.commit('addScenario', {name: this.name, description: this.description, type: this.type})
       this.clear()
     },
     clear: function () {

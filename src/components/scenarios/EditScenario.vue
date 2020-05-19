@@ -7,7 +7,7 @@
     </template>
     <v-card>
       <v-card-title>
-        <span class="headline">Edit Model</span>
+        <span class="headline">Edit Scenario</span>
       </v-card-title>
       <v-card-text>
         <v-form @submit.prevent ref="form" v-model="valid" lazy-validation>
@@ -31,8 +31,8 @@
 <script>
 
 export default {
-  name: 'new-model',
-  props: ['model'],
+  name: 'new-scenario',
+  props: ['scenario'],
   data: function () {
     return {
       state: {
@@ -46,22 +46,22 @@ export default {
   computed: {
     rules () {
       const rules = []
-      const rule = v => (this.isUnique(v)) || 'Model already exists'
+      const rule = v => (this.isUnique(v)) || 'Scenario already exists'
       rules.push(rule)
       return rules
     }
   },
   created: function () {
-    this.state.name = this.model.name
-    this.state.description = this.model.description
+    this.state.name = this.scenario.name
+    this.state.description = this.scenario.description
   },
   methods: {
     isUnique (name) {
-      const modelIndex = this.$store.state.models.findIndex(m => m.name === name)
-      if (modelIndex === -1) {
+      const scenarioIndex = this.$store.state.scenarios.findIndex(m => m.name === name)
+      if (scenarioIndex === -1) {
         return true
       } else {
-        if (name == this.model.name) {
+        if (name == this.scenario.name) {
           return true
         } else {
           return false
@@ -76,14 +76,14 @@ export default {
       if( this.valid ) {
         this.dialog = false
         this.pending = false
-        this.$store.commit('setModelAttributes', {
-          currentName: this.model.name,
-          modelAttributes: {
+        this.$store.commit('setScenarioAttributes', {
+          currentName: this.scenario.name,
+          scenarioAttributes: {
             name: this.state.name,
             description: this.state.description
           }})
-        this.state.name = this.model.name
-        this.state.description = this.model.description
+        this.state.name = this.scenario.name
+        this.state.description = this.scenario.description
       } 
     }
   }

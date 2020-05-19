@@ -9,16 +9,6 @@
     <v-card v-if="displayedSurface !== null">
       <v-card-title> <span class="headline">Surface</span> </v-card-title>
       <v-card-text>Id: {{displayedSurface.id}}</v-card-text>
-<!--
-      <v-form>
-         <v-text-field dense class="ma-0 pa-0" :rules="rules" @change="pending=true" v-model="state.name" label="Alias"/>
-
-         <b-form-group class="m-0 basic-label" label="Alias" label-cols=3>
-           <b-form-input class="basic-input" v-on:keyup.native="setSurfacePending()" type="text" size="sm" v-model="aliasView"/>
-         </b-form-group>
-         <b-btn size="sm" class="thin-button" block @click="setSurfaceAlias" :disabled="!surfaceState.pending" type="button">Apply</b-btn>
-      </b-form>
--->
     </v-card>
     <v-card outlined>
       <v-card-title> <span class="headline">Display</span> </v-card-title>
