@@ -88,7 +88,7 @@ class AnalyzeStabilizedMechanics extends AnalyzeScenarioBase {
       }
     }
 
-    this.inputData = {
+    this.outputData = {
       'Problem': {
         'Physics': { type: 'string', value: 'Plato Driver' },
         'Spatial Dimension': { type: 'int', value: '3' },

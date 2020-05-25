@@ -18,7 +18,7 @@ import {dynamicCopy} from './ByValue'
 
 export default {
   name: 'single-view',
-  props: ['scenario', 'modelviews', 'name', 'id', 'accordion'],
+  props: ['scenario', 'modelviews', 'name'],
   components: {
     DisplayBranch
   },
@@ -30,7 +30,11 @@ export default {
     }
   },
   created: function () {
-    dynamicCopy(this.scenario.modelviews[this.name]['view']['<Template>'], this.dataState)
+    if (this.scenario.modelviews[this.name]['data'] === null) {
+      dynamicCopy(this.scenario.modelviews[this.name]['view']['<Template>'], this.dataState)
+    } else {
+      dynamicCopy(this.scenario.modelviews[this.name]['data'], this.dataState)
+    }
   },
   methods: {
     getData: function () {

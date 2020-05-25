@@ -1,6 +1,7 @@
-//import TeuchosParser from '../teuchos-parser-module'
+import TeuchosParser from '../teuchos-parser-module'
 import TeuchosWriter from '../teuchos-writer-module'
 import ErrorHandler from '../error-handler-module'
+import {dynamicCopy, staticCopy} from '../../../components/ui/ByValue'
 import ParBase from '../par-base'
 import XMLWriter from 'xml-writer'
 import Vue from 'vue'
@@ -11,6 +12,7 @@ class AnalyzeScenarioBase extends ParBase {
   constructor () {
     super()
     this.tw = new TeuchosWriter()
+    this.tp = new TeuchosParser()
     this._type = ''
     this.hostPhysics = ''
     this.hostCode = 'Analyze'
@@ -20,7 +22,7 @@ class AnalyzeScenarioBase extends ParBase {
     }
     this.selectables = {}
     this.modelviews = {}
-    this.inputData = {}
+    this.outputData = {}
   }
   get type () {
     return this._type
@@ -100,7 +102,7 @@ class AnalyzeScenarioBase extends ParBase {
     xw.startDocument()
 
     let obj = {}
-    this.extractDOM(this.inputData['Problem'], obj)
+    this.extractDOM(this.outputData['Problem'], obj)
     this.writeObject(xw, obj, 'Problem')
 
     xw.endDocument()
@@ -201,6 +203,10 @@ class AnalyzeScenarioBase extends ParBase {
       this.hasPropertyOfType(aVar, 'value', 'object') ||
       this.hasPropertyOfType(aVar, 'value', 'function'))
   }
+  isInputParameter (aVar) {
+    return this.hasPropertyOfType(aVar, 'type', 'string') &&
+      this.hasPropertyOfType(aVar, 'value', 'function')
+  }
   isFunction (aVar) {
     return typeof aVar === 'function'
   }
@@ -228,15 +234,121 @@ class AnalyzeScenarioBase extends ParBase {
       errorHandler.report('data structure mismatch. Continuing.')
     }
   }
-  //loadScenarioXML (definition) {
-  //  errorHandler.report('This function isn\'t done yet.  Why are you here?')
-  // let required = true
-  // let parser = new DOMParser()
-  // let doc = parser.parseFromString(definition.data, 'text/xml')
-  // let teuchosParser = new TeuchosParser()
-  // let params = teuchosParser.getParameterList(doc, '', required)
-  // let problemParams = teuchosParser.getParameterList(params, 'Problem', required)
-  //}
+  loadProblem (params) {
+    this.fromDOM(this.inputData['Problem'], params)
+  }
+  fromDOM (dataMap, domParams) {
+    const tp = this.tp
+    Object.keys(dataMap).forEach(function (key) {
+      let dataBranch = dataMap[key]
+      if (this.isInputParameter(dataBranch)) {
+        const fromData = tp.getParameter(domParams, key, true)
+        dataBranch['value'](fromData)
+      } else
+      if (this.isParameterList(dataBranch)) {
+        const fromList = tp.getParameterList(domParams, key, true)
+        this.fromDOM(dataBranch, fromList)
+      } else {
+        this.addToModelViews(dataBranch, this.getParameterLists(domParams, key))
+      }
+    }, this)
+  }
+  getParameterLists (domParams, key) {
+    var pLists = []
+    if (key.indexOf("===") !== -1) {
+      const keys = key.split('===')
+      const paramName = keys[0].trim()
+      const paramValue = keys[1].trim()
+      const lists = this.tp.getParameterLists(domParams)
+      lists.forEach((p) => {
+        if (this.tp.isParameter(p, paramName)) {
+          const val = this.tp.getParameter(p, paramName)
+          if (val === paramValue) {
+            pLists.push(p)
+          }
+        }
+      }, this)
+    } else
+    if (this.isListName(key)) {
+      let trimmedKey = key.replace('(','').replace(')','')
+      let thisList = this.tp.getParameterList(domParams, trimmedKey, true)
+      pLists = this.tp.getParameterLists(thisList)
+    } else
+    if (key.startsWith('[') && key.endsWith(']')) {
+      pLists.push(domParams)
+    } else {
+      pLists.push(this.tp.getParameterList(domParams, key, true))
+    }
+    return pLists
+  }
+  syncObjects (fromObject, toObject) {
+    Object.keys(fromObject).forEach( (key) => {
+      let value = fromObject[key]
+      if (typeof value === 'string') {
+        if (value.startsWith('{') && value.endsWith('}')  &&
+            this.hasPropertyOfType(toObject, key, 'object')) {
+            let listString = value.replace('{','').replace('}','')
+            let listEntries = listString.split(',')
+            Object.keys(toObject[key]).forEach( (toKey, i) => {
+              toObject[key][toKey] = listEntries[i].trim()
+            })
+        } else
+        if (this.hasPropertyOfType(toObject, key, 'string')) {
+          if (value.startsWith('Array(') && value.endsWith(')')) {
+             value = value.replace('Array(','').replace(')','')
+          }
+          toObject[key] = value
+        }
+      } else
+      if (this.isParameterList(value)) {
+        if (this.hasPropertyOfType(toObject, key, 'object')) {
+          this.syncObjects(value, toObject[key])
+        }
+      }
+    })
+  }
+  addToModelViews (dataBranch, fromLists) {
+    fromLists.forEach( (p) => {
+      if (this.modelviews[dataBranch]['view']['type'] === 'option-view') {
+        let options = this.modelviews[dataBranch]['view']['<Options>']
+        let foundOption = null
+        Object.keys(options).forEach( (option) => {
+          if (this.tp.isParameterList(p, option)) {
+            foundOption = this.tp.getParameterList(p, option)
+          }
+        }, this)
+        if (foundOption === null) {
+          errorHandler.report("Error:  Requested a model that doesn't exist")
+        }
+        errorHandler.report("Found requested model")
+        let optionDataObject = this.tp.toObject(foundOption)
+        let optionDataName = this.tp.getName(foundOption)
+        this.modelviews[dataBranch]['view']['<Options>'][optionDataName] = optionDataObject[optionDataName]
+        this.modelviews[dataBranch]['view']['option'] = optionDataName
+      } else
+      if (this.modelviews[dataBranch]['view']['type'] === 'list-view') {
+        let inputListDataObject = this.tp.toObject(p)
+        let inputListDataName = this.tp.getName(p)
+        let templateListDataObject = {}
+        templateListDataObject[inputListDataName] = {}
+        staticCopy(this.modelviews[dataBranch]['view']['<Template>'], templateListDataObject[inputListDataName])
+        this.syncObjects(inputListDataObject, templateListDataObject)
+        let dynamicListDataObject = {}
+        dynamicCopy(templateListDataObject, dynamicListDataObject)
+        this.appendListData(dataBranch, inputListDataName, dynamicListDataObject[inputListDataName])
+      } else
+      if (this.modelviews[dataBranch]['view']['type'] === 'single-view') {
+        let inputSingleViewObject = this.tp.toObject(p)
+        let inputSingleViewName = this.tp.getName(p)
+        let templateSingleViewObject = {}
+        staticCopy(this.modelviews[dataBranch]['view']['<Template>'], templateSingleViewObject)
+        this.syncObjects(inputSingleViewObject[inputSingleViewName], templateSingleViewObject)
+        let dynamicSingleViewObject = {}
+        dynamicCopy(templateSingleViewObject, dynamicSingleViewObject)
+        this.modelviews[dataBranch]['data'] = dynamicSingleViewObject
+      }
+    }, this)
+  }
 }
 
 export default AnalyzeScenarioBase

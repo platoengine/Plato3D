@@ -3,7 +3,7 @@ import AnalyzeScenarioBase from './analyze-scenario-base-module'
 class AnalyzeMechanics extends AnalyzeScenarioBase {
   constructor () {
     super()
-    this.hostPhysics = 'Mechanics'
+    this.hostPhysics = 'Mechanical'
     this.availableViewTypes = {
       'X Displacement': 'pvdToPLY_dispX.py',
       'Y Displacement': 'pvdToPLY_dispY.py',
@@ -12,7 +12,7 @@ class AnalyzeMechanics extends AnalyzeScenarioBase {
     }
     this.modelviews = {
       'Problem': {
-        'data': {},
+        'data': null,
         'view': {
           'type': 'single-view',
           '<Template>': {
@@ -33,6 +33,7 @@ class AnalyzeMechanics extends AnalyzeScenarioBase {
       },
       'Material Model': {
         'data': {},
+        'option': null,
         'view': {
           'type': 'option-view',
           '<Options>': {
@@ -94,7 +95,7 @@ class AnalyzeMechanics extends AnalyzeScenarioBase {
       }
     }
 
-    this.inputData = {
+    this.outputData = {
       'Problem': {
         'Physics': { type: 'string', value: 'Plato Driver' },
         'Spatial Dimension': { type: 'int', value: '3' },
@@ -105,6 +106,18 @@ class AnalyzeMechanics extends AnalyzeScenarioBase {
           'Material Model': () => { return this.getViewData('Material Model') },
           'Natural Boundary Conditions': () => { return this.getViewData('Mechanical Loads') },
           'Essential Boundary Conditions': () => { return this.getViewData('Constraints') }
+        }
+      }
+    }
+    this.inputData = {
+      'Problem': {
+        'Input Mesh': { type: 'string', value: (v) => {this.geometry.body.fileName = v} },
+        'Plato Problem': {
+          'Type===Scalar Function': 'Scalar Functions',
+          'Material Model': 'Material Model',
+          '(Essential Boundary Conditions)': 'Constraints',
+          '(Natural Boundary Conditions)': 'Mechanical Loads',
+          '[Plato Problem]': 'Problem'
         }
       }
     }

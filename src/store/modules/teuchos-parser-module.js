@@ -3,6 +3,51 @@ import ErrorHandler from './error-handler-module'
 function TeuchosParser () {
   this.errorHandler = new ErrorHandler()
 
+  this.getParameterLists = function (node) {
+    var returnNodes = []
+    for (let iChild = 0; iChild < node.childNodes.length; iChild++) {
+      let child = node.childNodes[iChild]
+      if (child.nodeName === 'ParameterList') {
+        returnNodes.push(child)
+      }
+    }
+    return returnNodes
+  }
+  this.getName = function (plist) {
+    if (plist.nodeName === 'ParameterList') {
+      return plist.getAttribute('name')
+    }
+    return null
+  }
+  this.toObject = function (fromList) {
+    let retObject = {}
+    this.toObjectFromChild(retObject, fromList)
+    return retObject
+  }
+  this.toObjectFromChild = function (toObject, fromChild) {
+    let recObject = toObject
+    if (fromChild.nodeName === 'ParameterList') {
+      let key = fromChild.getAttribute('name')
+      toObject[key] = {}
+      recObject = toObject[key]
+    }
+    for (let iChild = 0; iChild < fromChild.childNodes.length; iChild++) {
+      let child = fromChild.childNodes[iChild]
+      if (child.nodeName === 'ParameterList') {
+        this.toObjectFromChild(recObject, child)
+      } else {
+        this.toObjectFromParameter(recObject, child)
+      }
+    }
+  }
+  this.toObjectFromParameter = function (toObject, fromChild) {
+    if (fromChild.nodeName === 'Parameter') {
+      let key = fromChild.getAttribute('name')
+      toObject[key] = {}
+      toObject[key]['value'] = fromChild.getAttribute('value')
+      toObject[key]['type'] = fromChild.getAttribute('type')
+    }
+  }
   this.getParameterList = function (node, listName = '', required = false) {
     var returnNode = null
     if (listName === '') {
@@ -29,6 +74,15 @@ function TeuchosParser () {
     for (var iChild = 0; iChild < node.childNodes.length; iChild++) {
       var child = node.childNodes[iChild]
       if (child.nodeName === 'Parameter' && child.getAttribute('name') === paramName) {
+        return true
+      }
+    }
+    return false
+  }
+  this.isParameterList = function (node, paramName) {
+    for (var iChild = 0; iChild < node.childNodes.length; iChild++) {
+      var child = node.childNodes[iChild]
+      if (child.nodeName === 'ParameterList' && child.getAttribute('name') === paramName) {
         return true
       }
     }
@@ -77,141 +131,6 @@ function TeuchosParser () {
       this.errorHandler.reportAndThrow('Could not parse Parameter: ' + paramName)
     }
     return null
-  }
-  this.parseBasis = function (params, name) {
-    try {
-      var originParams = this.getParameterList(params, 'Origin')
-      if (originParams) {
-        var X0 = this.getParameter(originParams, 'X', /* required= */ true)
-        var Y0 = this.getParameter(originParams, 'Y', /* required= */ true)
-        var Z0 = this.getParameter(originParams, 'Z', /* required= */ true)
-      }
-      var basisParams = this.getParameterList(params, 'Basis', /* required= */ true)
-      if (basisParams) {
-        var X = this.getParameter(basisParams, 'X Axis', /* required= */ true)
-        var Y = this.getParameter(basisParams, 'Y Axis', /* required= */ true)
-        var Z = this.getParameter(basisParams, 'Z Axis', /* required= */ true)
-      }
-    } catch (err) {
-      this.errorHandler.reportAndThrow('Failed to parse \'' + name + '\' parameters')
-    }
-    var definition = {
-      basisName: name,
-      x0: X0,
-      x1: X[0],
-      x2: X[1],
-      x3: X[2],
-      y0: Y0,
-      y1: Y[0],
-      y2: Y[1],
-      y3: Y[2],
-      z0: Z0,
-      z1: Z[0],
-      z2: Z[1],
-      z3: Z[2]
-    }
-    return definition
-  }
-  this.parsePrimitive = function (params, basis, operation) {
-    var definition
-    var pType = this.getParameter(params, 'Type')
-    if (pType === 'Frustum') {
-      try {
-        var pHeight = this.getParameter(params, 'Height', /* required= */ true)
-        var pRadius0 = this.getParameter(params, 'Radius0', /* required= */ true)
-        var pRadius1 = this.getParameter(params, 'Radius1', /* required= */ true)
-        var pAxis = this.getParameter(params, 'Axis')
-      } catch (err) {
-        this.errorHandler.reportAndThrow('Failed to parse \'Frustum\' parameters')
-      }
-      definition = {
-        Type: 'Cylinder',
-        Radius0: pRadius1,
-        Radius1: pRadius0,
-        Height: pHeight,
-        Xpos: '0.0',
-        Ypos: '0.0',
-        Zpos: '0.0',
-        basisName: basis,
-        Operation: (operation === 'Add' ? 'add' : 'subtract'),
-        axis: pAxis
-      }
-    } else
-    if (pType === 'Cylinder') {
-      try {
-        var pCylHeight = this.getParameter(params, 'Height', /* required= */ true)
-        var pCylRadius = this.getParameter(params, 'Radius', /* required= */ true)
-        var pCylAxis = this.getParameter(params, 'Axis')
-      } catch (err) {
-        this.errorHandler.reportAndThrow('Failed to parse \'Cylinder\' parameters')
-      }
-      definition = {
-        Type: 'Cylinder',
-        Radius0: pCylRadius,
-        Radius1: pCylRadius,
-        Height: pCylHeight,
-        Xpos: '0.0',
-        Ypos: '0.0',
-        Zpos: '0.0',
-        basisName: basis,
-        Operation: (operation === 'Add' ? 'add' : 'subtract'),
-        axis: pCylAxis
-      }
-    } else
-    if (pType === 'Brick') {
-      try {
-        var pX = this.getParameter(params, 'X Dimension', /* required= */ true)
-        var pY = this.getParameter(params, 'Y Dimension', /* required= */ true)
-        var pZ = this.getParameter(params, 'Z Dimension', /* required= */ true)
-      } catch (err) {
-        this.errorHandler.reportAndThrow('Failed to parse \'Brick\' parameters')
-      }
-      definition = {
-        Type: 'Cube',
-        Xdim: pX,
-        Ydim: pY,
-        Zdim: pZ,
-        Xpos: '0.0',
-        Ypos: '0.0',
-        Zpos: '0.0',
-        basisName: basis,
-        Operation: (operation === 'Add' ? 'add' : 'subtract')
-      }
-    } else
-    if (pType === 'Torus') {
-      try {
-        var pTorusRadius0 = this.getParameter(params, 'Major Radius', /* required= */ true)
-        var pTorusRadius1 = this.getParameter(params, 'Minor Radius', /* required= */ true)
-        var pTorusAxis = this.getParameter(params, 'Axis')
-      } catch (err) {
-        this.errorHandler.reportAndThrow('Failed to parse \'Torus\' parameters')
-      }
-      definition = {
-        Type: 'Torus',
-        Radius0: pTorusRadius0,
-        Radius1: pTorusRadius1,
-        Xpos: '0.0',
-        Ypos: '0.0',
-        Zpos: '0.0',
-        basisName: basis,
-        Operation: (operation === 'Add' ? 'add' : 'subtract'),
-        axis: (pTorusAxis !== null) ? pTorusAxis : 'Z'
-      }
-    } else
-    if (pType === 'Sphere') {
-      var pSphereRadius = this.getParameter(params, 'Radius')
-      definition = {
-        Type: 'Sphere',
-        Radius: pSphereRadius,
-        Xpos: '0.0',
-        Ypos: '0.0',
-        Zpos: '0.0',
-        basisName: basis,
-        Operation: (operation === 'Add' ? 'add' : 'subtract'),
-        axis: pTorusAxis
-      }
-    }
-    return definition
   }
 }
 

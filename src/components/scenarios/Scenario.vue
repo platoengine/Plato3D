@@ -17,12 +17,7 @@
 
       <edit-scenario :scenario="scenario"/>
 
-<!--
-      <export-scenario-component :scenario="scenario"></export-scenario-component>
--->
-      <v-btn small>
-        <v-icon>mdi-folder-download</v-icon>
-      </v-btn>
+      <export-scenario :scenario="scenario"/>
 
     </v-card>
   </v-card>
@@ -30,7 +25,7 @@
 
 <script>
 // import ImportScenarioComponent from './ImportScenarioComponent'
-// import ExportScenarioComponent from './ExportScenarioComponent'
+import ExportScenario from './ExportScenario'
 import DeleteScenario from './DeleteScenario'
 import EditScenario from './EditScenario'
 import AnalyzeScenario from './analyze/AnalyzeScenario'
@@ -58,9 +53,9 @@ export default {
   components: {
     DeleteScenario,
     EditScenario,
-    AnalyzeScenario
+    AnalyzeScenario,
+    ExportScenario
 //    ImportScenarioComponent,
-//    ExportScenarioComponent
   }
 }
 </script>

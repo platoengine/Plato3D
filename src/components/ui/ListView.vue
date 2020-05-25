@@ -5,7 +5,7 @@
       <v-card class="ma-0 pa-0" color=green>
       <v-card class="ml-2">
         <new-list-entry :scenario="this.scenario" :modelviews="this.modelviews" :name="this.name"/>
-        <v-expansion-panels>
+        <v-expansion-panels accordion>
           <v-expansion-panel v-for="(item,index) in this.scenario.modelviews[this.name]['data']" :key="index">
             <v-expansion-panel-header>{{getName(item)}}</v-expansion-panel-header>
             <v-expansion-panel-content>

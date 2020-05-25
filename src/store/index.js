@@ -144,6 +144,27 @@ export default new Vuex.Store({
         scenarios[scenarioIndex].appendListData(dataName, newEntryName, data)
       }
     },
+    setScenarioListData ({scenarios}, {scenarioName, dataName, data}) {
+      let scenarioIndex = scenarios.findIndex(scenario => scenario.name === scenarioName)
+      if (scenarioIndex !== -1) {
+        scenarios[scenarioIndex].setListData(dataName, data)
+      }
+    },
+    loadScenario ({scenarios}, definition) {
+      // Scenarios are accessed by name, so if 'name' is empty, change it to 'Scenario N'.
+      if (definition.name === '') {
+        definition.name = 'Scenario ' + scenarios.length.toString()
+      }
+      let newScenario = null
+      const hostCode = 'Analyze' // only supporting Analyze currently
+      if (hostCode === 'Analyze') {
+        let newScenarioFactory = new AnalyzeScenarioFactory()
+        newScenario = newScenarioFactory.createFromFile(definition)
+      }
+      if (newScenario !== null) {
+        scenarios.push(newScenario)
+      }
+    },
     addParameter (state, {parentObject, definition}) {
       parentObject.parameters.push(definition)
     },

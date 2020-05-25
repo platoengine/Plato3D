@@ -28,7 +28,7 @@ export default {
   data: function () {
     return {
       savePending: false,
-      selectedOption: '',
+      selectedOption: null,
       availableOptions: null,
       dataState: {}
     }
@@ -36,11 +36,15 @@ export default {
   created: function () {
     this.availableOptions = Object.keys(this.modelviews[this.name]['view']['<Options>'])
     dynamicCopy(this.modelviews[this.name]['view']['<Options>'], this.dataState)
+    this.selectedOption = this.modelviews[this.name]['option']
+    if (this.selectedOption !== null) {
+      this.save()
+    }
   },
   computed: {
     parameterNames: function () {
-      if (this.selectedOption !== '') {
-        let params = this.modelviews[this.name]['view']['<Options>'][this.selectedOption]
+      if (this.selectedOption !== null) {
+        let params = this.dataState[this.selectedOption]
         return Object.keys(params)
       } else {
         return []
@@ -58,10 +62,12 @@ export default {
       this.savePending = true
     },
     save: function () {
+      let option = {}
+      option[this.selectedOption] = this.dataState[this.selectedOption]
       this.$store.commit('setScenarioOptionData',
         { scenarioName: this.scenario.name,
           dataName: this.name,
-          data: this.dataState
+          data: option
         })
       this.savePending = false
     }

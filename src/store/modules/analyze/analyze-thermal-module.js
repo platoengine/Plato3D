@@ -92,7 +92,7 @@ class AnalyzeThermal extends AnalyzeScenarioBase {
       }
     }
 
-    this.inputData = {
+    this.outputData = {
       'Problem': {
         'Physics': { type: 'string', value: 'Plato Driver' },
         'Spatial Dimension': { type: 'int', value: '3' },
@@ -103,6 +103,18 @@ class AnalyzeThermal extends AnalyzeScenarioBase {
           '(Scalar Functions)': () => { return this.getViewData('Scalar Functions') },
           'Natural Boundary Conditions': () => { return this.getViewData('Thermal Loads') },
           'Essential Boundary Conditions': () => { return this.getViewData('Constraints') }
+        }
+      }
+    }
+    this.inputData = {
+      'Problem': {
+        'Input Mesh': { type: 'string', value: (v) => {this.geometry.body.fileName = v} },
+        'Plato Problem': {
+          'Type===Scalar Function': 'Scalar Functions',
+          'Material Model': 'Material Model',
+          '(Essential Boundary Conditions)': 'Constraints',
+          '(Natural Boundary Conditions)': 'Thermal Loads',
+          '[Plato Problem]': 'Problem'
         }
       }
     }

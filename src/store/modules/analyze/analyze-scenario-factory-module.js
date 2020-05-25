@@ -4,16 +4,18 @@ import AnalyzeThermal from './analyze-thermal-module'
 import AnalyzeMechanics from './analyze-mechanics-module'
 import AnalyzeStabilizedMechanics from './analyze-stabilized-mechanics-module'
 import AnalyzeStabilizedThermomechanics from './analyze-stabilized-thermomechanics-module'
+import ErrorHandler from '../error-handler-module'
+import TeuchosParser from '../teuchos-parser-module'
 
 class AnalyzeScenarioFactory {
   constructor () {
     this.mPhysics = new Map([
       [ 'Thermal', {code: 'Analyze', type: 'Thermal', Constructor: AnalyzeThermal} ],
-      [ 'Mechanics', {code: 'Analyze', type: 'Mechanics', Constructor: AnalyzeMechanics} ],
-      [ 'Stabilized Mechanics', {code: 'Analyze', type: 'Stabilized Mechanics', Constructor: AnalyzeStabilizedMechanics} ],
-      [ 'Stabilized Thermomechanics', {code: 'Analyze', type: 'Stabilized Thermomechanics', Constructor: AnalyzeStabilizedThermomechanics} ],
-      [ 'Thermomechanics', {code: 'Analyze', type: 'Thermomechanics', Constructor: AnalyzeThermomechanics} ],
-      [ 'Electromechanics', {code: 'Analyze', type: 'Electromechanics', Constructor: AnalyzeElectromechanics} ]
+      [ 'Mechanical', {code: 'Analyze', type: 'Mechanical', Constructor: AnalyzeMechanics} ],
+      [ 'Stabilized Mechanical', {code: 'Analyze', type: 'Stabilized Mechanical', Constructor: AnalyzeStabilizedMechanics} ],
+      [ 'Stabilized Thermomechanical', {code: 'Analyze', type: 'Stabilized Thermomechanical', Constructor: AnalyzeStabilizedThermomechanics} ],
+      [ 'Thermomechanical', {code: 'Analyze', type: 'Thermomechanical', Constructor: AnalyzeThermomechanics} ],
+      [ 'Electromechanical', {code: 'Analyze', type: 'Electromechanical', Constructor: AnalyzeElectromechanics} ]
     ])
   }
   availableScenarioTypes () {
@@ -26,6 +28,31 @@ class AnalyzeScenarioFactory {
       }
     }
     return null
+  }
+  createFromFile (aDefinition) {
+    const required = true
+    const parser = new DOMParser()
+    const doc = parser.parseFromString(aDefinition.data, 'text/xml')
+    const teuchosParser = new TeuchosParser()
+    const errorHandler = new ErrorHandler()
+    errorHandler.report('file read')
+
+    const params = teuchosParser.getParameterList(doc, 'Problem', required)
+    const params_PlatoProblem = teuchosParser.getParameterList(params, 'Plato Problem', required)
+    const param_Physics = teuchosParser.getParameter(params_PlatoProblem, 'Physics', required)
+
+    const newScenario = this.create(param_Physics)
+
+    if (newScenario === null){
+      errorHandler.report('Import failed:')
+      errorHandler.report('Could not find physics of type ' + param_Physics)
+      return null
+    }
+
+    newScenario.name = aDefinition.name
+    newScenario.loadProblem(params)
+
+    return newScenario
   }
 }
 
