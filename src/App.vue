@@ -101,10 +101,32 @@ export default {
     }
 };
 </script>
-<style scoped>
+<style>
 .p-console {
     font-size: 0.6em;
     padding: 2px;
+}
+/* width */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: gray;
+  border-radius: 4px;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background:DarkGray;
+  border-radius: 4px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: LightGray;
+  border-radius: 4px;
 }
 </style>
 

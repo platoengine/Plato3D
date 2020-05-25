@@ -271,8 +271,10 @@ class AnalyzeScenarioBase extends ParBase {
     } else
     if (this.isListName(key)) {
       let trimmedKey = key.replace('(','').replace(')','')
-      let thisList = this.tp.getParameterList(domParams, trimmedKey, true)
-      pLists = this.tp.getParameterLists(thisList)
+      let thisList = this.tp.getParameterList(domParams, trimmedKey, false)
+      if (thisList !== null) {
+        pLists = this.tp.getParameterLists(thisList)
+      }
     } else
     if (key.startsWith('[') && key.endsWith(']')) {
       pLists.push(domParams)

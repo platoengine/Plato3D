@@ -20,13 +20,29 @@ class AnalyzeMechanics extends AnalyzeScenarioBase {
             'Constraint': { type: 'string', value: '', options: () => { return this.selectables['Scalar Functions'] } },
             'Objective': { type: 'string', value: '', options: () => { return this.selectables['Scalar Functions'] } },
             'Self-Adjoint': { type: 'bool', value: 'false', options: [ 'false', 'true' ] },
-            'PDE Constraint': { type: 'string', value: 'Elliptic', options: ['Elliptic'] },
+            'PDE Constraint': { type: 'string', value: 'Elliptic', options: ['Elliptic', 'Hyperbolic'] },
             'Elliptic': {
               'Penalty Function': {
                 'Type': { type: 'string', value: 'SIMP', options: ['SIMP', 'RAMP', 'Heaviside'] },
                 'Exponent': { type: 'double', value: '3.0' },
                 'Minimum Value': { type: 'double', value: '1.0e-3' }
-              }
+              },
+              conditionalView: ['PDE Constraint', 'Elliptic']
+            },
+            'Hyperbolic': {
+              'Penalty Function': {
+                'Type': { type: 'string', value: 'SIMP', options: ['SIMP', 'RAMP', 'Heaviside'] },
+                'Exponent': { type: 'double', value: '3.0' },
+                'Minimum Value': { type: 'double', value: '1.0e-3' }
+              },
+              conditionalView: ['PDE Constraint', 'Hyperbolic']
+            },
+            'Time Integration': {
+              'Newmark Gamma': { type: 'double', value: '0.5'},
+              'Newmark Beta': { type: 'double', value: '0.25' },
+              'Number Time Steps': { type: 'int', value: '10' },
+              'Time Step': { type: 'double', value: '1e-6' },
+              conditionalView: ['PDE Constraint', 'Hyperbolic']
             }
           }
         }
