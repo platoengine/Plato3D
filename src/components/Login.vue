@@ -9,6 +9,7 @@
               <span v-if="loginerrors != null" style="color:red"> {{ loginError }} </span>
               <v-text-field dense v-model="password" label="Password" type="password"/>
               <v-btn block @click="loginUser">login</v-btn>
+              <register/>
             </v-col>
           </v-row>
         </v-container>
@@ -19,6 +20,7 @@
 <script>
 import ErrorHandler from '../store/modules/error-handler-module'
 import {APIService} from '../store/modules/rest-api-module'
+import Register from './Register'
 
 const apiService = new APIService()
 const errorHandler = new ErrorHandler()
@@ -28,6 +30,9 @@ export default {
   props: ['scene'],
   data: function () {
     return {server: '', username: '', password: '', loginerrors: ''}
+  },
+  components: {
+    Register
   },
   computed: {
     loginError: function () {

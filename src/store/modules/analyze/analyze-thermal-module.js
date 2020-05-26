@@ -36,6 +36,7 @@ class AnalyzeThermal extends AnalyzeScenarioBase {
       },
       'Material Model': {
         'data': {},
+        'option': null,
         'view': {
           'type': 'option-view',
           '<Options>': {
@@ -74,7 +75,7 @@ class AnalyzeThermal extends AnalyzeScenarioBase {
           '<Template>': {
             'Type': { type: 'string', value: 'Uniform', options: ['Uniform'] },
             'Value': { type: 'double', value: '0.0' },
-            'Sides': { type: 'string', value: '', options: this.geometry.boundaries }
+            'Sides': { type: 'string', value: '', options: () => { return this.selectables['sidesets'] } }
           }
         }
       },
@@ -86,7 +87,8 @@ class AnalyzeThermal extends AnalyzeScenarioBase {
             'Type': { type: 'string', value: 'Zero Value', options: ['Zero Value', 'Fixed Value'] },
             'Index': { type: 'int', value: '0', options: ['0'] },
             'Value': { type: 'double', value: '0.0', conditionalView: ['Type', 'Fixed Value'] },
-            'Sides': { type: 'string', value: '', options: this.geometry.boundaries }
+            'Sides': { type: 'string', value: '', options: () => { return this.selectables['nodesets'] } }
+
           }
         }
       }

@@ -1,9 +1,7 @@
 <template>
-  <v-dialog v-model="dialog" persistent max-width="600px">
+  <v-dialog v-model="dialog" persistent max-width="500px">
     <template v-slot:activator="{ on }">
-      <v-btn x-large block v-on="on" raised>
-          Create/Add
-      </v-btn>
+      <v-btn x-large block v-on="on" raised> Create/Add </v-btn>
     </template>
     <v-card>
       <v-card-title>
