@@ -6,7 +6,7 @@ class AnalyzeThermal extends AnalyzeScenarioBase {
     this.hostPhysics = 'Thermal'
     this.modelviews = {
       'Problem': {
-        'data': {},
+        'data': null,
         'view': {
           'type': 'single-view',
           '<Template>': {

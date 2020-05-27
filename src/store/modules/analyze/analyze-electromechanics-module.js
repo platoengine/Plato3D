@@ -3,10 +3,10 @@ import AnalyzeScenarioBase from './analyze-scenario-base-module'
 class AnalyzeElectromechanics extends AnalyzeScenarioBase {
   constructor () {
     super()
-    this.hostPhysics = 'Electromechanics'
+    this.hostPhysics = 'Electromechanical'
     this.modelviews = {
       'Problem': {
-        'data': {},
+        'data': null,
         'view': {
           'type': 'single-view',
           '<Template>': {
@@ -27,6 +27,7 @@ class AnalyzeElectromechanics extends AnalyzeScenarioBase {
       },
       'Material Model': {
         'data': {},
+        'option': null,
         'view': {
           'type': 'option-view',
           '<Options>': {
@@ -72,18 +73,18 @@ class AnalyzeElectromechanics extends AnalyzeScenarioBase {
             'Values': { type: 'double', value: {'X': '0.0', 'Y': '0.0', 'Z': '0.0'}, conditionalView: ['Type', 'Uniform'] },
             'Value': { type: 'double', value: '0.0', conditionalView: ['Type', 'Uniform Component'] },
             'Component': { type: 'string', value: 'X', options: ['X', 'Y', 'Z'], conditionalView: ['Type', 'Uniform Component'] },
-            'Sides': { type: 'string', value: '', options: this.geometry.boundaries }
+            'Sides': { type: 'string', value: '', options: () => { return this.selectables['sidesets'] } }
           }
         }
       },
-      'Thermal Loads': {
+      'Electrical Loads': {
         'data': [],
         'view': {
           'type': 'list-view',
           '<Template>': {
             'Type': { type: 'string', value: 'Uniform', options: ['Uniform'] },
             'Value': { type: 'double', value: '0.0' },
-            'Sides': { type: 'string', value: '', options: this.geometry.boundaries }
+            'Sides': { type: 'string', value: '', options: () => { return this.selectables['sidesets'] } }
           }
         }
       },
@@ -95,7 +96,7 @@ class AnalyzeElectromechanics extends AnalyzeScenarioBase {
             'Type': { type: 'string', value: 'Zero Value', options: ['Zero Value', 'Fixed Value'] },
             'Index': { type: 'int', value: '0', options: ['0', '1', '2', '3'] },
             'Value': { type: 'double', value: '0.0', conditionalView: ['Type', 'Fixed Value'] },
-            'Sides': { type: 'string', value: '', options: this.geometry.boundaries }
+            'Sides': { type: 'string', value: '', options: () => { return this.selectables['nodesets'] } }
           }
         }
       }
@@ -111,8 +112,21 @@ class AnalyzeElectromechanics extends AnalyzeScenarioBase {
           'Material Model': () => { return this.getViewData('Material Model') },
           '(Scalar Functions)': () => { return this.getViewData('Scalar Functions') },
           'Mechanical Natural Boundary Conditions': () => { return this.getViewData('Mechanical Loads') },
-          'Thermal Natural Boundary Conditions': () => { return this.getViewData('Thermal Loads') },
+          'Electrical Natural Boundary Conditions': () => { return this.getViewData('Electrical Loads') },
           'Essential Boundary Conditions': () => { return this.getViewData('Constraints') }
+        }
+      }
+    }
+    this.inputData = {
+      'Problem': {
+        'Input Mesh': { type: 'string', value: (v) => {this.geometry.body.fileName = v} },
+        'Plato Problem': {
+          'Type===Scalar Function': 'Scalar Functions',
+          'Material Model': 'Material Model',
+          '(Essential Boundary Conditions)': 'Constraints',
+          '(Mechanical Natural Boundary Conditions)': 'Mechanical Loads',
+          '(Electrical Natural Boundary Conditions)': 'Electrical Loads',
+          '[Plato Problem]': 'Problem'
         }
       }
     }

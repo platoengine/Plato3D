@@ -326,7 +326,7 @@ class AnalyzeScenarioBase extends ParBase {
         let optionDataObject = this.tp.toObject(foundOption)
         let optionDataName = this.tp.getName(foundOption)
         this.modelviews[dataBranch]['view']['<Options>'][optionDataName] = optionDataObject[optionDataName]
-        this.modelviews[dataBranch]['view']['option'] = optionDataName
+        this.modelviews[dataBranch]['option'] = optionDataName
       } else
       if (this.modelviews[dataBranch]['view']['type'] === 'list-view') {
         let inputListDataObject = this.tp.toObject(p)
