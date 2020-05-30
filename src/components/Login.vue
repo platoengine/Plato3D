@@ -42,23 +42,21 @@ export default {
   methods: {
     loginUser () {
       errorHandler.report(`login username ${this.username}`)
+      let callbackThis = this
       apiService.loginUser(this.server, this.username, this.password).then((response) => {
         //  if login was successful, there will be a JWT token in the response
         errorHandler.report(response)
         if (response.Authenticated) {
-          localStorage.setItem('token', response.token)
-          localStorage.setItem('server', this.server)
-          localStorage.setItem('username', this.username)
-          this.$store.commit('updateAuthentication', this.username, response.token)
-          this.$store.commit('setEventSource', this.server)
-          // var usertoken = localStorage.getItem('token')
-          apiService.loadUsersProjects(this.username).then(data => {
-            this.$store.commit('storeUserProjects', data)
+          callbackThis.$store.commit('updateAuthentication',
+            {authenticateduser: callbackThis.username, newtoken: response.token})
+          callbackThis.$store.commit('setEventSource', callbackThis.server)
+          apiService.loadUsersProjects().then(data => {
+            callbackThis.$store.commit('storeUserProjects', data)
           })
         } else if (response.invaliduser) {
-          this.loginerrors = 'no user found'
+          callbackThis.loginerrors = 'no user found'
         } else {
-          this.loginerrors = 'password is incorrect!'
+          callbackThis.loginerrors = 'password is incorrect!'
         }
       })
     }

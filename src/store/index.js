@@ -3,7 +3,7 @@ import Vuex from 'vuex'
 
 import ExodusModel from './modules/exodus-module'
 import UI from './modules/plato-ui-module'
-import Session from './modules/session-module'
+import SessionContainer from './modules/session-container'
 import {APIService} from './modules/rest-api-module'
 import ErrorHandler from './modules/error-handler-module'
 import EventsContainer from './modules/events-container'
@@ -21,8 +21,7 @@ Vue.use(Vuex)
 export default new Vuex.Store({
   strict: true,
   modules: {
-    ui: UI,
-    session: Session
+    ui: UI
   },
   state: {
     models: [],
@@ -30,12 +29,14 @@ export default new Vuex.Store({
     activeModel: null, // refers to the to which requests and modifications are applied
     availableModelTypes: null,
     availableScenarioTypes: null,
-    events: { type: EventsContainer }
+    events: { type: EventsContainer },
+    session: { type: SessionContainer }
   },
   mutations: {
     initialize (state) {
       state.availableModelTypes = ['Exodus', 'OpenCSM (coming soon)', 'Cogent (coming soon)']
       state.events = new EventsContainer()
+      state.session = new SessionContainer()
 
       state.availableScenarioTypes = new Map()
 
@@ -44,6 +45,10 @@ export default new Vuex.Store({
       let analyzeScenarioTypes = analyzeScenarioFactory.availableScenarioTypes()
       analyzeScenarioTypes.forEach((value, key) => state.availableScenarioTypes.set(key, value))
 
+    },
+    updateAuthentication ({session}, sessionAuth) {
+      session.updateAuthentication(sessionAuth)
+      apiService.updateToken(sessionAuth.newtoken)
     },
     setEventSource ({events}, server) {
       events.setSource(server)

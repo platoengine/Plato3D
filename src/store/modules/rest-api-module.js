@@ -4,23 +4,18 @@ import ErrorHandler from './error-handler-module'
 const errorHandler = new ErrorHandler()
 
 export class APIService {
-  constructor () {
-    this.server = localStorage.getItem('server')
-    this.token = localStorage.getItem('token')
-    this.username = localStorage.getItem('username')
-  }
   loadScene (username) {
-    const {token} = this
-    const url = `${this.server}/api/loadscene`
+    const {token, server} = this.getSession()
+    const url = `${server}/api/loadscene`
     return axios.post(url, {
       username,
       token
     }).then(response => response.data)
   }
   saveScene (sceneData, projectName) {
-    const {token, username} = this
+    const {token, username, server} = this.getSession()
     errorHandler.report(`saveScene: ${projectName}`)
-    const url = `${this.server}/api/savescene`
+    const url = `${server}/api/savescene`
     return axios.post(url, {
       sceneData,
       projectName,
@@ -29,7 +24,8 @@ export class APIService {
     })
   }
   registerUser (username, email, password) {
-    const url = `${this.server}/register`
+    const {server} = this.getSession()
+    const url = `${server}/register`
     return axios.post(url, {
       username,
       email,
@@ -37,6 +33,8 @@ export class APIService {
     }).then(response => response.data)
   }
   loginUser (server, username, password) {
+    localStorage.setItem('server', server)
+    localStorage.setItem('username', username)
     const url = `${server}/login`
     errorHandler.report(`logging in: ${url}`)
     return axios.post(url, {
@@ -44,18 +42,26 @@ export class APIService {
       password
     }).then(response => response.data)
   }
+  getSession () {
+    return { token: localStorage.getItem('token'),
+             username: localStorage.getItem('username'),
+             server: localStorage.getItem('server') }
+  }
+  updateToken (token) {
+    localStorage.setItem('token', token)
+  }
   isValidToken () {
-    const {token, username} = this
-    const url = `${this.server}/validatetoken`
+    const {token, username, server} = this.getSession()
+    const url = `${server}/validatetoken`
     return axios.post(url, {
       username,
       token
     })
   }
   deleteProject (projectId) {
-    const {token, username} = this
+    const {token, username, server} = this.getSession()
     errorHandler.report(`deleting project: ${projectId}`)
-    const url = `${this.server}/api/deleteProject`
+    const url = `${server}/api/deleteProject`
     return axios.post(url, {
       projectId,
       username,
@@ -63,8 +69,8 @@ export class APIService {
     }).then(response => response.data)
   }
   loadUsersProjects () {
-    const {token, username} = this
-    const url = `${this.server}/api/getprojects`
+    const {token, username, server} = this.getSession()
+    const url = `${server}/api/getprojects`
     errorHandler.report(`loading projects for user: ${username}`)
     return axios.post(url, {
       username,
@@ -72,8 +78,8 @@ export class APIService {
     }).then(response => response.data)
   }
   updateProject (sceneData, projectName, username, dateCreated) {
-    const {token} = this
-    const url = `${this.server}/api/updateproject`
+    const {token, server} = this.getSession()
+    const url = `${server}/api/updateproject`
     return axios.post(url, {
       sceneData,
       projectName,
@@ -83,9 +89,9 @@ export class APIService {
     }).then(response => response.data)
   }
   createRealizationView (viewDefinition) {
-    const {token, username} = this
+    const {token, username, server} = this.getSession()
 
-    const url = `${this.server}/jobs/create-realization-view`
+    const url = `${server}/jobs/create-realization-view`
     errorHandler.report('creating view')
     return axios.post(url, {
       viewDefinition,
@@ -94,9 +100,9 @@ export class APIService {
     }).then(response => response.data)
   }
   uploadExodusModel (formData) {
-    const {token, username} = this
+    const {token, username, server} = this.getSession()
 
-    const url = `${this.server}/jobs/upload-exodus-model`
+    const url = `${server}/jobs/upload-exodus-model`
     errorHandler.report('uploading exodus model')
     formData.append('token', token)
     formData.append('username', username)
@@ -109,13 +115,13 @@ export class APIService {
     .then(response => response.data)
   }
   createSimulation (state, realization) {
-    const {token, username} = this
+    const {token, username, server} = this.getSession()
 
     let hostCode = realization.scenario.hostCode
 
     if (hostCode === 'Albany') {
       let inputFileString = realization.scenario.toDOM(state.models)
-      const url = `${this.server}/jobs/create-simulation`
+      const url = `${server}/jobs/create-simulation`
       return axios.post(url, {
         token,
         username,
@@ -128,7 +134,7 @@ export class APIService {
     } else
     if (hostCode === 'Analyze') {
       let inputFileString = realization.scenario.toDOM(state.models)
-      const url = `${this.server}/jobs/create-simulation`
+      const url = `${server}/jobs/create-simulation`
       let modelName = realization.scenario.geometry.body.modelName
       let modelIndex = state.models.findIndex((m) => m.name === modelName)
       if (modelIndex === -1) {
@@ -150,11 +156,11 @@ export class APIService {
     }
   }
   startSimulation (realization) {
-    const {token, username} = this
+    const {token, username, server} = this.getSession()
 
     let hostCode = realization.scenario.hostCode
 
-    const url = `${this.server}/jobs/start-simulation`
+    const url = `${server}/jobs/start-simulation`
 
     if (hostCode === 'Albany') {
       let inputFileName = realization.simulation.inputFile
