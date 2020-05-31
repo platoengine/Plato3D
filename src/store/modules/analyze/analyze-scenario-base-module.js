@@ -124,6 +124,7 @@ class AnalyzeScenarioBase extends ParBase {
     }
   }
   extractDOM (aObjectFrom, aObjectTo) {
+    if (aObjectFrom === null) return
     Object.keys(aObjectFrom).forEach(function (key) {
       let aMember = aObjectFrom[key]
       if (this.isParameter(aMember)) {

@@ -47,7 +47,7 @@ const errorHandler = new ErrorHandler()
 
 export default {
   name: 'exodus-model',
-  props: ['model', 'displayID'],
+  props: ['model'],
   components: {
     LoadModel,
     ImportModel,
@@ -55,34 +55,7 @@ export default {
     EditModel
   },
   data: function () {
-    return {
-      deleteIsConfirmed: false,
-      openModel: false,
-      entitiesDisplay: {from: 0, num: 3},
-      visibleEntityPanel: [false, false, false]
-    }
-  },
-  watch: {
-    selectedPrimitive: function () {
-      if (this.model === this.$store.state.ui.showItemDetailModel) {
-        this.$emit('open-models')
-        this.openModel = true
-        let displayIndex = this.$store.state.ui.currentlySelectedPrimitiveIndex
-        if (displayIndex !== -1) {
-          for (var i = 0; i < this.visibleEntityPanel.length; i++) {
-            this.$set(this.visibleEntityPanel, i, false)
-          }
-          if (displayIndex < this.entitiesDisplay.num) {
-            this.entitiesDisplay.from = 0
-            this.$set(this.visibleEntityPanel, displayIndex, true)
-          } else {
-            let lastDisplayIndex = this.entitiesDisplay.num - 1
-            this.entitiesDisplay.from = displayIndex - lastDisplayIndex
-            this.$set(this.visibleEntityPanel, lastDisplayIndex, true)
-          }
-        }
-      }
-    }
+    return {}
   },
   computed: {
     selectedPrimitive: function () {
@@ -140,7 +113,7 @@ export default {
           name: modelName,
           description: null
         }})
-      this.$store.commit('setActiveModel', modelName)
+      this.$store.commit('setActiveModel', this.model.name)
       this.$store.dispatch('uploadExodusModel', eventData)
     },
     open: function (primitive) {

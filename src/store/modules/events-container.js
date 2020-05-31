@@ -22,6 +22,7 @@ function EventsContainer () {
       this.pendingListeners.push({myName: aName, myFunction: aFunction})
     } else {
       if (this.eventNames.includes(aName) === false) {
+        this.eventNames.push(aName)
         this.eventSource.addEventListener(aName, aFunction)
       }
     }

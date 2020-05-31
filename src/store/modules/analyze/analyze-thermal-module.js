@@ -30,6 +30,12 @@ class AnalyzeThermal extends AnalyzeScenarioBase {
                 'Minimum Value': { type: 'double', value: '1.0e-3' }
               },
               conditionalView: ['PDE Constraint', 'Parabolic']
+            },
+            'Time Integration': {
+              'Trapezoid Alpha': { type: 'double', value: '0.5'},
+              'Number Time Steps': { type: 'int', value: '10' },
+              'Time Step': { type: 'double', value: '1e-6' },
+              conditionalView: ['PDE Constraint', 'Parabolic']
             }
           }
         }

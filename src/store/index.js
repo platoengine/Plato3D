@@ -88,6 +88,11 @@ export default new Vuex.Store({
     setModelAttributes ({models}, {currentName, modelAttributes}) {
       let modelIndex = models.findIndex(model => model.name === currentName)
       if (modelIndex !== -1) {
+        // see if model with requested name already exists
+        let dupIndex = models.findIndex(model => model.name === modelAttributes.name)
+        if (dupIndex !== -1) {
+          modelAttributes.name = currentName
+        }
         models[modelIndex].setModelAttributes(modelAttributes)
       }
     },
