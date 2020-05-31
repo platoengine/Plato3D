@@ -2,7 +2,7 @@
     <v-card>
       <v-form @submit.prevent>
         <v-container>
-          <v-row>
+          <v-row v-if="!loggedIn">
             <v-col>
               <v-text-field dense v-model="server" label="Server"/>
               <v-text-field dense v-model="username" label="Username"/>
@@ -10,6 +10,13 @@
               <v-text-field dense v-model="password" label="Password" type="password"/>
               <v-btn block @click="loginUser">login</v-btn>
               <register/>
+            </v-col>
+          </v-row>
+          <v-row v-else>
+            <v-col>
+              <v-text-field dense v-model="server" label="Server" :disabled="true"/>
+              <v-text-field dense v-model="username" label="Username" :disabled="true"/>
+              <v-btn block @click="logoutUser">log out</v-btn>
             </v-col>
           </v-row>
         </v-container>
@@ -29,7 +36,7 @@ export default {
   name: 'login',
   props: ['scene'],
   data: function () {
-    return {server: '', username: '', password: '', loginerrors: ''}
+    return {server: 'http://127.0.0.1:3000', username: '', password: '', loginerrors: ''}
   },
   components: {
     Register
@@ -37,6 +44,9 @@ export default {
   computed: {
     loginError: function () {
       return this.loginerrors
+    },
+    loggedIn: function () {
+      return this.$store.state.session.data.authenticated
     }
   },
   methods: {
@@ -53,12 +63,16 @@ export default {
           apiService.loadUsersProjects().then(data => {
             callbackThis.$store.commit('storeUserProjects', data)
           })
+          callbackThis.loginerrors = ''
         } else if (response.invaliduser) {
           callbackThis.loginerrors = 'no user found'
         } else {
           callbackThis.loginerrors = 'password is incorrect!'
         }
       })
+    },
+    logoutUser () {
+      this.$store.commit('destroySession')
     }
   }
 }

@@ -1,7 +1,6 @@
 <template>
   <v-card>
-    <load-model v-if="loaded" v-on:load-model='loadModel($event)'>
-    </load-model>
+    <load-model v-if="!loaded" v-on:load-model='loadModel($event)'/>
     <v-container class="py-0" v-else>
       <v-row>
         <v-col class="pa-0 ma-0">
@@ -62,7 +61,7 @@ export default {
       return this.$store.state.ui.showItemDetailPrimitive
     },
     loaded: function () {
-      const tLoaded = this.model.primitives.length===0
+      const tLoaded = this.model.primitives.length!==0
       return tLoaded
     }
   },
@@ -126,6 +125,7 @@ export default {
   }
 }
 </script>
+
 <style scoped>
 .entity-title {
   margin-left: 6px;

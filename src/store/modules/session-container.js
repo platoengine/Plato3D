@@ -1,5 +1,5 @@
 function SessionContainer () {
-  this.session = {
+  this.data = {
   username: '',
   authenticated: false,
   token: '',
@@ -8,9 +8,9 @@ function SessionContainer () {
 }
 
 this.updateAuthentication = function (sessionAuth) {
-    this.session.authenticated = true
-    this.session.username = sessionAuth.authenticateduser
-    this.session.token = sessionAuth.newtoken
+    this.data.authenticated = true
+    this.data.username = sessionAuth.authenticateduser
+    this.data.token = sessionAuth.newtoken
   }
 
 }

@@ -19,7 +19,7 @@
       <v-card-actions>
         <v-spacer></v-spacer>
         <v-btn text @click="dialog = false; clear()">Cancel</v-btn>
-        <v-btn text @click="dialog = false; create()" :disabled="this.type===''">Create</v-btn>
+        <v-btn text @click="dialog = false; create()" :disabled="disabled()">Create</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -66,6 +66,14 @@ export default {
     clear: function () {
       this.name = ''
       this.type = ''
+    },
+    disabled: function () {
+      let retval = false
+      retval = retval && this.type===''
+      if (typeof this.type === 'string') {
+        retval = retval || this.type.includes('coming soon')
+      }
+      return retval
     }
   }
 }

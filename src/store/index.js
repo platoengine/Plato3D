@@ -50,6 +50,19 @@ export default new Vuex.Store({
       session.updateAuthentication(sessionAuth)
       apiService.updateToken(sessionAuth.newtoken)
     },
+    destroySession ({session}) {
+      localStorage.removeItem('token')
+      localStorage.removeItem('username')
+      localStorage.removeItem('server')
+      session.data.authenticated = false
+      session.data.username = ''
+      session.data.token = ''
+      for (var i = 0; i < session.data.projects.length; i++) {
+        Vue.set(session.data.projects, i, undefined)
+      }
+      session.data.projects = []
+      session.data.activeproject = null
+    },
     setEventSource ({events}, server) {
       events.setSource(server)
     },
