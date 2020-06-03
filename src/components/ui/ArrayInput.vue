@@ -1,5 +1,5 @@
 <template>
-  <v-text-field dense class="ma-0 pa-0 body-2" v-model="parameterValue" :label="name" v-on:input="setPending()"/>
+  <v-text-field dense class="ml-2 ma-0 pa-0 body-2" v-model="parameterValue" :label="name" v-on:input="setPending()"/>
 </template>
 
 <script>

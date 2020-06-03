@@ -1,14 +1,14 @@
 <template>
   <div>
-    <div v-if="this.viewType === 'option-view'">
+    <v-card v-if="this.viewType === 'option-view'">
       <option-view :scenario="this.scenario" :modelviews="this.modelviews" :name="this.name"/>
-    </div>
-    <div v-else-if="this.viewType === 'single-view'">
+    </v-card>
+    <v-card v-else-if="this.viewType === 'single-view'">
       <single-view :scenario="this.scenario" :modelviews="this.modelviews" :name="this.name"/>
-    </div>
-    <div v-else-if="this.viewType === 'list-view'">
+    </v-card>
+    <v-card v-else-if="this.viewType === 'list-view'">
       <list-view :scenario="this.scenario" :modelviews="this.modelviews" :name="this.name"/>
-    </div>
+    </v-card>
   </div>
 </template>
 

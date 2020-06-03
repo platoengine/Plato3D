@@ -1,10 +1,10 @@
 <template>
- <div>
+ <v-card class="ma-0 pa-0">
   <display-branch :level="0" :data="getData()" v-on:pending="setPending()"/>
   <v-btn small block @click="save()" :disabled="!savePending" type="button">
     Modify
   </v-btn>
- </div>
+ </v-card>
 </template>
 
 <script>
