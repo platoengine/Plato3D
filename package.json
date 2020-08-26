@@ -1,6 +1,6 @@
 {
   "name": "plato3d",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
@@ -13,6 +13,7 @@
     "file-saver": "^2.0.2",
     "three": "^0.114.0",
     "three-obj-mtl-loader": "^1.0.3",
+    "vee-validate": "^3.3.5",
     "vue": "^2.6.11",
     "vuetify": "^2.2.11",
     "vuex": "^3.1.3",
