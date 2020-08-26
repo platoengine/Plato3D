@@ -28,13 +28,6 @@ export default {
   components: {
     NewParameter,
     ModifyParameter
-  },
-  data: function () {
-    return {
-      openParameters: false,
-      visibleNewParameterPanel: false,
-      display: {from: 0, num: 3}
-    }
   }
 }
 </script>

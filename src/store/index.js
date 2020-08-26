@@ -9,6 +9,8 @@ import ErrorHandler from './modules/error-handler-module'
 import EventsContainer from './modules/events-container'
 
 import AnalyzeScenarioFactory from './modules/analyze/analyze-scenario-factory-module'
+import Realization from './modules/realization-module'
+
 
 
 
@@ -26,6 +28,7 @@ export default new Vuex.Store({
   state: {
     models: [],
     scenarios: [],
+    realizations: [],
     activeModel: null, // refers to the to which requests and modifications are applied
     availableModelTypes: null,
     availableScenarioTypes: null,
@@ -45,6 +48,12 @@ export default new Vuex.Store({
       let analyzeScenarioTypes = analyzeScenarioFactory.availableScenarioTypes()
       analyzeScenarioTypes.forEach((value, key) => state.availableScenarioTypes.set(key, value))
 
+    },
+    setSimulationAttribute ({realizations}, {name, key, value}) {
+      let realizationIndex = realizations.findIndex(realization => realization.name === name)
+      if (realizationIndex !== -1) {
+        realizations[realizationIndex].simulation[key] = value
+      }
     },
     updateAuthentication ({session}, sessionAuth) {
       session.updateAuthentication(sessionAuth)
@@ -194,6 +203,26 @@ export default new Vuex.Store({
     modifyParameter (state, {parentObject, definition}) {
       const tModIndex = parentObject.parameters.findIndex(p => p.ParameterName === definition.ParameterName)
       parentObject.parameters[tModIndex] = definition
+    },
+    addRealization ({scenarios, realizations}, {name, description, scenarioName}) {
+      const newRealization = new Realization()
+      // Realizations are accessed by name, so if 'name' is empty, change it to 'Realization N'.
+      if (name === '') {
+        name = 'Realization ' + realizations.length.toString()
+      }
+      newRealization.name = name
+      newRealization.description = description
+      let scenarioIndex = scenarios.findIndex(scenario => scenario.name === scenarioName)
+      if (scenarioIndex !== -1) {
+        newRealization.scenario = scenarios[scenarioIndex]
+      }
+      realizations.push(newRealization)
+    },
+    deleteRealization ({realizations}, {name}) {
+      let realizationIndex = realizations.findIndex(realization => realization.name === name)
+      if (realizationIndex !== -1) {
+        realizations.splice(realizationIndex, 1)
+      }
     }
   },
   actions: {
@@ -202,6 +231,26 @@ export default new Vuex.Store({
       const response = await apiService.uploadExodusModel(formData)
       if (response === 'FAILURE') {
         errorHandler.report('server request failed: upload exodus model')
+      }
+    },
+    async createRealizationSimulation ({state, commit}, {realization}) {
+      const response = await apiService.createSimulation(state, commit, realization)
+      if (response === 'FAILURE') {
+        errorHandler.report('server request failed: create simulation')
+      }
+    },
+    async startRealizationSimulation ({commit}, {realization}) {
+      const response = await apiService.startSimulation(commit, realization)
+      if (response === 'FAILURE') {
+        errorHandler.report('server request failed: start simulation')
+      }
+    },
+    async conductRealizationSimulation ({dispatch, state}, {realizationName}) {
+      let realizationIndex = state.realizations.findIndex(realization => realization.name === realizationName)
+      if (realizationIndex !== -1) {
+        let realization = state.realizations[realizationIndex]
+        await dispatch('createRealizationSimulation', {realization: realization})
+        await dispatch('startRealizationSimulation', {realization: realization})
       }
     }
   }

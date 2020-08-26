@@ -128,7 +128,7 @@ class AnalyzeScenarioBase extends ParBase {
     Object.keys(aObjectFrom).forEach(function (key) {
       let aMember = aObjectFrom[key]
       if (this.isParameter(aMember)) {
-        if (this.conditionMet(aMember, aObjectFrom)) {
+        if (this.conditionMet(aMember, aObjectFrom) && this.asWriteable(aMember['value']) != "") {
           aObjectTo[key] = {}
           aObjectTo[key]['value'] = this.asWriteable(aMember['value'])
           aObjectTo[key]['type'] = aMember['type']

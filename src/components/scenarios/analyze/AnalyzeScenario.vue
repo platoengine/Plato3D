@@ -45,12 +45,6 @@ export default {
   created: function () {
     this.attributesState.description = this.scenario.description
   },
-  methods: {
-    save_model: function () {
-      this.$store.commit('setScenarioModel', {scenarioName: this.scenario.name, modelName: this.modelState.name})
-      this.modelState.pending = false
-    }
-  },
   computed: {
     selectedModelName: {
       get: function () {

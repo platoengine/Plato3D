@@ -46,10 +46,8 @@ class AnalyzeThermal extends AnalyzeScenarioBase {
         'view': {
           'type': 'option-view',
           '<Options>': {
-            'Isotropic Linear Thermal': {
-              'Conductivity Coefficient': { type: 'double', value: '210.0' },
-              'Specific Heat': { type: 'double', value: '900.0' },
-              'Mass Density': { type: 'double', value: '2703.0' }
+            'Thermal Conduction': {
+              'Thermal Conductivity': { type: 'double', value: '210.0' },
             }
           }
         }
@@ -104,7 +102,7 @@ class AnalyzeThermal extends AnalyzeScenarioBase {
       'Problem': {
         'Physics': { type: 'string', value: 'Plato Driver' },
         'Spatial Dimension': { type: 'int', value: '3' },
-        'Input Mesh': { type: 'string', value: this.geometry.body.fileName },
+        'Input Mesh': { type: 'string', value: () => this.geometry.body.fileName },
         'Plato Problem': {
           '(Problem)': () => { return this.getViewData('Problem') },
           'Material Model': () => { return this.getViewData('Material Model') },

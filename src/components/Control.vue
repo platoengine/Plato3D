@@ -20,14 +20,9 @@
           Realize
           <v-icon>mdi-pencil-outline</v-icon>
         </v-tab>
+
         <v-tab-item>
-          <v-card flat>
-            <v-card-text>
-              <p>
-                Coming soon
-              </p>
-            </v-card-text>
-          </v-card>
+          <realization-tree/>
         </v-tab-item>
 
         <v-tab class="px-0 mx-0">
@@ -50,12 +45,14 @@
 <script>
 import ModelTree from './models/ModelTree'
 import ScenarioTree from './scenarios/ScenarioTree'
+import RealizationTree from './realizations/RealizationTree'
 
 export default {
     name: 'Control',
     components: {
       ModelTree,
-      ScenarioTree
+      ScenarioTree,
+      RealizationTree
     },
     data: () => ({
     })

@@ -114,24 +114,11 @@ export class APIService {
       })
     .then(response => response.data)
   }
-  createSimulation (state, realization) {
+  createSimulation (state, commit, realization) {
     const {token, username, server} = this.getSession()
 
     let hostCode = realization.scenario.hostCode
 
-    if (hostCode === 'Albany') {
-      let inputFileString = realization.scenario.toDOM(state.models)
-      const url = `${server}/jobs/create-simulation`
-      return axios.post(url, {
-        token,
-        username,
-        inputFileString
-      })
-      .then(response => {
-        realization.simulation.computeStatus = 'created'
-        realization.simulation.inputFile = response.data
-      })
-    } else
     if (hostCode === 'Analyze') {
       let inputFileString = realization.scenario.toDOM(state.models)
       const url = `${server}/jobs/create-simulation`
@@ -150,30 +137,18 @@ export class APIService {
         remoteAssets
       })
       .then(response => {
-        realization.simulation.computeStatus = 'created'
-        realization.simulation.inputFile = response.data
+        commit('setSimulationAttribute', {name: realization.name, key: 'computeStatus', value: 'created'})
+        commit('setSimulationAttribute', {name: realization.name, key: 'inputFile', value: response.data})
       })
     }
   }
-  startSimulation (realization) {
+  startSimulation (commit, realization) {
     const {token, username, server} = this.getSession()
 
     let hostCode = realization.scenario.hostCode
 
     const url = `${server}/jobs/start-simulation`
 
-    if (hostCode === 'Albany') {
-      let inputFileName = realization.simulation.inputFile
-      let numProcs = realization.resources.numProcs
-      return axios.post(url, {
-        token,
-        username,
-        payload: {inputFileName: inputFileName, numProcs: numProcs, useMPI: true, hostCode: hostCode}
-      }).then((response) => {
-        realization.simulation.computeStatus = 'started'
-        realization.simulation.runID = response.data
-      })
-    } else
     if (hostCode === 'Analyze') {
       let inputFileName = realization.simulation.inputFile
       return axios.post(url, {
@@ -181,7 +156,7 @@ export class APIService {
         username,
         payload: {inputFileName: inputFileName, useMPI: false, hostCode: hostCode}
       }).then(() => {
-        realization.simulation.computeStatus = 'started'
+        commit('setSimulationAttribute', {name: realization.name, key: 'computeStatus', value: 'started'})
       })
     }
   }
