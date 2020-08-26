@@ -5,13 +5,14 @@
           Register
       </v-btn>
     </template>
-    <v-card>
-      <v-card-title>
-        <span class="headline">Register</span>
-      </v-card-title>
-      <v-card-text>
-        <v-container>
-            <v-col>
+    <v-container>
+      <v-layout row>
+        <v-flex md6>
+          <v-card>
+            <v-card-title>
+              <span class="headline">Register</span>
+            </v-card-title>
+            <v-card-text>
               <validation-observer>
                 <validation-provider rules="required|alpha_num" name="Username" v-slot="{ errors }">
                   <v-text-field v-model="username" label="Username" :error-messages="errors"/>
@@ -29,21 +30,26 @@
                   <v-text-field v-model="confirmpassword" type="password" label="Confirm Password" :error-messages="errors"/>
                 </validation-provider>
               </validation-observer>
-            </v-col>
-        </v-container>
-      </v-card-text>
-      <v-card-actions>
-        <v-spacer></v-spacer>
-        <v-btn text @click="dialog = false;">Cancel</v-btn>
-        <validation-provider name="registerButton" v-slot="{ errors }">
-          <v-btn text @click="dialog = false; registerNewUser()" :disabled="errors[0] || checkNullForms()">Create</v-btn>
-        </validation-provider>
-      </v-card-actions>
-    </v-card>
+            </v-card-text>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn text @click="dialog = false;">Cancel</v-btn>
+              <validation-provider name="registerButton" v-slot="{ errors }">
+                <v-btn text @click="dialog = false; registerNewUser()" :disabled="errors[0] || checkNullForms()">Create</v-btn>
+              </validation-provider>
+            </v-card-actions>  
+          </v-card>
+        </v-flex>
+        <v-flex md6>
+          <img :src="logo" class= "logo"/>
+        </v-flex>
+      </v-layout>
+    </v-container>  
   </v-dialog>
 </template>
 
 <script>
+import Logo from '../assets/Logo.png'
 import {APIService} from '../store/modules/rest-api-module'
 import {ValidationObserver, ValidationProvider, extend} from 'vee-validate'
 import {required, alpha_num, email, min, confirmed} from 'vee-validate/dist/rules'
@@ -77,7 +83,8 @@ export default {
       password: '',
       confirmpassword: '',
       confirmemail: '',
-      registrationerrors: ''
+      registrationerrors: '',
+      logo: Logo
     }
   },
   methods: {
@@ -107,3 +114,12 @@ export default {
   }
 }
 </script>
+<style scoped>
+.logo{
+  height: 100%;
+  width: 100%;
+  object-fit: cover; 
+}
+</style>
+
+
