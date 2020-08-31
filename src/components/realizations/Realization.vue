@@ -21,11 +21,9 @@
           </v-expansion-panel-content>
         </v-expansion-panel>
         <v-expansion-panel>
+          <v-expansion-panel-header>Views</v-expansion-panel-header>
           <v-expansion-panel-content>
-            views
-            <!--
             <realization-views :parentObject="realization"/>
-            -->
           </v-expansion-panel-content>
         </v-expansion-panel>
       </v-expansion-panels>
@@ -35,33 +33,6 @@
       <delete-realization :realization="realization"/>
     </v-card>
   </v-card>
-<!--
-  <b-card no-body class="text-right list-item" v-bind:class="{ 'list-item-open': openPanel }">
-
-    <b-collapse v-model="openPanel" id="realizationsPanel">
-
-      <b-card class=list-item v-bind:class="{ 'list-item-open': openSolution }" no-body>
-        <div class=bold v-bind:class="{ 'bold-open': openSolution}" @click="toggleSolution">
-          <div><span>
-              <div v-if="openSolution"><octicon scale="0.75" name="chevron-down"></octicon> Solution</div>
-              <div v-else><octicon scale="0.75" name="chevron-right"></octicon> Solution</div>
-          </span></div>
-        </div>
-        <b-collapse v-model="openSolution" id="realizationSolutionPanel" accordion="realizationAccordion">
-          <b-form>
-            <b-form-group class="m-0 basic-label" label="Status:" label-cols="5">
-              <b-form-input disabled class="basic-input" type="text" v-model="solutionStatus"></b-form-input>
-            </b-form-group>
-            <b-btn size="sm" class="thin-button" block @click="compute_solution" :disabled="!solutionPending" type="button">Compute</b-btn>
-          </b-form>
-        </b-collapse>
-      </b-card>
-
-      <views-component :parentObject="realization" accordion="realizationAccordion"/>
-      
-    </b-collapse>
-  </b-card>
--->
 </template>
 
 <script>
@@ -70,7 +41,7 @@ import EditRealization from './EditRealization'
 import DeleteRealization from './DeleteRealization'
 import RealizationResources from './RealizationResources'
 import RealizationSolution from './RealizationSolution'
-//import ViewsComponent from './ViewsComponent'
+import RealizationViews from './RealizationViews'
 
 export default {
   name: 'realization',
@@ -146,8 +117,8 @@ export default {
     EditRealization,
     DeleteRealization,
     RealizationResources,
-    RealizationSolution
-    //ViewsComponent
+    RealizationSolution,
+    RealizationViews
   }
 }
 </script>

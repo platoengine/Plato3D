@@ -128,5 +128,8 @@ export default {
   background: LightGray;
   border-radius: 4px;
 }
+.v-label {
+  font-size: 10px
+}
 </style>
 

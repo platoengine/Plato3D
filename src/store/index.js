@@ -223,9 +223,34 @@ export default new Vuex.Store({
       if (realizationIndex !== -1) {
         realizations.splice(realizationIndex, 1)
       }
-    }
+    },
+    addViewToRealization ({realizations}, payload) {
+      let realizationIndex = realizations.findIndex(realization => realization.name === payload.realizationName)
+      if (realizationIndex !== -1) {
+        realizations[realizationIndex].addView(payload)
+      }
+    },
+    removeView ({realizations}, payload) {
+      let realizationIndex = realizations.findIndex(realization => realization.name === payload.parentObject.name)
+      if (realizationIndex !== -1) {
+        realizations[realizationIndex].removeView(payload)
+      }
+    },
+    modifyView ({realizations}, payload) {
+      let realizationIndex = realizations.findIndex(realization => realization.name === payload.parentObject.name)
+      if (realizationIndex !== -1) {
+        realizations[realizationIndex].modifyView(payload)
+      }
+    },
+
   },
   actions: {
+    async addRealizationView (state, viewDefinition) {
+      const response = await apiService.createRealizationView(viewDefinition)
+      if (response === 'FAILURE') {
+        errorHandler.report('server request failed: add view')
+      }
+    },
     async uploadExodusModel ({state}, formData) {
       state.activeModel.fileName = formData.get('file').name
       const response = await apiService.uploadExodusModel(formData)
