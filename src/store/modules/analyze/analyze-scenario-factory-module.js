@@ -1,25 +1,33 @@
-import AnalyzeThermomechanics from './analyze-thermomechanics-module'
-import AnalyzeElectromechanics from './analyze-electromechanics-module'
-import AnalyzeThermal from './analyze-thermal-module'
-import AnalyzeMechanics from './analyze-mechanics-module'
-import AnalyzeStabilizedMechanics from './analyze-stabilized-mechanics-module'
-import AnalyzeStabilizedThermomechanics from './analyze-stabilized-thermomechanics-module'
+import AnalyzeStaticThermomechanics from './analyze-static-thermomechanics-module'
+import AnalyzeTransientThermomechanics from './analyze-transient-thermomechanics-module'
+import AnalyzeStaticThermal from './analyze-static-thermal-module'
+import AnalyzeTransientThermal from './analyze-transient-thermal-module'
+import AnalyzeStaticMechanics from './analyze-static-mechanics-module'
+import AnalyzeTransientMechanics from './analyze-transient-mechanics-module'
 import ErrorHandler from '../error-handler-module'
 import TeuchosParser from '../teuchos-parser-module'
 
 class AnalyzeScenarioFactory {
   constructor () {
     this.mPhysics = new Map([
-      [ 'Thermal', {code: 'Analyze', type: 'Thermal', Constructor: AnalyzeThermal} ],
-      [ 'Mechanical', {code: 'Analyze', type: 'Mechanical', Constructor: AnalyzeMechanics} ],
-      [ 'Stabilized Mechanical', {code: 'Analyze', type: 'Stabilized Mechanical', Constructor: AnalyzeStabilizedMechanics} ],
-      [ 'Stabilized Thermomechanical', {code: 'Analyze', type: 'Stabilized Thermomechanical', Constructor: AnalyzeStabilizedThermomechanics} ],
-      [ 'Thermomechanical', {code: 'Analyze', type: 'Thermomechanical', Constructor: AnalyzeThermomechanics} ],
-      [ 'Electromechanical', {code: 'Analyze', type: 'Electromechanical', Constructor: AnalyzeElectromechanics} ]
+      [ 'Steady State Thermal', {code: 'Analyze', type: 'Steady State Thermal', Constructor: AnalyzeStaticThermal} ],
+      [ 'Transient Thermal', {code: 'Analyze', type: 'Transient Thermal', Constructor: AnalyzeTransientThermal} ],
+      [ 'Static Mechanical', {code: 'Analyze', type: 'Static Mechanical', Constructor: AnalyzeStaticMechanics} ],
+      [ 'Transient Mechanical', {code: 'Analyze', type: 'Transient Mechanical', Constructor: AnalyzeTransientMechanics} ],
+      [ 'Steady State Thermomechanical', {code: 'Analyze', type: 'Steady State Thermomechanical', Constructor: AnalyzeStaticThermomechanics} ],
+      [ 'Transient Thermomechanical', {code: 'Analyze', type: 'Transient Thermomechanical', Constructor: AnalyzeTransientThermomechanics} ]
     ])
+    this.mPDE = {
+      'Thermal': {'Elliptic': 'Steady State Thermal', 'Parabolic': 'Transient Thermal'},
+      'Mechanical': {'Elliptic': 'Static Mechanical', 'Hyperbolic': 'Transient Mechanical'},
+      'Thermomechanical': {'Elliptic': 'Steady State Thermomechanical', 'Parabolic': 'Transient Thermomechanical'}
+    }
   }
   availableScenarioTypes () {
     return this.mPhysics
+  }
+  createFromClass (aHostPhysics, aPDEClass) {
+    return this.create(this.mPDE[aHostPhysics][aPDEClass])
   }
   create (aHostPhysics) {
     for (var [key, entry] of this.mPhysics.entries()) {
@@ -40,8 +48,9 @@ class AnalyzeScenarioFactory {
     const params = teuchosParser.getParameterList(doc, 'Problem', required)
     const params_PlatoProblem = teuchosParser.getParameterList(params, 'Plato Problem', required)
     const param_Physics = teuchosParser.getParameter(params_PlatoProblem, 'Physics', required)
+    const param_PDEClass = teuchosParser.getParameter(params_PlatoProblem, 'PDE Constraint', required)
 
-    const newScenario = this.create(param_Physics)
+    const newScenario = this.createFromClass(param_Physics, param_PDEClass)
 
     if (newScenario === null){
       errorHandler.report('Import failed:')

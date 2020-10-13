@@ -1,7 +1,21 @@
 <template>
   <div>
     <div v-if="isBranch(this.data)">
-      <display-branch :data="this.data" :name="dataName" v-on:pending="setPending()"/>
+      <v-expansion-panels accordion>
+        <v-expansion-panel>
+          <v-expansion-panel-header>{{this.name}}</v-expansion-panel-header>
+          <v-expansion-panel-content>
+            <v-card class="ma-0 pa-0" color=green>
+            <v-card class="ml-2 pt-3">
+              <display-branch :data="this.data" :name="dataName" v-on:pending="setPending()"/>
+              <v-btn v-if="this.modify_button" small block @click="save()" :disabled="!savePending" type="button">
+                Modify
+              </v-btn>
+            </v-card>
+            </v-card>
+          </v-expansion-panel-content>
+        </v-expansion-panel>
+      </v-expansion-panels>
     </div>
     <div v-else-if="isLeaf(this.data)">
       <display-leaf :data="dataValue" :name="dataName" :options="dataOptions" :fixed="dataFixed"
@@ -19,10 +33,15 @@ import DisplayLeaf from './DisplayLeaf'
 
 export default {
   name: 'display-sub',
-  props: ['data', 'name'],
+  props: {data: Object, name: String, modify_button: {type: Boolean, required: false, default: false}},
   components: {
     DisplayBranch,
     DisplayLeaf
+  },
+  data: function () {
+    return {
+      savePending: false
+    }
   },
   computed: {
     dataValue: {
@@ -70,8 +89,13 @@ export default {
     }
   },
   methods: {
+    save: function () {
+      this.$emit('save')
+      this.savePending = false
+    },
     setPending: function () {
       this.$emit('pending')
+      this.savePending = true
     },
     hasOptions: function () {
       return Object.prototype.hasOwnProperty.call(this.data, 'options')

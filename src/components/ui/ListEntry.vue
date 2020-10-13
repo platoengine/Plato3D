@@ -1,15 +1,12 @@
 <template>
  <v-card class="ma-0 pa-0">
-  <display-branch :level="0" :data="getData()" v-on:pending="setPending()"/>
-  <v-btn small block @click="save()" :disabled="!savePending" type="button">
-    Modify
-  </v-btn>
+  <display-branch :modify_button="true" :data="getData()" v-on:save="save()"/>
  </v-card>
 </template>
 
 <script>
 import DisplayBranch from './DisplayBranch'
-import {dynamicCopy} from './ByValue'
+import {dynamicCopy, staticCopy} from './ByValue'
 
 export default {
   name: 'list-entry',
@@ -34,10 +31,12 @@ export default {
       this.savePending = true
     },
     save: function () {
+      let updatedListEntry = {}
+      staticCopy(this.dataState, updatedListEntry)
       this.$store.commit('setScenarioListData',
         { scenarioName: this.scenario.name,
           dataName: this.name,
-          data: this.dataState
+          data: updatedListEntry
         })
       this.savePending = false
       this.$emit('close')

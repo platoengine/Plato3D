@@ -14,7 +14,7 @@
 
 <script>
 import DisplayBranch from './DisplayBranch'
-import {dynamicCopy} from './ByValue'
+import {dynamicCopy, staticCopy} from './ByValue'
 
 export default {
   name: 'single-view',
@@ -47,10 +47,12 @@ export default {
       this.savePending = true
     },
     save: function () {
+      let staticState = {}
+      staticCopy(this.dataState, staticState)
       this.$store.commit('setScenarioOptionData',
         { scenarioName: this.scenario.name,
           dataName: this.name,
-          data: this.dataState
+          data: staticState
         })
       this.savePending = false
       this.openThings = false

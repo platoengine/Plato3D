@@ -47,13 +47,17 @@ class AnalyzeScenarioBase extends ParBase {
     const entryIndex = models.findIndex((m) => m.name === modelName)
     if (entryIndex !== -1) {
       const model = models[entryIndex]
+      Vue.set(this.selectables, 'blocks', [])
       Vue.set(this.selectables, 'nodesets', [])
       Vue.set(this.selectables, 'sidesets', [])
       model.primitives.forEach(
         function (p) {
+          if (p.type === 'block') {
+            Vue.set(this.selectables['blocks'], this.selectables['blocks'].length, p.definition.Name)
+          } else
           if (p.type === 'nodeset') {
             Vue.set(this.selectables['nodesets'], this.selectables['nodesets'].length, p.definition.Name)
-          }
+          } else
           if (p.type === 'sideset') {
             Vue.set(this.selectables['sidesets'], this.selectables['sidesets'].length, p.definition.Name)
           }
@@ -113,7 +117,17 @@ class AnalyzeScenarioBase extends ParBase {
     if (typeof aVar === 'object' && !Array.isArray(aVar)) {
       let retVal = []
       Object.keys(aVar).forEach(k => {
-        retVal.push(aVar[k])
+        const keyTokens = k.split('|')
+        if (keyTokens.length === 2) {
+          if (keyTokens[0] === 'checkbox') {
+            const valTokens = aVar[k].split('|')
+            if (valTokens[0] === 'true') {
+              retVal.push(valTokens[1])
+            }
+          }
+        } else {
+          retVal.push(aVar[k])
+        }
       })
       return retVal
     } else
@@ -123,25 +137,37 @@ class AnalyzeScenarioBase extends ParBase {
       return aVar
     }
   }
+  getAlias (aObject, aDefault) {
+    if (this.hasPropertyOfType(aObject, 'alias', 'string') ) {
+      return aObject['alias']
+    } else
+    {
+      return aDefault
+    }
+  }
   extractDOM (aObjectFrom, aObjectTo) {
     if (aObjectFrom === null) return
     Object.keys(aObjectFrom).forEach(function (key) {
       let aMember = aObjectFrom[key]
       if (this.isParameter(aMember)) {
-        if (this.conditionMet(aMember, aObjectFrom) && this.asWriteable(aMember['value']) != "") {
-          aObjectTo[key] = {}
-          aObjectTo[key]['value'] = this.asWriteable(aMember['value'])
-          aObjectTo[key]['type'] = aMember['type']
+        if (this.conditionMet(aMember, aObjectFrom) && this.isWriteable(aMember) && this.asWriteable(aMember['value']) != "") {
+          const actualKey = this.getAlias(aMember, key)
+          aObjectTo[actualKey] = {}
+          aObjectTo[actualKey]['value'] = this.asWriteable(aMember['value'])
+          aObjectTo[actualKey]['type'] = aMember['type']
         }
       } else
       if (this.isFunction(aMember)) {
-        aObjectTo[key] = {}
-        this.extractDOM(aMember(), aObjectTo[key])
-      } else
-      if (this.isParameterList(aMember)) {
-        if (this.conditionMet(aMember, aObjectFrom)) {
+        if (!this.isEmptyObject(aMember())) {
           aObjectTo[key] = {}
-          this.extractDOM(aMember, aObjectTo[key])
+          this.extractDOM(aMember(), aObjectTo[key])
+        }
+      } else
+      if (this.isObject(aMember)) {
+        if (this.conditionMet(aMember, aObjectFrom)) {
+          const actualKey = this.getAlias(aMember, key)
+          aObjectTo[actualKey] = {}
+          this.extractDOM(aMember, aObjectTo[actualKey])
         }
       }
     }, this)
@@ -170,6 +196,16 @@ class AnalyzeScenarioBase extends ParBase {
   isListName (aName) {
     return (aName.startsWith('(') && aName.endsWith(')'))
   }
+  isEmptyObject (aVar) {
+    return (JSON.stringify(aVar) === JSON.stringify({}))
+  }
+  isWriteable (aVar) {
+    if (this.hasPropertyOfType (aVar, 'noWrite', 'boolean')) {
+      return !aVar.noWrite
+    } else {
+      return true
+    }
+  }
   hasPropertyOfType (aVar, aName, aType) {
     if (Object.prototype.hasOwnProperty.call(aVar, aName)) {
       if (typeof aVar[aName] === aType) {
@@ -179,7 +215,7 @@ class AnalyzeScenarioBase extends ParBase {
     return false
   }
   conditionMet (aVar, aContext) {
-    if (this.hasPropertyOfType(aVar, 'conditionalView', 'object') && Array.isArray(aVar['conditionalView'])) {
+    if (this.isConditional(aVar)) {
       let propName = aVar['conditionalView'][0]
       let propValue = aVar['conditionalView'][1]
       if (Object.prototype.hasOwnProperty.call(aContext, propName)) {
@@ -195,7 +231,7 @@ class AnalyzeScenarioBase extends ParBase {
       return true
     }
   }
-  isParameterList (aVar) {
+  isObject (aVar) {
     return typeof aVar === 'object' && !Array.isArray(aVar)
   }
   isParameter (aVar) {
@@ -246,7 +282,7 @@ class AnalyzeScenarioBase extends ParBase {
         const fromData = tp.getParameter(domParams, key, true)
         dataBranch['value'](fromData)
       } else
-      if (this.isParameterList(dataBranch)) {
+      if (this.isObject(dataBranch)) {
         const fromList = tp.getParameterList(domParams, key, true)
         this.fromDOM(dataBranch, fromList)
       } else {
@@ -290,11 +326,32 @@ class AnalyzeScenarioBase extends ParBase {
       if (typeof value === 'string') {
         if (value.startsWith('{') && value.endsWith('}')  &&
             this.hasPropertyOfType(toObject, key, 'object')) {
+            // found a list of values (i.e., {val1, val2, ...}
             let listString = value.replace('{','').replace('}','')
             let listEntries = listString.split(',')
-            Object.keys(toObject[key]).forEach( (toKey, i) => {
-              toObject[key][toKey] = listEntries[i].trim()
-            })
+            const toKeys = Object.keys(toObject[key])
+            if (toKeys.length > 0) {
+              const firstKey = toKeys[0]
+              const tokens = firstKey.split('|')
+              // is it a checkbox list?
+              if (tokens.length === 2 && tokens[0] === 'checkbox') {
+                toKeys.forEach( (toKey) => {
+                  // find matching entry in listEntries, if present
+                  const toValTokens = toObject[key][toKey].split('|')
+                  const valName = toValTokens[1]
+                  const entryIndex = listEntries.findIndex( el => el === valName )
+                  if (entryIndex !== -1) {
+                    toObject[key][toKey] = 'true|' + valName
+                  } else {
+                    toObject[key][toKey] = 'false|' + valName
+                  }
+                })
+              } else { // standard list (i.e., not a checkbox list)
+                toKeys.forEach( (toKey, i) => {
+                  toObject[key][toKey] = listEntries[i].trim()
+                })
+              }
+            }
         } else
         if (this.hasPropertyOfType(toObject, key, 'string')) {
           if (value.startsWith('Array(') && value.endsWith(')')) {
@@ -303,12 +360,63 @@ class AnalyzeScenarioBase extends ParBase {
           toObject[key] = value
         }
       } else
-      if (this.isParameterList(value)) {
+      if (this.isObject(value)) {
+        
+        let toSub = null
+        // is this object in the target?
         if (this.hasPropertyOfType(toObject, key, 'object')) {
-          this.syncObjects(value, toObject[key])
+          toSub = toObject[key]
+        } else {
+          toSub = this.getConditionalSub(fromObject, toObject, key)
+        }
+
+        if (toSub) {
+          this.syncObjects(value, toSub)
+
+          // If the target object specifies a 'conditionalValue', then find the 
+          // member datum that is conditional and set the value. 
+          if (this.hasPropertyOfType(toSub, 'conditionalValue', 'object')) {
+            const target = toSub['conditionalValue'][0]
+            const cvalue = toSub['conditionalValue'][1]
+            if (this.hasPropertyOfType(toObject, target, 'object')) {
+              if (this.hasPropertyOfType(toObject[target], 'value', 'string')) {
+                toObject[target]['value'] = cvalue
+              }
+            }
+          }
         }
       }
     })
+  }
+  isConditional(aVar) {
+    if (this.hasPropertyOfType(aVar, 'conditionalView', 'object') && Array.isArray(aVar['conditionalView'])) {
+      return true
+    } else {
+      return false
+    }
+  }
+  getConditionalSub (tFromObject, tToObject, tKey) {
+    let keys = Object.keys(tToObject)
+    for (let key of keys) {
+      let tokens = key.split('|')
+      if (tokens.length === 2) {
+        if (tokens[0] === tKey) {
+          // check the condition 
+          let tVar = tToObject[key]
+          if (this.isConditional(tVar)) {
+            let propName = tVar['conditionalView'][0]
+            let propValue = tVar['conditionalView'][1]
+            if (this.hasPropertyOfType(tFromObject, propName, 'object') && tFromObject[propName]['value'] === propValue) {
+              return tToObject[key]
+            } else
+            if (this.hasPropertyOfType(tToObject, propName, 'object') && tToObject[propName]['value'] === propValue) {
+              return tToObject[key]
+            }
+          }
+        }
+      }
+    }
+    return null
   }
   addToModelViews (dataBranch, fromLists) {
     fromLists.forEach( (p) => {
@@ -316,7 +424,7 @@ class AnalyzeScenarioBase extends ParBase {
         let options = this.modelviews[dataBranch]['view']['<Options>']
         let foundOption = null
         Object.keys(options).forEach( (option) => {
-          if (this.tp.isParameterList(p, option)) {
+          if (this.tp.isObject(p, option)) {
             foundOption = this.tp.getParameterList(p, option)
           }
         }, this)
