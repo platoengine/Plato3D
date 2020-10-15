@@ -10,6 +10,7 @@
 <script>
 import DisplayBranch from './DisplayBranch'
 import {dynamicCopy} from './ByValue'
+import {listViewValidation} from './FieldChecker'
 
 export default {
   name: 'list-entry',
@@ -20,11 +21,25 @@ export default {
   data: function () {
     return {
       savePending: false,
-      dataState: {}
+      dataState: {},
+      indicator : {color : 'red'}
     }
   },
   created: function () {
     dynamicCopy(this.data, this.dataState)
+  },
+  watch: {
+    dataState : {
+      handler: function(){
+        if(listViewValidation(this.dataState) === true){
+          this.indicator.color = 'green'
+        } else {
+          this.indicator.color = 'red'
+        }
+        this.$emit('change-color', this.indicator)
+      },
+    deep: true
+    }
   },
   methods: {
     getData: function () {

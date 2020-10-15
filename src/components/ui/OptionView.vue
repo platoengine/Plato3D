@@ -1,36 +1,43 @@
 <template>
   <v-card>
-  <v-expansion-panel-header>{{this.name}}</v-expansion-panel-header>
-  <v-expansion-panel-content>
-    <v-card class="ma-0 pa-0" color=green>
-      <v-card class="ml-2">
-        <v-select dense class="ml-2 ma-0 pa-0 caption" v-model="selectedOption" :items="availableOptions" v-on:change="setPending()"/>
-        <div v-for="(param, index) in parameterNames" :key="index">
-          <display-leaf :data="getParameterValue(param)" :name="param" v-on:set-value="setParameterValue(param, $event)" v-on:pending="setPending()"/>
-        </div>
-        <v-btn block small @click="save()" :disabled="!savePending">Apply</v-btn>
+    <v-expansion-panel-header>
+      {{this.name}}
+      <Indicator v-bind:style="indicator" />
+    </v-expansion-panel-header>
+    <v-expansion-panel-content>
+      <v-card class="ma-0 pa-0" color=green>
+        <v-card class="ml-2">
+          <v-select dense class="ml-2 ma-0 pa-0 caption" v-model="selectedOption" :items="availableOptions" v-on:change="setPending()"/>
+          <div v-for="(param, index) in parameterNames" :key="index">
+            <display-leaf :data="getParameterValue(param)" :name="param" v-on:set-value="setParameterValue(param, $event)" v-on:pending="setPending()"/>
+          </div>
+          <v-btn block small @click="save()" :disabled="!savePending">Apply</v-btn>
+        </v-card>
       </v-card>
-    </v-card>
-  </v-expansion-panel-content>
+    </v-expansion-panel-content>
   </v-card>
 </template>
 
 <script>
 import DisplayLeaf from './DisplayLeaf'
 import {dynamicCopy} from './ByValue'
+import {listViewValidation} from './FieldChecker'
+import Indicator from './Indicator'
 
 export default {
   name: 'option-view',
   props: ['scenario', 'modelviews', 'name'],
   components: {
-    DisplayLeaf
+    DisplayLeaf,
+    Indicator
   },
   data: function () {
     return {
       savePending: false,
       selectedOption: null,
       availableOptions: null,
-      dataState: {}
+      dataState: {},
+      indicator : {color : 'red'}
     }
   },
   created: function () {
@@ -50,6 +57,29 @@ export default {
         return []
       }
     }
+  },
+  watch: {
+    dataState : {
+      handler: function() {
+        if(this.selectedOption !== null) {
+          if(listViewValidation(this.dataState) === true) {
+            this.indicator.color = 'green'     
+          } else {
+            this.indicator.color = 'red'
+          }
+        }
+      },
+      deep: true
+    },
+    selectedOption: {
+      handler: function(){
+        if(this.selectedOption === null){
+          this.indicator.color = 'red'
+        } else {
+          this.indicator.color = 'green'
+        }
+      }
+    }  
   },
   methods: {
     getParameterValue: function (param) {
