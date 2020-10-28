@@ -8,11 +8,11 @@ function checkForConditionalView(prefix, key){
   return false
 }
   
-function allFieldsSpecified(prefix, key, flag){
+export function allFieldsSpecified(prefix, key, flag){
   if(!('value' in prefix[key])&& prefix[key] instanceof Object){
     if(checkForConditionalView(prefix, key) === false){
       const keys = Object.keys(prefix[key])
-      if( !(key === 'conditionalView')){
+      if( !(key === 'conditionalView' || key === 'conditionalValue')){
         keys.forEach(key_=> {   
           flag = flag && allFieldsSpecified(prefix[key], key_, flag)
         })

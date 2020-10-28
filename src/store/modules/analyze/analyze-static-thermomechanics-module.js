@@ -1,6 +1,6 @@
 import AnalyzeScenarioBase from './analyze-scenario-base-module'
 
-class AnalyzeThermomechanics extends AnalyzeScenarioBase {
+class AnalyzeStaticThermomechanics extends AnalyzeScenarioBase {
   constructor () {
     super()
     this.hostPhysics = 'Thermomechanical'
@@ -12,28 +12,13 @@ class AnalyzeThermomechanics extends AnalyzeScenarioBase {
           '<Template>': {
             'Physics': { type: 'string', value: 'Thermomechanical', fixed: true },
             'Self-Adjoint': { type: 'bool', value: 'false', options: [ 'false', 'true' ] },
-            'PDE Constraint': { type: 'string', value: 'Elliptic', options: ['Elliptic', 'Parabolic'] },
+            'PDE Constraint': { type: 'string', value: 'Elliptic', fixed: true },
             'Elliptic': {
               'Penalty Function': {
                 'Type': { type: 'string', value: 'SIMP', options: ['SIMP', 'RAMP', 'Heaviside'] },
                 'Exponent': { type: 'double', value: '3.0' },
                 'Minimum Value': { type: 'double', value: '1.0e-3' }
-              },
-              conditionalView: ['PDE Constraint', 'Elliptic']
-            },
-            'Parabolic': {
-              'Penalty Function': {
-                'Type': { type: 'string', value: 'SIMP', options: ['SIMP', 'RAMP', 'Heaviside'] },
-                'Exponent': { type: 'double', value: '3.0' },
-                'Minimum Value': { type: 'double', value: '1.0e-3' }
-              },
-              conditionalView: ['PDE Constraint', 'Parabolic']
-            },
-            'Time Integration': {
-              'Trapezoid Alpha': { type: 'double', value: '0.5'},
-              'Number Time Steps': { type: 'int', value: '10' },
-              'Time Step': { type: 'double', value: '1e-6' },
-              conditionalView: ['PDE Constraint', 'Parabolic']
+              }
             },
             'Newton Iteration': {
               'Maximum Iterations': { type: 'int', value: '2'},
@@ -60,33 +45,12 @@ class AnalyzeThermomechanics extends AnalyzeScenarioBase {
         'view': {
           'type': 'list-view',
           '<Template>': {
-            'Thermal Mass': {
-              'Temperature Dependent': { type: 'bool', value: 'false', options: [ 'false', 'true' ] },
-              'Specific Heat Constant': {
-                type: 'double',
-                value: '900.0',
-                conditionalView: ['Temperature Dependent', 'false'],
-                alias: 'Specific Heat'
-              },
-              'Specific Heat': {
-                'c0': { type: 'double', value: '900.0'},
-                'c1': { type: 'double', value: '5.0e-4'},
-                conditionalView: ['Temperature Dependent', 'true']
-              },
-              'Mass Density Constant': {
-                type: 'double',
-                value: '2700.0',
-                conditionalView: ['Temperature Dependent', 'false'],
-                alias: 'Mass Density'
-              },
-              'Mass Density': {
-                'c0': { type: 'double', value: '2700.0'},
-                'c1': { type: 'double', value: '0.0'},
-                conditionalView: ['Temperature Dependent', 'true']
-              }
-            },
             'Thermoelastic': {
               'Temperature Dependent': { type: 'bool', value: 'false', options: [ 'false', 'true' ] },
+              'Reference Temperature': {
+                type: 'double',
+                value: '0.0'
+              },
               'Thermal Conductivity Constant': {
                 type: 'double',
                 value: '210.0',
@@ -226,4 +190,4 @@ class AnalyzeThermomechanics extends AnalyzeScenarioBase {
   }
 }
 
-export default AnalyzeThermomechanics
+export default AnalyzeStaticThermomechanics

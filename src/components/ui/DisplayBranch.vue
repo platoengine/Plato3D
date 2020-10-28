@@ -1,8 +1,9 @@
 <template>
   <v-card>
     <div v-for="(prop, index) in propertyNames" :key="index">
-      <div v-if="conditionalView(prop)">
-        <display-sub :data="getPropertyValue(prop)" :name="prop" v-on:pending="setPending()"/>
+      <div v-if="displayable(prop)">
+        <display-sub :modify_button="modify_button" :myKey="prop" :parentObject="data" :data="getPropertyValue(prop)" :name="getPropertyName(prop)" 
+         v-on:pending="setPending()" v-on:save="save()"/>
       </div>
     </div>
   </v-card>
@@ -14,6 +15,11 @@ export default {
   name: 'display-branch',
   props: {
     data: Object,
+    modify_button: {
+      type: Boolean,
+      required: false,
+      default: false
+    },
     name: {
       type: String,
       required: false,
@@ -25,15 +31,21 @@ export default {
   },
   computed: {
     propertyNames: function () {
-      let names = Object.keys(this.data).filter(e => e !== 'conditionalView')
+      let names = Object.keys(this.data).filter(e => (e !== 'conditionalView') && (e !== 'conditionalValue'))
       return names
     }
   },
   methods: {
+    save: function () {
+      this.$emit('save')
+    },
     setPending: function () {
       this.$emit('pending')
     },
-    conditionalView: function (param) {
+    displayable: function (param) {
+      if (typeof this.data[param] !== 'object') {
+        return false
+      }
       if (Object.prototype.hasOwnProperty.call(this.data[param], 'conditionalView')) {
         let condition = this.data[param]['conditionalView']
         if (Array.isArray(condition)) {
@@ -43,6 +55,9 @@ export default {
         }
       }
       return true
+    },
+    getPropertyName: function (param) {
+      return param.split('|')[0]
     },
     getPropertyValue: function (param) {
       return this.data[param]
