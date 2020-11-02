@@ -1,9 +1,9 @@
 import AnalyzeScenarioBase from './analyze-scenario-base-module'
 
-class AnalyzeMechanics extends AnalyzeScenarioBase {
+class AnalyzeTransientMechanics extends AnalyzeScenarioBase {
   constructor () {
     super()
-    this.hostPhysics = 'Mechanical'
+    this.hostPhysics = 'TransientMechanical'
     this.availableViewTypes = {
       'X Displacement': 'pvdToPLY_dispX.py',
       'Y Displacement': 'pvdToPLY_dispY.py',
@@ -18,29 +18,20 @@ class AnalyzeMechanics extends AnalyzeScenarioBase {
           '<Template>': {
             'Physics': { type: 'string', value: 'Mechanical', fixed: true },
             'Self-Adjoint': { type: 'bool', value: 'false', options: [ 'false', 'true' ] },
-            'PDE Constraint': { type: 'string', value: 'Elliptic', options: ['Elliptic', 'Hyperbolic'] },
-            'Elliptic': {
-              'Penalty Function': {
-                'Type': { type: 'string', value: 'SIMP', options: ['SIMP', 'RAMP', 'Heaviside'] },
-                'Exponent': { type: 'double', value: '3.0' },
-                'Minimum Value': { type: 'double', value: '1.0e-3' }
-              },
-              conditionalView: ['PDE Constraint', 'Elliptic']
-            },
+            'PDE Constraint': { type: 'string', value: 'Hyperbolic', fixed: true },
             'Hyperbolic': {
+              'Plottable': { type: 'string', value: {'checkbox|Cauchy Stress': 'false|stress', 'checkbox|Infinitesimal Strain': 'false|strain'} },
               'Penalty Function': {
                 'Type': { type: 'string', value: 'SIMP', options: ['SIMP', 'RAMP', 'Heaviside'] },
                 'Exponent': { type: 'double', value: '3.0' },
                 'Minimum Value': { type: 'double', value: '1.0e-3' }
-              },
-              conditionalView: ['PDE Constraint', 'Hyperbolic']
+              }
             },
             'Time Integration': {
               'Newmark Gamma': { type: 'double', value: '0.5'},
               'Newmark Beta': { type: 'double', value: '0.25' },
               'Number Time Steps': { type: 'int', value: '10' },
-              'Time Step': { type: 'double', value: '1e-6' },
-              conditionalView: ['PDE Constraint', 'Hyperbolic']
+              'Time Step': { type: 'double', value: '1e-6' }
             }
           }
         }
@@ -84,10 +75,6 @@ class AnalyzeMechanics extends AnalyzeScenarioBase {
       'Computed Fields': {
         'data': [],
         'required': false,
-        'isActive': (modelviews) => {
-           try {return modelviews['Problem']['data']['PDE Constraint'].value === 'Hyperbolic'}
-           catch (e) {return false}
-        },
         'view': {
           'type': 'list-view',
           '<Template>': {
@@ -98,10 +85,6 @@ class AnalyzeMechanics extends AnalyzeScenarioBase {
       'Initial State': {
         'data': [],
         'required': false,
-        'isActive': (modelviews) => {
-           try {return modelviews['Problem']['data']['PDE Constraint'].value === 'Hyperbolic'}
-           catch (e) {return false}
-        },
         'view': {
           'type': 'list-view',
            'options': ['Displacement X', 'Displacement Y'],
@@ -150,9 +133,10 @@ class AnalyzeMechanics extends AnalyzeScenarioBase {
         'view': {
           'type': 'list-view',
           '<Template>': {
-            'Type': { type: 'string', value: 'Zero Value', options: ['Zero Value', 'Fixed Value'] },
+            'Type': { type: 'string', value: 'Zero Value', options: ['Zero Value', 'Fixed Value, Time Dependent'] },
             'Index': { type: 'int', value: '0', options: ['0', '1', '2'] },
             'Value': { type: 'double', value: '0.0', conditionalView: ['Type', 'Fixed Value'] },
+            'Function': { type: 'string', value: '0.0', conditionalView: ['Type', 'Time Dependent'] },
             'Sides': { type: 'string', value: '', options: () => { return this.selectables['nodesets'] } }
           }
         }
@@ -172,7 +156,7 @@ class AnalyzeMechanics extends AnalyzeScenarioBase {
           'Initial State': () => { return this.getViewData('Initial State') },
           'Criteria': () => { return this.getViewData('Criteria') },
           'Natural Boundary Conditions': () => { return this.getViewData('Mechanical Loads') },
-          'Essential Boundary Conditions': () => { return this.getViewData('Constraints') }
+          'Displacement Boundary Conditions': () => { return this.getViewData('Constraints') }
         }
       }
     }
@@ -184,7 +168,7 @@ class AnalyzeMechanics extends AnalyzeScenarioBase {
           '(Computed Fields)': 'Computed Fields',
           '(Initial State)': 'Initial State',
           '(Material Models)': 'Material Models',
-          '(Essential Boundary Conditions)': 'Constraints',
+          '(Displacement Boundary Conditions)': 'Constraints',
           '(Natural Boundary Conditions)': 'Mechanical Loads',
           '[Plato Problem]': 'Problem',
           'Spatial Model': {
@@ -196,4 +180,4 @@ class AnalyzeMechanics extends AnalyzeScenarioBase {
   }
 }
 
-export default AnalyzeMechanics
+export default AnalyzeTransientMechanics

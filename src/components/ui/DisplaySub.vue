@@ -1,7 +1,21 @@
 <template>
   <div>
     <div v-if="isBranch(this.data)">
-      <display-branch :data="this.data" :name="dataName" v-on:pending="setPending()"/>
+      <v-expansion-panels accordion>
+        <v-expansion-panel>
+          <v-expansion-panel-header>{{this.name}}<Indicator v-bind:style="this.getBranchColor"/></v-expansion-panel-header>
+          <v-expansion-panel-content>
+            <v-card class="ma-0 pa-0" color=green>
+            <v-card class="ml-2 pt-3">
+              <display-branch :data="this.data" :name="dataName" v-on:pending="setPending()"/>
+              <v-btn v-if="this.modify_button" small block @click="save()" :disabled="!savePending" type="button">
+                Modify
+              </v-btn>
+            </v-card>
+            </v-card>
+          </v-expansion-panel-content>
+        </v-expansion-panel>
+      </v-expansion-panels>
     </div>
     <div v-else-if="isLeaf(this.data)">
       <display-leaf :data="dataValue" :name="dataName" :options="dataOptions" :fixed="dataFixed"
@@ -16,15 +30,36 @@
 <script>
 import DisplayBranch from './DisplayBranch'
 import DisplayLeaf from './DisplayLeaf'
+import Indicator from './Indicator'
+import {allFieldsSpecified} from './FieldChecker'
 
 export default {
   name: 'display-sub',
-  props: ['data', 'name'],
+  props: {
+    myKey: String,
+    parentObject: Object,
+    data: Object,
+    name: String,
+    modify_button: {
+      type: Boolean,
+      required: false,
+      default: false
+    }
+  },
   components: {
     DisplayBranch,
-    DisplayLeaf
+    DisplayLeaf,
+    Indicator
+  },
+  data: function () {
+    return {
+      savePending: false
+    }
   },
   computed: {
+    getBranchColor: function () {
+      return allFieldsSpecified(this.parentObject, this.myKey, true) === true ? {color: 'green'} : {color: 'red'}
+    },
     dataValue: {
       get: function () {
         let val = this.data['value']
@@ -70,8 +105,13 @@ export default {
     }
   },
   methods: {
+    save: function () {
+      this.$emit('save')
+      this.savePending = false
+    },
     setPending: function () {
       this.$emit('pending')
+      this.savePending = true
     },
     hasOptions: function () {
       return Object.prototype.hasOwnProperty.call(this.data, 'options')

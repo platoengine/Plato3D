@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="this.isActive">
     <v-card v-if="this.viewType === 'option-view'">
       <option-view :scenario="this.scenario" :modelviews="this.modelviews" :name="this.name"/>
     </v-card>
@@ -32,6 +32,15 @@ export default {
   },
   created: function () {
     this.viewType = this.modelviews[this.name]['view']['type']
+  },
+  computed: {
+    isActive: function () {
+      let tParent = this.modelviews[this.name]
+      if (Object.prototype.hasOwnProperty.call(tParent, 'isActive')) {
+        return tParent.isActive(this.modelviews);
+      }
+      return true
+    }
   }
 }
 </script>

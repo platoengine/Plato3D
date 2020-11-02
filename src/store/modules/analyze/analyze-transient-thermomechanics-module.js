@@ -1,6 +1,6 @@
 import AnalyzeScenarioBase from './analyze-scenario-base-module'
 
-class AnalyzeThermomechanics extends AnalyzeScenarioBase {
+class AnalyzeTransientThermomechanics extends AnalyzeScenarioBase {
   constructor () {
     super()
     this.hostPhysics = 'Thermomechanical'
@@ -12,28 +12,18 @@ class AnalyzeThermomechanics extends AnalyzeScenarioBase {
           '<Template>': {
             'Physics': { type: 'string', value: 'Thermomechanical', fixed: true },
             'Self-Adjoint': { type: 'bool', value: 'false', options: [ 'false', 'true' ] },
-            'PDE Constraint': { type: 'string', value: 'Elliptic', options: ['Elliptic', 'Parabolic'] },
-            'Elliptic': {
-              'Penalty Function': {
-                'Type': { type: 'string', value: 'SIMP', options: ['SIMP', 'RAMP', 'Heaviside'] },
-                'Exponent': { type: 'double', value: '3.0' },
-                'Minimum Value': { type: 'double', value: '1.0e-3' }
-              },
-              conditionalView: ['PDE Constraint', 'Elliptic']
-            },
+            'PDE Constraint': { type: 'string', value: 'Elliptic', fixed: true },
             'Parabolic': {
               'Penalty Function': {
                 'Type': { type: 'string', value: 'SIMP', options: ['SIMP', 'RAMP', 'Heaviside'] },
                 'Exponent': { type: 'double', value: '3.0' },
                 'Minimum Value': { type: 'double', value: '1.0e-3' }
-              },
-              conditionalView: ['PDE Constraint', 'Parabolic']
+              }
             },
             'Time Integration': {
               'Trapezoid Alpha': { type: 'double', value: '0.5'},
               'Number Time Steps': { type: 'int', value: '10' },
               'Time Step': { type: 'double', value: '1e-6' },
-              conditionalView: ['PDE Constraint', 'Parabolic']
             },
             'Newton Iteration': {
               'Maximum Iterations': { type: 'int', value: '2'},
@@ -62,56 +52,64 @@ class AnalyzeThermomechanics extends AnalyzeScenarioBase {
           '<Template>': {
             'Thermal Mass': {
               'Temperature Dependent': { type: 'bool', value: 'false', options: [ 'false', 'true' ] },
-              'Specific Heat Constant': {
+              'Specific Heat|false': {
                 type: 'double',
                 value: '900.0',
                 conditionalView: ['Temperature Dependent', 'false'],
                 alias: 'Specific Heat'
               },
-              'Specific Heat': {
+              'Specific Heat|true': {
                 'c0': { type: 'double', value: '900.0'},
                 'c1': { type: 'double', value: '5.0e-4'},
-                conditionalView: ['Temperature Dependent', 'true']
+                conditionalView: ['Temperature Dependent', 'true'],
+                alias: 'Specific Heat'
               },
-              'Mass Density Constant': {
+              'Mass Density|false': {
                 type: 'double',
                 value: '2700.0',
                 conditionalView: ['Temperature Dependent', 'false'],
                 alias: 'Mass Density'
               },
-              'Mass Density': {
+              'Mass Density|true': {
                 'c0': { type: 'double', value: '2700.0'},
                 'c1': { type: 'double', value: '0.0'},
-                conditionalView: ['Temperature Dependent', 'true']
+                conditionalView: ['Temperature Dependent', 'true'],
+                alias: 'Mass Density'
               }
             },
             'Thermoelastic': {
               'Temperature Dependent': { type: 'bool', value: 'false', options: [ 'false', 'true' ] },
-              'Thermal Conductivity Constant': {
+              'Reference Temperature': {
+                type: 'double',
+                value: '0.0'
+              },
+              'Thermal Conductivity|false': {
                 type: 'double',
                 value: '210.0',
                 conditionalView: ['Temperature Dependent', 'false'],
                 alias: 'Thermal Conductivity'
               },
-              'Thermal Conductivity': {
+              'Thermal Conductivity|true': {
                 'c011': { type: 'double', value: '205.0'},
                 'c111': { type: 'double', value: '0.0'},
                 'c211': { type: 'double', value: '0.0'},
-                conditionalView: ['Temperature Dependent', 'true']
+                conditionalView: ['Temperature Dependent', 'true'],
+                alias: 'Thermal Conductivity'
               },
-              'Thermal Expansivity Constant': {
+              'Thermal Expansivity|false': {
                 type: 'double',
                 value: '22.06e-6',
                 conditionalView: ['Temperature Dependent', 'false'],
                 alias: 'Thermal Expansivity'
               },
-              'Thermal Expansivity': {
+              'Thermal Expansivity|true': {
                 'c011': { type: 'double', value: '22.06e-6'},
                 'c111': { type: 'double', value: '0.0'},
                 'c211': { type: 'double', value: '0.0'},
-                conditionalView: ['Temperature Dependent', 'true']
+                conditionalView: ['Temperature Dependent', 'true'],
+                alias: 'Thermal Expansivity'
               },
-              'Elastic Stiffness Constant': {
+              'Elastic Stiffness|false': {
                 'Youngs Modulus': {
                   type: 'double',
                   value: '6.90342e10',
@@ -120,16 +118,38 @@ class AnalyzeThermomechanics extends AnalyzeScenarioBase {
                 conditionalView: ['Temperature Dependent', 'false'],
                 alias: 'Elastic Stiffness'
               },
-              'Elastic Stiffness': {
+              'Elastic Stiffness|true': {
                 'Youngs Modulus': {
                   'c0': { type: 'double', value: '6.90342e10'},
                   'c1': { type: 'double', value: '0.0'},
-                  'c2': { type: 'double', value: '0.0'},
+                  'c2': { type: 'double', value: '0.0'}
                 },
                 'Poissons Ratio': { type: 'double', value: '0.35' },
-                conditionalView: ['Temperature Dependent', 'true']
+                conditionalView: ['Temperature Dependent', 'true'],
+                alias: 'Elastic Stiffness'
               }
             }
+          }
+        }
+      },
+      'Computed Fields': {
+        'data': [],
+        'required': false,
+        'view': {
+          'type': 'list-view',
+          '<Template>': {
+            'Function': { type: 'string', value: '' }
+          }
+        }
+      },
+      'Initial State': {
+        'data': [],
+        'required': false,
+        'view': {
+          'type': 'list-view',
+           'options': ['Displacement X', 'Displacement Y', 'Displacement Z', 'Temperature'],
+          '<Template>': {
+            'Computed Field': { type: 'string', value: '', options: () =>this.selectables['Computed Fields'] }
           }
         }
       },
@@ -200,6 +220,8 @@ class AnalyzeThermomechanics extends AnalyzeScenarioBase {
           '(Problem)': () => { return this.getViewData('Problem') },
           'Material Models': () => { return this.getViewData('Material Models') },
           'Spatial Model': { 'Domains': () => { return this.getViewData('Domains') }},
+          'Computed Fields': () => { return this.getViewData('Computed Fields') },
+          'Initial State': () => { return this.getViewData('Initial State') },
           'Criteria': () => { return this.getViewData('Criteria') },
           'Mechanical Natural Boundary Conditions': () => { return this.getViewData('Mechanical Loads') },
           'Thermal Natural Boundary Conditions': () => { return this.getViewData('Thermal Loads') },
@@ -212,6 +234,8 @@ class AnalyzeThermomechanics extends AnalyzeScenarioBase {
         'Input Mesh': { type: 'string', value: (v) => {this.geometry.body.fileName = v} },
         'Plato Problem': {
           '(Criteria)': 'Criteria',
+          '(Computed Fields)': 'Computed Fields',
+          '(Initial State)': 'Initial State',
           '(Material Models)': 'Material Models',
           '(Essential Boundary Conditions)': 'Constraints',
           '(Mechanical Natural Boundary Conditions)': 'Mechanical Loads',
@@ -226,4 +250,4 @@ class AnalyzeThermomechanics extends AnalyzeScenarioBase {
   }
 }
 
-export default AnalyzeThermomechanics
+export default AnalyzeTransientThermomechanics

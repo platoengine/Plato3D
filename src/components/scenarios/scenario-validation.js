@@ -31,10 +31,12 @@ function loadCheck(prefix, view, fieldSpecifier){
     }
   } else if (view === "Values"){
     let errors = []
+    let vectorIsZero = true
     for (const key in prefix['Values'].value) {
-      if(prefix['Values']['value'][key] == 0) {
-        errors.push(key+' in '+fieldSpecifier+' must not be 0')
-      }
+      vectorIsZero = vectorIsZero && (prefix['Values']['value'][key] == 0)
+    }
+    if(vectorIsZero) {
+      errors.push('All fields in '+fieldSpecifier+' must not be 0')
     }
     return errors
   }
@@ -58,26 +60,29 @@ function isLoadZero(prefix, fieldSpecifier){
   return []
 }
 
-function checkForConditionalView(prefix, infoIn){
+function checkForConditionalView(prefix, parentObject){
   if('conditionalView' in prefix){
     const conditionalViewPrefix = prefix['conditionalView']
-    const setDataView = infoIn.data[conditionalViewPrefix[0]].value
+    const setDataView = parentObject[conditionalViewPrefix[0]].value
     const setView = conditionalViewPrefix[1]
     if(setDataView != setView){ return true}
   }
   return false
 }    
 
-function automateValidation(prefix, key, dataPrefix, infoIn, fieldSpecifier) {   
+function automateValidation(prefix, key, dataPrefix, fieldSpecifier, parentObject) {   
+  if(typeof prefix[key] !== 'object') {
+    return []
+  }
   if(!('value' in prefix[key]) && prefix[key] instanceof Object){
-    if(checkForConditionalView(prefix, infoIn)){return []}
+    if(checkForConditionalView(prefix, parentObject)){return []}
     const keysIn = getKeys(prefix[key]) 
-    if(key === 'conditionalView') {return []}
+    if(key === 'conditionalView' || key === 'conditionalValue') {return []}
     return keysIn.flatMap(
-      keyIn => automateValidation(prefix[key], keyIn, dataPrefix[key], infoIn, fieldSpecifier)
+      keyIn => automateValidation(prefix[key], keyIn, dataPrefix[key], fieldSpecifier, dataPrefix)
     )
   } else  if('value' in prefix[key] ){  
-    if(checkForConditionalView(prefix, infoIn)){return []}
+    if(checkForConditionalView(prefix, parentObject)){return []}
     if(key === 'Poissons Ratio'){
       return poissonsRatioCheck(dataPrefix, key)
     }
@@ -89,7 +94,9 @@ function automateValidation(prefix, key, dataPrefix, infoIn, fieldSpecifier) {
 }
 function validateModel(prefix){
   if(!prefix.geometry.body.fileName){
-    return[' Must specify Model']
+    return [' Must specify Model']
+  } else {
+    return []
   }
 }
   
@@ -101,21 +108,17 @@ export function validateScenario(scenario){
   mainKeys.forEach(key => {
     const viewPrefix = infoIn[key].view
     const dataPrefix = infoIn[key].data
+    const reqPrefix = infoIn[key].required
     const viewPrefixTemplate = viewPrefix['<Template>']
     if(!dataPrefix || (JSON.stringify(dataPrefix) === JSON.stringify({})) ||
       (getKeys(dataPrefix).length === 0 && dataPrefix.constructor === Object)||
-      (dataPrefix.length == 0 && Array.isArray(dataPrefix))){
+      (dataPrefix.length == 0 && Array.isArray(dataPrefix) && reqPrefix===true)){
         errors.push('Must specify '+key)
     } else {
       if(viewPrefix.type === 'single-view'){      
         const subKeys = getKeys(viewPrefixTemplate)
-        if(key === 'Problem' && dataPrefix.Constraint.value && dataPrefix.Objective.value){
-          if(dataPrefix.Constraint.value === dataPrefix.Objective.value){
-            errors = errors.concat(['Constraint and objective must not have the same value'])
-          }
-        }
         subKeys.forEach(subKey => {
-          errors = errors.concat(automateValidation(viewPrefixTemplate, subKey, dataPrefix, infoIn[key], key))
+          errors = errors.concat(automateValidation(viewPrefixTemplate, subKey, dataPrefix, key, {}))
         })  
       } else if(viewPrefix.type === 'list-view'){
         let subKeys = getKeys(viewPrefixTemplate)
@@ -128,7 +131,7 @@ export function validateScenario(scenario){
               errors = errors.concat(
                 automateValidation(viewPrefixTemplate
                 , subKey, dataPrefix[index][userGeneratedFieldName]
-                , infoIn[key], userGeneratedFieldName)
+                , userGeneratedFieldName, {})
               )
               
               if(key.includes('Loads') && subKey === 'Value'){
@@ -145,12 +148,10 @@ export function validateScenario(scenario){
           automateValidation(viewPrefix['<Options>'][optionSet], subKey, dataPrefix[optionSet], infoIn[key], key)
         ) */
         subKeys.forEach(subKey =>
-          errors = errors.concat(automateValidation(optionInfo, subKey, dataPrefix[optionSet], infoIn[key], key))
+          errors = errors.concat(automateValidation(optionInfo, subKey, dataPrefix[optionSet], key, {}))
         )       
       }
     } 
   })
   return errors
 }
-
-        

@@ -6,7 +6,12 @@
     <v-card>
       <v-card-title>{{ title }}</v-card-title>
       <v-card-text>
-        <display-leaf :data="newEntryName" :name="'Name'" v-on:set-value="newEntryName = $event" v-on:pending="setPending()"/>
+        <div v-if="this.hasOptions()">
+          <display-leaf :data="newEntryName" :options="this.getOptions()" :name="'Options'" v-on:set-value="newEntryName = $event" v-on:pending="setPending()"/>
+        </div>
+        <div v-else>
+          <display-leaf :data="newEntryName" :name="'Name'" v-on:set-value="newEntryName = $event" v-on:pending="setPending()"/>
+        </div>
         <display-branch :data="getData()" v-on:set-pending="setPending()"/>
       </v-card-text>
       <v-card-actions>
@@ -49,6 +54,20 @@ export default {
   methods: {
     getData: function () {
       return this.dataState
+    },
+    hasOptions: function () {
+      let tData = this.modelviews[this.name]['view']
+      if (Object.prototype.hasOwnProperty.call(tData, 'options')) {
+        return true
+      }
+      return false
+    },
+    getOptions: function () {
+      let tData = this.modelviews[this.name]['view']
+      if (Object.prototype.hasOwnProperty.call(tData, 'options')) {
+        return tData['options']
+      }
+      return []
     },
     setPending: function () {
       this.savePending = true

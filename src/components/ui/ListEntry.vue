@@ -1,15 +1,12 @@
 <template>
  <v-card class="ma-0 pa-0">
-  <display-branch :level="0" :data="getData()" v-on:pending="setPending()"/>
-  <v-btn small block @click="save()" :disabled="!savePending" type="button">
-    Modify
-  </v-btn>
+  <display-branch :modify_button="true" :data="getData()" v-on:save="save()"/>
  </v-card>
 </template>
 
 <script>
 import DisplayBranch from './DisplayBranch'
-import {dynamicCopy} from './ByValue'
+import {dynamicCopy, staticCopy} from './ByValue'
 import {listViewValidation} from './FieldChecker'
 
 export default {
@@ -27,21 +24,25 @@ export default {
   },
   created: function () {
     dynamicCopy(this.data, this.dataState)
+    this.emitDisplayColor()
   },
   watch: {
     dataState : {
-      handler: function(){
-        if(listViewValidation(this.dataState) === true){
-          this.indicator.color = 'green'
-        } else {
-          this.indicator.color = 'red'
-        }
-        this.$emit('change-color', this.indicator)
+      handler: function () {
+        this.emitDisplayColor()
       },
     deep: true
     }
   },
   methods: {
+    emitDisplayColor: function () {
+      if(listViewValidation(this.dataState) === true){
+        this.indicator.color = 'green'
+      } else {
+        this.indicator.color = 'red'
+      }
+      this.$emit('change-color', this.indicator)
+    },
     getData: function () {
       return this.dataState
     },
@@ -49,10 +50,12 @@ export default {
       this.savePending = true
     },
     save: function () {
+      let updatedListEntry = {}
+      staticCopy(this.dataState, updatedListEntry)
       this.$store.commit('setScenarioListData',
         { scenarioName: this.scenario.name,
           dataName: this.name,
-          data: this.dataState
+          data: updatedListEntry
         })
       this.savePending = false
       this.$emit('close')

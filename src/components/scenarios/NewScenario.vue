@@ -12,7 +12,7 @@
       </v-col>
     </v-container>
     </v-card>
-    <v-expansion-panels class="ma-0 pa-2" accordion focusable multiple v-model="openPanel">
+    <v-expansion-panels class="ma-0 pa-2" accordion focusable>
     <v-expansion-panel>
       <v-expansion-panel-header>Create</v-expansion-panel-header>
       <v-expansion-panel-content>
@@ -47,19 +47,7 @@ import ImportScenario from './ImportScenario'
 export default {
   name: 'new-scenario',
   data: function () {
-    return {name: '', description: '', type: '', dialog: false, openPanel: [0]}
-  },
-  mounted () {
-    const availableTypes = this.availableTypes()
-    if( availableTypes.length > 0 ) {
-      this.type = availableTypes[0]
-    }
-  },
-  watch: {
-    openPanel: function (newVal, oldVal) {
-      if(oldVal.toString() === [0].toString() && newVal.toString() === [0,1].toString()) this.openPanel = [1]
-      if(oldVal.toString() === [1].toString() && newVal.toString() === [1,0].toString()) this.openPanel = [0]
-    }
+    return {name: '', description: '', type: '', dialog: false}
   },
   components: {
     ImportScenario
@@ -95,3 +83,4 @@ export default {
   }
 }
 </script>
+
