@@ -29,15 +29,11 @@
           Optimize
           <v-icon>mdi-code-braces</v-icon>
         </v-tab>
+
         <v-tab-item>
-          <v-card flat>
-            <v-card-text>
-              <p>
-                Coming soon
-              </p>
-            </v-card-text>
-          </v-card>
+          <optimization-tree/>
         </v-tab-item>
+
       <v-spacer></v-spacer>
       </v-tabs>
 </template>
@@ -46,13 +42,15 @@
 import ModelTree from './models/ModelTree'
 import ScenarioTree from './scenarios/ScenarioTree'
 import RealizationTree from './realizations/RealizationTree'
+import OptimizationTree from './optimizations/OptimizationTree'
 
 export default {
     name: 'Control',
     components: {
       ModelTree,
       ScenarioTree,
-      RealizationTree
+      RealizationTree,
+      OptimizationTree
     },
     data: () => ({
     })
