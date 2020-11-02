@@ -4,7 +4,7 @@
       <v-icon style="font-size:100px;color:yellow;"> mdi-alert</v-icon>
     </div>
     <br><br>
-    <h2>Oops, this file will fail to run with Analyze!</h2><br><br>
+    <h2>Oops, this scenario will fail to run with Analyze!</h2><br><br>
     <div class= "err" v-bind:key= "error" v-for="error in errors">
       <h3>{{error}}</h3>
       <br>
@@ -22,12 +22,12 @@ export default {
 <style scoped>
 
 .container {
-  padding: 10% 20% 0% 20%;
+  padding: 10% 10% 0% 10%;
   text-align: center;
   line-height: 12px;
 }
 .err {
- padding-left: 23%;
+ padding-left: 30%;
  text-align: left;
 }
  </style>

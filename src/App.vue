@@ -19,7 +19,7 @@
         </template>
           <v-card>
           <v-textarea outlined class="p-console" style="padding:12px;"
-            :no-resize=true :reverse=true :readonly=true id="error-console"/>
+            :no-resize=true :reverse=true :readonly=true id="error-console" disabled/>
           </v-card>
       </p-menu>
 
