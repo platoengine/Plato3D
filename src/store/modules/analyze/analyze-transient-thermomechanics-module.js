@@ -15,9 +15,9 @@ class AnalyzeTransientThermomechanics extends AnalyzeScenarioBase {
             'PDE Constraint': { type: 'string', value: 'Elliptic', fixed: true },
             'Parabolic': {
               'Penalty Function': {
-                'Type': { type: 'string', value: 'SIMP', options: ['SIMP', 'RAMP', 'Heaviside'] },
-                'Exponent': { type: 'double', value: '3.0' },
-                'Minimum Value': { type: 'double', value: '1.0e-3' }
+                'Type': { type: 'string', value: 'SIMP', options: ['SIMP', 'RAMP', 'Heaviside'], tooltip: 'Physics penalty method' },
+                'Exponent': { type: 'double', value: '3.0', tooltip: 'Exponent must be positive' },
+                'Minimum Value': { type: 'double', value: '1.0e-3', tooltip: 'Minimum value of the penalty function range.  Must be non-zero to guarantee stability.' }
               }
             },
             'Time Integration': {

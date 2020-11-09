@@ -9,6 +9,6 @@ export default {
 <style scoped>
 .indicator {
   text-align: right;
-  font-size: 20px;
+  font-size: 17px;
 };
 </style>

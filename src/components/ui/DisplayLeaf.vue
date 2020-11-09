@@ -1,17 +1,22 @@
 <template>
-  <div v-if="hasOptions()">
-    <v-select :label=name :disabled="fixed" dense class="ml-2 ma-0 pa-0" v-on:change="setPending()" v-model="parameterValue" :items="getOptions()"/>
-  </div>
-  <div v-else>
-    <div v-if="isObject()">
-        <array-input v-for="(entry, index) in Object.keys(data)" @pending="setPending()"
-          @set-value="setData(entry,$event)" :key="index" :data="data[entry]" :name="entry"/>
-    </div>
-    <div v-else>
-      <v-text-field :label=name :disabled="fixed" dense class="ml-2 ma-0 pa-0 body-2" v-on:input="setPending()" v-model="parameterValue">
-      </v-text-field>
-    </div>
-  </div>
+  <v-tooltip :disabled="toolTipDisabled" top >
+    <template v-slot:activator="{ on, attrs }">
+      <div v-if="hasOptions()" v-bind="attrs" v-on="on" >
+        <v-select  :label=name :disabled="fixed" dense class="ml-2 ma-0 pa-0" v-on:change="setPending()" v-model="parameterValue" :items="getOptions()"/>
+      </div>
+      <div v-else>
+        <div v-if="isObject()" >
+          <array-input v-for="(entry, index) in Object.keys(data)" @pending="setPending()"
+            @set-value="setData(entry,$event)" :key="index" :data="data[entry]" :name="entry"/>
+        </div>
+        <div v-else>
+          <v-text-field v-bind="attrs" v-on="on" :label=name :disabled="fixed" dense class="ml-2 ma-0 pa-0 body-2" v-on:input="setPending()" v-model="parameterValue">
+          </v-text-field>
+        </div>
+      </div>
+    </template>
+    <span>{{tooltip}}</span>
+  </v-tooltip>  
 </template>
 
 <script>
@@ -34,9 +39,15 @@ export default {
       type: Boolean,
       required: false,
       default: false
-    }
+    }, 
+    tooltip:String
   },
+
   computed: {
+    toolTipDisabled:function() {
+      if(this.tooltip === ""){ return true}
+      return false
+    },
     parameterValue: {
       set: function (param) {
         this.$emit('set-value', param)
@@ -52,6 +63,7 @@ export default {
       Object.keys(this.data).forEach(k => { newValue[k] = this.data[k] }, this)
       newValue[entry] = value
       this.parameterValue = newValue
+      
     },
     isObject: function () {
       let value = this.data

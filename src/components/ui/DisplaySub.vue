@@ -6,19 +6,19 @@
           <v-expansion-panel-header>{{this.name}}<Indicator v-bind:style="this.getBranchColor"/></v-expansion-panel-header>
           <v-expansion-panel-content>
             <v-card class="ma-0 pa-0" color=green>
-            <v-card class="ml-2 pt-3">
-              <display-branch :data="this.data" :name="dataName" v-on:pending="setPending()"/>
-              <v-btn v-if="this.modify_button" small block @click="save()" :disabled="!savePending" type="button">
-                Modify
-              </v-btn>
-            </v-card>
+              <v-card class="ml-2 pt-3">
+                <display-branch :data="this.data" :name="dataName" v-on:pending="setPending()"/>
+                <v-btn v-if="this.modify_button" small block @click="save()" :disabled="!savePending" type="button">
+                  Modify
+                </v-btn>
+              </v-card>
             </v-card>
           </v-expansion-panel-content>
         </v-expansion-panel>
       </v-expansion-panels>
     </div>
     <div v-else-if="isLeaf(this.data)">
-      <display-leaf :data="dataValue" :name="dataName" :options="dataOptions" :fixed="dataFixed"
+      <display-leaf :tooltip="toolTipText" :data="dataValue" :name="dataName" :options="dataOptions" :fixed="dataFixed"
         v-on:set-value="dataValue=$event" v-on:pending="setPending()"/>
     </div>
     <div v-else>
@@ -59,6 +59,12 @@ export default {
   computed: {
     getBranchColor: function () {
       return allFieldsSpecified(this.parentObject, this.myKey, true) === true ? {color: 'green'} : {color: 'red'}
+    },
+    toolTipText:function(){
+      if(this.data['tooltip']){
+        return this.data['tooltip']
+      } 
+      return ''
     },
     dataValue: {
       get: function () {
