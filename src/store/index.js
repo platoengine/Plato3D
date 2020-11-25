@@ -300,8 +300,17 @@ export default new Vuex.Store({
       if (optimizationIndex !== -1) {
         let scenarioIndex = scenarios.findIndex(scenario => scenario.name === newEntry.scenarioName)
         if (scenarioIndex !== -1) {
-          optimizations[optimizationIndex].addObjective(scenarios[scenarioIndex], newEntry.objectiveName, newEntry.weight)
+          optimizations[optimizationIndex].addObjective(
+            scenarios[scenarioIndex],
+            newEntry.objectiveName,
+            newEntry.weight)
         }
+      }
+    },
+    setNormalizeObjectives ({optimizations}, {optimization, normalize}) {
+      let optimizationIndex = optimizations.findIndex(opt => opt.name === optimization.name)
+      if (optimizationIndex !== -1) {
+        optimizations[optimizationIndex].normalizeObjectives = normalize
       }
     },
     deleteOptimizationConstraint ({optimizations}, {optimization, constraint}) {
@@ -312,12 +321,13 @@ export default new Vuex.Store({
         opt.constraints.splice(constraintIndex, 1)
       }
     },
-    modifyOptimizationConstraint ({optimizations}, {optimization, constraint, weight}) {
+    modifyOptimizationConstraint ({optimizations}, {optimization, constraint, weight, perVolume}) {
       let optimizationIndex = optimizations.findIndex(opt => opt.name === optimization.name)
       if (optimizationIndex !== -1) {
         let opt = optimizations[optimizationIndex]
         let constraintIndex = opt.constraints.findIndex(obj => obj.name === constraint.name)
         opt.constraints[constraintIndex].weight = weight
+        opt.constraints[constraintIndex].perVolume = perVolume
       }
     },
     addConstraintToOptimization ({scenarios, optimizations}, {optimizationName, newEntry}) {
@@ -325,8 +335,29 @@ export default new Vuex.Store({
       if (optimizationIndex !== -1) {
         let scenarioIndex = scenarios.findIndex(scenario => scenario.name === newEntry.scenarioName)
         if (scenarioIndex !== -1) {
-          optimizations[optimizationIndex].addConstraint(scenarios[scenarioIndex], newEntry.constraintName, newEntry.target)
+          optimizations[optimizationIndex].addConstraint(scenarios[scenarioIndex], newEntry.constraintName, newEntry.target, newEntry.perVolume)
         }
+      }
+    },
+    setOptimizationOptimizerPackage ({optimizations}, {optimization, packageName}) {
+      let optimizationIndex = optimizations.findIndex(opt => opt.name === optimization.name)
+      if (optimizationIndex !== -1) {
+        optimizations[optimizationIndex].optimizer.selected = packageName
+      }
+    },
+    setOptimizationOptimizerOption ({optimizations}, {optimization, optionName, optionValue}) {
+      let optimizationIndex = optimizations.findIndex(opt => opt.name === optimization.name)
+      if (optimizationIndex !== -1) {
+        let opt = optimizations[optimizationIndex].optimizer
+        let selected = opt.selected
+        opt.packages[selected][optionName].value = optionValue
+      }
+    },
+    setOptimizationSolverOption ({optimizations}, {optimization, optionName, optionValue}) {
+      let optimizationIndex = optimizations.findIndex(opt => opt.name === optimization.name)
+      if (optimizationIndex !== -1) {
+        let solver = optimizations[optimizationIndex].solver
+        solver[optionName].value = optionValue
       }
     }
   },
@@ -338,6 +369,7 @@ export default new Vuex.Store({
       }
     },
     async uploadExodusModel ({state}, formData) {
+      state.activeModel.file = formData.get('file')
       state.activeModel.fileName = formData.get('file').name
       const response = await apiService.uploadExodusModel(formData)
       if (response === 'FAILURE') {

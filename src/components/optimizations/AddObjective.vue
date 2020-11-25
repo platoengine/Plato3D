@@ -62,7 +62,11 @@ export default {
     add: function () {
       this.$store.commit('addObjectiveToOptimization',
         { optimizationName: this.optimization.name,
-          newEntry: {scenarioName: this.selectedScenario, objectiveName: this.selectedCriterion, weight: this.weightValue}
+          newEntry: {
+            scenarioName: this.selectedScenario,
+            objectiveName: this.selectedCriterion,
+            weight: this.weightValue
+          }
         })
       this.addPending = false
       this.close()

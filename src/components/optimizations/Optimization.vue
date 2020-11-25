@@ -5,6 +5,8 @@
         <v-expansion-panel>
           <v-expansion-panel-header>Objectives</v-expansion-panel-header>
           <v-expansion-panel-content>
+            <v-card color=green>
+            <v-card outlined class="ml-2">
             <add-objective :optimization="optimization"/>
             <v-expansion-panels :focusable=true accordion>
               <v-expansion-panel v-for="(item,index) in optimization.objectives" :key="index" >
@@ -14,12 +16,19 @@
                 </v-expansion-panel-content>
               </v-expansion-panel>
             </v-expansion-panels>
+            <v-card-text>
+              <v-checkbox dense class="ma-0 pa-0" v-model="normalizeObjectives" label="Normalize Objectives"/>
+            </v-card-text>
+            </v-card>
+            </v-card>
           </v-expansion-panel-content>
         </v-expansion-panel>
 
         <v-expansion-panel>
           <v-expansion-panel-header>Constraints</v-expansion-panel-header>
           <v-expansion-panel-content>
+            <v-card color=green>
+            <v-card outlined class="ml-2">
             <add-constraint :optimization="optimization"/>
             <v-expansion-panels :focusable=true accordion>
               <v-expansion-panel v-for="(item,index) in optimization.constraints" :key="index" >
@@ -29,16 +38,29 @@
                 </v-expansion-panel-content>
               </v-expansion-panel>
             </v-expansion-panels>
+            </v-card>
+            </v-card>
+          </v-expansion-panel-content>
+        </v-expansion-panel>
+        <v-expansion-panel>
+          <v-expansion-panel-header>Optimizer</v-expansion-panel-header>
+          <v-expansion-panel-content>
+            <optimization-optimizer :optimization="optimization"/>
+          </v-expansion-panel-content>
+        </v-expansion-panel>
+        <v-expansion-panel>
+          <v-expansion-panel-header>Solver</v-expansion-panel-header>
+          <v-expansion-panel-content>
+            <optimization-solver :optimization="optimization"/>
+          </v-expansion-panel-content>
+        </v-expansion-panel>
+        <v-expansion-panel>
+          <v-expansion-panel-header>Solution</v-expansion-panel-header>
+          <v-expansion-panel-content>
+            <optimization-solution :parentObject="optimization"/>
           </v-expansion-panel-content>
         </v-expansion-panel>
 <!--
-
-        add constraint(s) w/ target value(s)
-
-        compute
-
-
-
         <v-expansion-panel>
           <v-expansion-panel-header>Parameters</v-expansion-panel-header>
           <v-expansion-panel-content>
@@ -49,12 +71,6 @@
           <v-expansion-panel-header>Resources</v-expansion-panel-header>
           <v-expansion-panel-content>
             <realization-resources :parentObject="realization"/>
-          </v-expansion-panel-content>
-        </v-expansion-panel>
-        <v-expansion-panel>
-          <v-expansion-panel-header>Solution</v-expansion-panel-header>
-          <v-expansion-panel-content>
-            <realization-solution :parentObject="realization"/>
           </v-expansion-panel-content>
         </v-expansion-panel>
         <v-expansion-panel>
@@ -69,6 +85,7 @@
     <v-card :class="'d-flex justify-space-between'">
       <edit-optimization :optimization="optimization"/>
       <delete-optimization :optimization="optimization"/>
+      <export-optimization :optimization="optimization"/>
     </v-card>
   </v-card>
 </template>
@@ -77,17 +94,30 @@
 //import Parameters from '../parameters/Parameters'
 import EditOptimization from './EditOptimization'
 import DeleteOptimization from './DeleteOptimization'
+import ExportOptimization from './ExportOptimization'
 import AddObjective from './AddObjective'
 import AddConstraint from './AddConstraint'
 import Objective from './Objective'
 import Constraint from './Constraint'
+import OptimizationOptimizer from './OptimizationOptimizer'
+import OptimizationSolver from './OptimizationSolver'
+import OptimizationSolution from './OptimizationSolution'
 //import RealizationResources from './RealizationResources'
-//import RealizationSolution from './RealizationSolution'
 //import RealizationViews from './RealizationViews'
 
 export default {
   name: 'optimization',
   props: ['optimization'],
+  computed: {
+    normalizeObjectives: {
+      get: function () {
+        return this.optimization.normalizeObjectives
+      },
+      set: function (newVal) {
+        this.$store.commit('setNormalizeObjectives', {optimization: this.optimization, normalize: newVal})
+      }
+    }
+  },
   methods: {
     criterionName: function (criterion) {
       return `${criterion.scenario.name}: ${criterion.criterionName}`
@@ -100,12 +130,14 @@ export default {
 //    Parameters,
     EditOptimization,
     DeleteOptimization,
+    ExportOptimization,
     AddObjective,
     AddConstraint,
     Objective,
-    Constraint
-//    RealizationResources,
-//    RealizationSolution,
+    Constraint,
+    OptimizationOptimizer,
+    OptimizationSolver,
+    OptimizationSolution
 //    RealizationViews
   }
 }
