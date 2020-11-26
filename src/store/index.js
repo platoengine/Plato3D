@@ -295,6 +295,18 @@ export default new Vuex.Store({
         optimizations[optimizationIndex].description = optimizationAttributes.description
       }
     },
+    setOptimizationFilterRadius ({optimizations}, {optimizationName, filterRadius}) {
+      let optimizationIndex = optimizations.findIndex(optimization => optimization.name === optimizationName)
+      if (optimizationIndex !== -1) {
+        optimizations[optimizationIndex].filterRadius = filterRadius
+      }
+    },
+    setOptimizationApplyFilter ({optimizations}, {optimizationName, applyFilter}) {
+      let optimizationIndex = optimizations.findIndex(optimization => optimization.name === optimizationName)
+      if (optimizationIndex !== -1) {
+        optimizations[optimizationIndex].applyFilter = applyFilter
+      }
+    },
     addObjectiveToOptimization ({scenarios, optimizations}, {optimizationName, newEntry}) {
       let optimizationIndex = optimizations.findIndex(optimization => optimization.name === optimizationName)
       if (optimizationIndex !== -1) {

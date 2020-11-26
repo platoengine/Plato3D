@@ -55,6 +55,12 @@
           </v-expansion-panel-content>
         </v-expansion-panel>
         <v-expansion-panel>
+          <v-expansion-panel-header>Geometry</v-expansion-panel-header>
+          <v-expansion-panel-content>
+            <optimization-geometry :optimization="optimization"/>
+          </v-expansion-panel-content>
+        </v-expansion-panel>
+        <v-expansion-panel>
           <v-expansion-panel-header>Solution</v-expansion-panel-header>
           <v-expansion-panel-content>
             <optimization-solution :parentObject="optimization"/>
@@ -101,6 +107,7 @@ import Objective from './Objective'
 import Constraint from './Constraint'
 import OptimizationOptimizer from './OptimizationOptimizer'
 import OptimizationSolver from './OptimizationSolver'
+import OptimizationGeometry from './OptimizationGeometry'
 import OptimizationSolution from './OptimizationSolution'
 //import RealizationResources from './RealizationResources'
 //import RealizationViews from './RealizationViews'
@@ -137,6 +144,7 @@ export default {
     Constraint,
     OptimizationOptimizer,
     OptimizationSolver,
+    OptimizationGeometry,
     OptimizationSolution
 //    RealizationViews
   }

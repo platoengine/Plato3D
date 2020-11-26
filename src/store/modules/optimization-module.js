@@ -45,6 +45,7 @@ class Optimization extends ParBase {
     this.constraints = []
     this.simulation = {inputFile: '', computeStatus: '', availableViewTypes: {}, views: []}
     this.filterRadius = 2.48 // default value 
+    this.applyFilter = true // default value 
   }
   writeMpirunSourceFile(uniqueScenarios) {
     let mpirun_source = "mpirun -np 1 --oversubscribe "
