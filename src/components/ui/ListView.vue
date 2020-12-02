@@ -1,7 +1,7 @@
 <template>
   <v-card> 
     <v-expansion-panel-header>
-      {{this.name}} 
+      <span :style="this.getListColor">{{this.name}} </span>
       <span class="d-flex justify-end" tile >
         <v-tooltip top>
           <template v-slot:activator="{ on, attrs }">
@@ -9,8 +9,7 @@
           </template>
           <span>Add</span>
         </v-tooltip>
-        <NewListEntry  :dialog = "this.newListEntryDialogVisibility"  @contentEnteredByUser="contentSpecified()" @closeNewListEntryDialog = "closeNewListEntryDialog()" :modelviews = "this.modelviews" :name = "this.name" :scenario="this.scenario"/>
-        <Indicator v-bind:style="this.getListColor" /> 
+        <NewListEntry :dialog = "this.newListEntryDialogVisibility"  @contentEnteredByUser="contentSpecified()" @closeNewListEntryDialog = "closeNewListEntryDialog()" :modelviews = "this.modelviews" :name = "this.name" :scenario="this.scenario"/>
       </span>   
     </v-expansion-panel-header>
     <v-expansion-panel-content>
@@ -36,7 +35,6 @@
 <script>
 import NewListEntry from './NewListEntry'
 import ListEntry from './ListEntry'
-import Indicator from './Indicator'
 import Vue from 'vue'
 
 export default {
@@ -44,8 +42,7 @@ export default {
   props: ['scenario', 'modelviews', 'name'],
   components: {
     NewListEntry,
-    ListEntry,
-    Indicator
+    ListEntry
   },
   data: function(){
     return {
@@ -97,10 +94,10 @@ export default {
 </script>
 <style lang="scss">
 #no-background-hover::before {
-   background-color: transparent !important; 
+  background-color: transparent !important; 
 
 }
 .add:hover {
   color:green;
- }
+}
 </style>

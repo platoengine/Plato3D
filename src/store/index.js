@@ -33,9 +33,13 @@ export default new Vuex.Store({
     availableModelTypes: null,
     availableScenarioTypes: null,
     events: { type: EventsContainer },
-    session: { type: SessionContainer }
+    session: { type: SessionContainer },
+    disabledByUser : false
   },
   mutations: {
+    toggleTooltip(state){
+      state.disabledByUser = !state.disabledByUser
+    },
     initialize (state) {
       state.availableModelTypes = ['Exodus', 'OpenCSM (coming soon)', 'Cogent (coming soon)']
       state.events = new EventsContainer()

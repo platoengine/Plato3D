@@ -28,16 +28,6 @@ class AnalyzeTransientThermal extends AnalyzeScenarioBase {
           }
         }
       },
-      'Domains': {
-        'data': [],
-        'view': {
-          'type': 'list-view',
-          '<Template>': {
-            'Element Block': { type: 'string', value: '', options: () => { return this.selectables['blocks'] } },
-            'Material Model': { type: 'string', value: '', options: () => { return this.selectables['Material Models'] } }
-          }
-        }
-      },
       'Material Models': {
         'data': [],
         'view': {
@@ -83,6 +73,16 @@ class AnalyzeTransientThermal extends AnalyzeScenarioBase {
                 conditionalView: ['Temperature Dependent', 'true']
               }
             }
+          }
+        }
+      },
+      'Domains': {
+        'data': [],
+        'view': {
+          'type': 'list-view',
+          '<Template>': {
+            'Element Block': { type: 'string', value: '', options: () => { return this.selectables['blocks'] } },
+            'Material Model': { type: 'string', value: '', options: () => { return this.selectables['Material Models'] } }
           }
         }
       },

@@ -1,32 +1,29 @@
 <template>
   <v-card>
-  <v-expansion-panel-header>
-    {{this.name}}
-    <Indicator v-bind:style="indicator" />
-  </v-expansion-panel-header>
-  <v-expansion-panel-content>
-    <v-card class="ma-0 pa-0" color=green>
-      <v-card class="pt-4 ml-2">
-        <display-branch :data="getData()" v-on:pending="setPending();"/>
-        <v-btn block small @click="save(); printData()" :disabled="!savePending">Modify</v-btn>
+    <v-expansion-panel-header>
+      <span :style="this.indicator">{{this.name}}</span>
+    </v-expansion-panel-header>
+    <v-expansion-panel-content>
+      <v-card class="ma-0 pa-0" color=green>
+        <v-card class="pt-4 ml-2">
+          <display-branch :data="getData()" v-on:pending="setPending();"/>
+          <v-btn block small @click="save(); printData()" :disabled="!savePending">Modify</v-btn>
+        </v-card>
       </v-card>
-    </v-card>
-  </v-expansion-panel-content>
+    </v-expansion-panel-content>
   </v-card>
 </template>
 
 <script>
 import DisplayBranch from './DisplayBranch'
 import {dynamicCopy, staticCopy} from './ByValue'
-import Indicator from './Indicator'
 import {singleViewValidation} from './FieldChecker'
 
 export default {
   name: 'single-view',
   props: ['scenario', 'modelviews', 'name'],
   components: {
-    DisplayBranch,
-    Indicator
+    DisplayBranch
   },
   data: function () {
     return {

@@ -1,5 +1,5 @@
 <template>
-  <v-tooltip :disabled="toolTipDisabled" top >
+  <v-tooltip :disabled="toolTipDisabled || this.$store.state.disabledByUser" top>
     <template v-slot:activator="{ on, attrs }">
       <div v-if="hasOptions()" v-bind="attrs" v-on="on" >
         <v-select  :label=name :disabled="fixed" dense class="ml-2 ma-0 pa-0" v-on:change="setPending()" v-model="parameterValue" :items="getOptions()"/>

@@ -17,18 +17,18 @@ export default {
   name: 'modify-parameter',
   props: ['parentObject', 'parameterName'],
   data: function () {
-    return {stateValue: '', stateDescription: ''}
+    return {
+      stateValue: ''
+    , stateDescription: ''
+    , indicator : {color : 'red'}
+    , value:''
+    }
+  },
+  created: function () {
+    this.value = this.parentObject.parameters.find(p => p.ParameterName === this.parameterName).value
+    this.stateValue = this.value
   },
   computed: {
-    value: {
-      get: function () {
-        let thisParameter = this.parentObject.parameters.find(p => p.ParameterName === this.parameterName)
-        return thisParameter.value
-      },
-      set: function (newValue) {
-        this.stateValue = newValue
-      }
-    },
     description: {
       get: function () {
         let thisParameter = this.parentObject.parameters.find(p => p.ParameterName === this.parameterName)
@@ -36,6 +36,14 @@ export default {
       },
       set: function (newValue) {
         this.stateDescription = newValue
+      }
+    }
+  },
+  watch: {
+    value: {
+      handler: function() {
+        this.stateValue = this.value
+        this.emitDisplayColor()
       }
     }
   },
@@ -51,6 +59,14 @@ export default {
           }
         }
       )
+    },
+    emitDisplayColor: function () {
+      if(this.stateValue!= ""){
+        this.indicator.color = 'green'
+      } else {
+        this.indicator.color = 'red'
+      }
+      this.$emit('change-color', this.indicator)
     }
   }
 }

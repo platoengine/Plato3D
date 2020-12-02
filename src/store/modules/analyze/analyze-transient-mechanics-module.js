@@ -36,17 +36,6 @@ class AnalyzeTransientMechanics extends AnalyzeScenarioBase {
           }
         }
       },
-      'Domains': {
-        'data': [],
-        'required': true,
-        'view': {
-          'type': 'list-view',
-          '<Template>': {
-            'Element Block': { type: 'string', value: '', options: () => { return this.selectables['blocks'] } },
-            'Material Model': { type: 'string', value: '', options: () => { return this.selectables['Material Models'] } }
-          }
-        }
-      },
       'Material Models': {
         'data': [],
         'required': true,
@@ -69,6 +58,17 @@ class AnalyzeTransientMechanics extends AnalyzeScenarioBase {
                conditionalView: ['Model', 'Cubic Linear Elastic'],
                conditionalValue: ['Model', 'Cubic Linear Elastic']
             }
+          }
+        }
+      },
+      'Domains': {
+        'data': [],
+        'required': true,
+        'view': {
+          'type': 'list-view',
+          '<Template>': {
+            'Element Block': { type: 'string', value: '', options: () => { return this.selectables['blocks'] } },
+            'Material Model': { type: 'string', value: '', options: () => { return this.selectables['Material Models'] } }
           }
         }
       },
