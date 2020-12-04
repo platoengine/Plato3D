@@ -295,16 +295,19 @@ export default new Vuex.Store({
         optimizations[optimizationIndex].description = optimizationAttributes.description
       }
     },
-    setOptimizationFilterRadius ({optimizations}, {optimizationName, filterRadius}) {
-      let optimizationIndex = optimizations.findIndex(optimization => optimization.name === optimizationName)
+    setOptimizationAttribute ({optimizations}, {name, key, value}) {
+      let optimizationIndex = optimizations.findIndex(optimization => optimization.name === name)
       if (optimizationIndex !== -1) {
-        optimizations[optimizationIndex].filterRadius = filterRadius
+        optimizations[optimizationIndex].run[key] = value
       }
     },
-    setOptimizationApplyFilter ({optimizations}, {optimizationName, applyFilter}) {
-      let optimizationIndex = optimizations.findIndex(optimization => optimization.name === optimizationName)
+    setOptimizationKeysValue ({optimizations}, {name, keys, value}) {
+      let optimizationIndex = optimizations.findIndex(optimization => optimization.name === name)
       if (optimizationIndex !== -1) {
-        optimizations[optimizationIndex].applyFilter = applyFilter
+        let target = optimizations[optimizationIndex]
+        let last = keys.pop()
+        keys.forEach( key => { target = target[key] } )
+        target[last] = value
       }
     },
     addObjectiveToOptimization ({scenarios, optimizations}, {optimizationName, newEntry}) {
@@ -371,6 +374,42 @@ export default new Vuex.Store({
         let solver = optimizations[optimizationIndex].solver
         solver[optionName].value = optionValue
       }
+    },
+    addIterationToOptimization ({optimizations}, payload) {
+      let optimizationIndex = optimizations.findIndex(optimization => optimization.name === payload.optimizationName)
+      if (optimizationIndex !== -1) {
+        optimizations[optimizationIndex].addIteration(payload)
+      }
+    },
+    toFirstOptimizationIteration ({optimizations}, {optimizationName, graphics}) {
+      let optimizationIndex = optimizations.findIndex(optimization => optimization.name === optimizationName)
+      if (optimizationIndex !== -1) {
+        optimizations[optimizationIndex].toFirstIteration(graphics)
+      }
+    },
+    decrementOptimizationIteration ({optimizations}, {optimizationName, graphics}) {
+      let optimizationIndex = optimizations.findIndex(optimization => optimization.name === optimizationName)
+      if (optimizationIndex !== -1) {
+        optimizations[optimizationIndex].decrementActiveIteration(graphics)
+      }
+    },
+    incrementOptimizationIteration ({optimizations}, {optimizationName, graphics}) {
+      let optimizationIndex = optimizations.findIndex(optimization => optimization.name === optimizationName)
+      if (optimizationIndex !== -1) {
+        optimizations[optimizationIndex].incrementActiveIteration(graphics)
+      }
+    },
+    toLastOptimizationIteration ({optimizations}, {optimizationName, graphics}) {
+      let optimizationIndex = optimizations.findIndex(optimization => optimization.name === optimizationName)
+      if (optimizationIndex !== -1) {
+        optimizations[optimizationIndex].toLastIteration(graphics)
+      }
+    },
+    resetOptimizationRun({optimizations}, {optimizationName, graphics}) {
+      let optimizationIndex = optimizations.findIndex(optimization => optimization.name === optimizationName)
+      if (optimizationIndex !== -1) {
+          optimizations[optimizationIndex].resetRun(graphics)
+      }
     }
   },
   actions: {
@@ -406,6 +445,43 @@ export default new Vuex.Store({
         let realization = state.realizations[realizationIndex]
         await dispatch('createRealizationSimulation', {realization: realization})
         await dispatch('startRealizationSimulation', {realization: realization})
+      }
+    },
+    //
+    // optimization actions
+    //
+    async conductOptimizationRun ({dispatch, state, commit}, {optimizationName, graphics}) {
+      let optimizationIndex = state.optimizations.findIndex(optimization => optimization.name === optimizationName)
+      if (optimizationIndex !== -1) {
+        let optimization = state.optimizations[optimizationIndex]
+        if (optimization.run.iterations.length !== 0) {
+          commit('resetOptimizationRun', {optimizationName, graphics})
+        }
+        await dispatch('createOptimizationRun', {optimization: optimization})
+        await dispatch('addOptimizationView', {optimizationName: optimization.name})
+        await dispatch('startOptimizationRun', {optimization: optimization})
+      }
+    },
+    async createOptimizationRun ({state, commit}, {optimization}) {
+      const response = await apiService.createOptimization(state, commit, optimization)
+      if (response === 'FAILURE') {
+        errorHandler.report('server request failed: create optimization')
+      }
+    },
+    async startOptimizationRun ({commit}, {optimization}) {
+      const response = await apiService.startOptimization(commit, optimization)
+      if (response === 'FAILURE') {
+        errorHandler.report('server request failed: start optimization')
+      }
+    },
+    async addOptimizationView ({state}, viewDefinition) {
+      let optimizationIndex = state.optimizations.findIndex(optimization => optimization.name === viewDefinition.optimizationName)
+      if (optimizationIndex !== -1) {
+        viewDefinition.runDir = state.optimizations[optimizationIndex].run.runDir
+        const response = await apiService.createOptimizationView(viewDefinition)
+        if (response === 'FAILURE') {
+          errorHandler.report('server request failed: add optimization view')
+        }
       }
     }
   }

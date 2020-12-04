@@ -160,4 +160,50 @@ export class APIService {
       })
     }
   }
+  //
+  // optimization services
+  //
+  createOptimization (state, commit, optimization) {
+    const {token, username, server} = this.getSession()
+
+      let {files, meshes} = optimization.toDOM(state.models)
+
+      const url = `${server}/jobs/create-optimization`
+
+      let remoteAssets = meshes.map((mesh) => {return {fileName: mesh.fileName, remoteName: mesh.remote.remoteName, remotePath: mesh.remote.remotePath}})
+      return axios.post(url, {
+        token,
+        username,
+        files,
+        remoteAssets
+      })
+      .then(response => {
+        commit('setOptimizationAttribute', {name: optimization.name, key: 'computeStatus', value: 'created'})
+        commit('setOptimizationAttribute', {name: optimization.name, key: 'runDir', value: response.data})
+      })
+  }
+  startOptimization (commit, optimization) {
+    const {token, username, server} = this.getSession()
+
+    const url = `${server}/jobs/start-optimization`
+
+    return axios.post(url, {
+      token,
+      username,
+      payload: {runDir: optimization.run.runDir}
+    }).then(() => {
+      commit('setOptimizationAttribute', {name: optimization.name, key: 'computeStatus', value: 'started'})
+    })
+  }
+  createOptimizationView (viewDefinition) {
+    const {token, username, server} = this.getSession()
+
+    const url = `${server}/jobs/create-optimization-view`
+    errorHandler.report('creating view')
+    return axios.post(url, {
+      viewDefinition,
+      username,
+      token
+    }).then(response => response.data)
+  }
 }

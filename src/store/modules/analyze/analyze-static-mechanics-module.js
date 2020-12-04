@@ -82,9 +82,10 @@ class AnalyzeStaticMechanics extends AnalyzeScenarioBase {
             'Scalar Function Type': {
               type: 'string',
               value: 'Internal Elastic Energy',
-              options: ['Internal Elastic Energy'],
+              options: ['Internal Elastic Energy', 'Stress P-Norm'],
               conditionalView: ['Linear', 'false']
             },
+            'Exponent': { type: 'double', value: '6.0', conditionalView: ['Scalar Function Type', 'Stress P-Norm']},
             'Penalty Function': {
               'Type': { type: 'string', value: 'SIMP', options: ['SIMP', 'RAMP', 'Heaviside'] },
               'Exponent': { type: 'double', value: '3.0' },

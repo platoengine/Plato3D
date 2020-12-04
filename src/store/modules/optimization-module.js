@@ -2,6 +2,9 @@ import ParBase from './par-base'
 import XMLWriter from 'xml-writer'
 //import * as THREE from 'three'
 
+// TODO: create a geometry object that hold all geometry related settings such as
+// filter, initial topology value, symmetry, fixed blocks, overhang constraints, etc.  
+
 class Optimization extends ParBase {
   constructor () {
     super()
@@ -45,7 +48,65 @@ class Optimization extends ParBase {
     this.constraints = []
     this.simulation = {inputFile: '', computeStatus: '', availableViewTypes: {}, views: []}
     this.filterRadius = 2.48 // default value 
+    this.initialValue = 0.25 // default value
     this.applyFilter = true // default value 
+    this.run = {computeStatus: 'Idle', runDir: 'not set', iterations: [], activeIteration: 0}
+  }
+  addIteration (payload) {
+    let graphics = payload.graphics
+    let iterations = this.run.iterations
+
+    // if the last iteration is the active iteration then add the new iteration visible and increment the active iteration
+    let addVisible = true
+    let lastIndex = iterations.length - 1
+    if (this.run.activeIteration === lastIndex) {
+      this.setVisibility(graphics, lastIndex, false)
+      this.run.activeIteration++
+    } else {
+      addVisible = false
+    }
+    payload.geometry.visible = addVisible
+    graphics.scene.add(payload.geometry)
+    this.run.iterations.push({geometryID: payload.geometry.id, iteration: payload.iteration, isVisible: addVisible, isWireframe: false})
+  }
+  toFirstIteration(graphics) {
+    this.setVisibility(graphics, this.run.activeIteration, false)
+    this.run.activeIteration = 0
+    this.setVisibility(graphics, this.run.activeIteration, true)
+  }
+  toLastIteration(graphics) {
+    this.setVisibility(graphics, this.run.activeIteration, false)
+    this.run.activeIteration = this.run.iterations.length - 1
+    this.setVisibility(graphics, this.run.activeIteration, true)
+  }
+  incrementActiveIteration(graphics) {
+    let lastIndex = this.run.iterations.length - 1
+    if (this.run.activeIteration < lastIndex) {
+      this.setVisibility(graphics, this.run.activeIteration, false)
+      this.run.activeIteration++
+      this.setVisibility(graphics, this.run.activeIteration, true)
+    }
+  }
+  decrementActiveIteration(graphics) {
+    if (this.run.activeIteration > 0) {
+      this.setVisibility(graphics, this.run.activeIteration, false)
+      this.run.activeIteration--
+      this.setVisibility(graphics, this.run.activeIteration, true)
+    }
+  }
+  setVisibility (graphics, index, visibility) {
+    let iteration = this.run.iterations[index]
+    let lastGeom = graphics.scene.getObjectById(iteration.geometryID)
+    lastGeom.visible = visibility
+    
+  }
+  resetRun (graphics) {
+    this.run.iterations.forEach((iteration) => {
+      let geom = graphics.scene.getObjectById(iteration.geometryID)
+      graphics.scene.remove(geom)
+    })
+    this.run.iterations = []
+    this.run.activeIteration = 0
   }
   writeMpirunSourceFile(uniqueScenarios) {
     let mpirun_source = "mpirun -np 1 --oversubscribe "
@@ -141,7 +202,7 @@ class Optimization extends ParBase {
           ArgumentName: "Initialized Field"
         },
         Uniform: {
-          Value: 0.2
+          Value: 0.2 //TODO
         }
       }
     }, platoApp)
@@ -181,7 +242,7 @@ class Optimization extends ParBase {
         let tObjName = `${obj.scenario.name}:${obj.criterionName}`
         let tSharedDataName = `Initial ${tObjName} Value`
         // add Initial Value operation to stage
-        newStage["Stage"][`Operation__${obj.criterionName}`] = {
+        newStage["Stage"][`Operation__${tObjName}`] = {
           Name: `Compute ${tObjName} Value`,
           PerformerName: "Analyze",
           Input: {
@@ -254,19 +315,6 @@ class Optimization extends ParBase {
         SIMP: {
           PenaltyExponent: 1.0,
           MinimumValue: 0.0
-        }
-      }
-    }, xw)
-  }
-  addPlatoMainOutput(xw) {
-    this.addBranch({
-      Operation: {
-        Function: "PlatoMainOutput",
-        Name: "PlatoMainOutput",
-        OutputFrequency: 1000,
-        Input__1: {
-          ArgumentName: "Topology",
-          Alias: "Topology"
         }
       }
     }, xw)
@@ -804,11 +852,20 @@ class Optimization extends ParBase {
       let newOperation = {
         Operation: {
           Function: "PlatoMainOutput",
-          OutputFrequency: 1000,
+          OutputFrequency: 1,
           Name: "PlatoMainOutput",
           Input__0: {
             ArgumentName: "Topology",
             Alias: "Topology"
+          },
+          SurfaceExtraction: {
+            OutputMethod: "parallel write",
+            Discretization: "density",
+            BaseName: "design",
+            AppendIterationCount: "True",
+            Output: {
+              Format: "STL"
+            }
           }
         }
       }
@@ -873,7 +930,7 @@ class Optimization extends ParBase {
   inputFileName(aName){
     return `${aName.replace(" ", "_")}.xml`
   }
-  toDOM ({models}) {
+  toDOM (models) {
     let retVal = {}
 
     let config = {
@@ -896,14 +953,6 @@ class Optimization extends ParBase {
         uniqueScenarios.push(obj.scenario)
       }
     })
-    let uniqueModels = []
-    uniqueScenarios.forEach((scenario) => {
-      let modelName = scenario.geometry.body.modelName
-      let index = uniqueModels.findIndex((m) => m.name === modelName )
-      if (index === -1) {
-        uniqueModels.push(models[index])
-      }
-    }, this)
     
     // write analyzeInput file for each scenario
     uniqueScenarios.forEach((scenario) => {
@@ -941,7 +990,7 @@ class Optimization extends ParBase {
     retVal["amgx.json"] = JSON.stringify(this.getAmgxSettings(), null, 4)
  
 
-    let meshes = models.map(model => {return {file: model.file, fileName: model.fileName}})
+    let meshes = models.map(model => {return {file: model.file, fileName: model.fileName, remote: model.remote}})
     return {files: retVal, meshes: meshes}
   }
   getAmgxSettings() {

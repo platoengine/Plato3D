@@ -68,7 +68,7 @@ export default {
     },
     exportOptimization: function () {
       if(this.validation().length === 0 || this.enableSaveWithErrors === true){
-        let {files, meshes} = this.optimization.toDOM(this.$store.state)
+        let {files, meshes} = this.optimization.toDOM(this.$store.state.models)
 
         let zip = new JSZip();
         Object.keys(files).forEach((key) => {

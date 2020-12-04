@@ -3,6 +3,7 @@
     <v-card class="pt-4 ml-2">
       <v-card outlined class="pl-2 pr-2">
         <v-text-field label="Filter Radius" dense class="ml-2 ma-0 pa-0 body-2" v-model="filterRadius"/>
+        <v-text-field label="Initial Value" dense class="ml-2 ma-0 pa-0 body-2" v-model="initialValue"/>
 <!--
         <v-checkbox label="Apply Filter" dense class="ml-2 ma-0 pa-0 body-2" v-model="applyFilter"/>
 -->
@@ -22,7 +23,15 @@ export default {
         return this.optimization.filterRadius
       },
       set: function (newValue) {
-        this.$store.commit('setOptimizationFilterRadius', {optimizationName: this.optimization.name, filterRadius: newValue})
+        this.$store.commit('setOptimizationKeysValue', {name: this.optimization.name, keys: ['filterRadius'], value: newValue})
+      }
+    },
+    initialValue: {
+      get: function () {
+        return this.optimization.initialValue
+      },
+      set: function (newValue) {
+        this.$store.commit('setOptimizationKeysValue', {name: this.optimization.name, keys: ['initialValue'], value: newValue})
       }
     },
     applyFilter: {
@@ -30,7 +39,7 @@ export default {
         return this.optimization.applyFilter
       },
       set: function (newValue) {
-        this.$store.commit('setOptimizationApplyFilter', {optimizationName: this.optimization.name, applyFilter: newValue})
+        this.$store.commit('setOptimizationKeysValue', {name: this.optimization.name, keys: ['applyFilter'], value: newValue})
       }
     }
   }

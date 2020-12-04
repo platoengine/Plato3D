@@ -61,9 +61,9 @@
           </v-expansion-panel-content>
         </v-expansion-panel>
         <v-expansion-panel>
-          <v-expansion-panel-header>Solution</v-expansion-panel-header>
+          <v-expansion-panel-header>Run</v-expansion-panel-header>
           <v-expansion-panel-content>
-            <optimization-solution :parentObject="optimization"/>
+            <optimization-run :optimization="optimization"/>
           </v-expansion-panel-content>
         </v-expansion-panel>
 <!--
@@ -77,12 +77,6 @@
           <v-expansion-panel-header>Resources</v-expansion-panel-header>
           <v-expansion-panel-content>
             <realization-resources :parentObject="realization"/>
-          </v-expansion-panel-content>
-        </v-expansion-panel>
-        <v-expansion-panel>
-          <v-expansion-panel-header>Views</v-expansion-panel-header>
-          <v-expansion-panel-content>
-            <realization-views :parentObject="realization"/>
           </v-expansion-panel-content>
         </v-expansion-panel>
 -->
@@ -108,9 +102,8 @@ import Constraint from './Constraint'
 import OptimizationOptimizer from './OptimizationOptimizer'
 import OptimizationSolver from './OptimizationSolver'
 import OptimizationGeometry from './OptimizationGeometry'
-import OptimizationSolution from './OptimizationSolution'
+import OptimizationRun from './OptimizationRun'
 //import RealizationResources from './RealizationResources'
-//import RealizationViews from './RealizationViews'
 
 export default {
   name: 'optimization',
@@ -128,9 +121,6 @@ export default {
   methods: {
     criterionName: function (criterion) {
       return `${criterion.scenario.name}: ${criterion.criterionName}`
-    },
-    compute_solution: function () {
-//      this.$store.dispatch('conductOptimizationSimulation', {optimizationName: this.optimization.name})
     }
   },
   components: {
@@ -145,8 +135,7 @@ export default {
     OptimizationOptimizer,
     OptimizationSolver,
     OptimizationGeometry,
-    OptimizationSolution
-//    RealizationViews
+    OptimizationRun
   }
 }
 </script>
