@@ -3,13 +3,20 @@ const state = {
   showItemDetail: false,
   showItemDetailModel: null,
   showItemDetailPrimitive: null,
-  showItemDetailSurfaceID: null
+  showItemDetailSurfaceID: null,
+  showOptViewDetail: false
 }
 
 const actions = {
 }
 
 const mutations = {
+  openOptViewDetail (state) {
+    state.showOptViewDetail = true
+  },
+  closeOptViewDetail (state) {
+    state.showOptViewDetail = false
+  },
   closeItemDetail (state) {
     state.showItemDetail = false
   },

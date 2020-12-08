@@ -2,6 +2,7 @@
   <v-app id="inspire">
 
     <item-detail/>
+    <opt-view-detail/>
 
     <v-app-bar app clipped-left >
       <v-app-bar-nav-icon @click.stop="toggleDrawer()" />
@@ -71,6 +72,7 @@ import GridSettings from './components/settings/GridSettings'
 import ThreeRenderer from './components/ThreeRenderer'
 import LightingSettings from './components/settings/LightingSettings'
 import ItemDetail from './components/settings/ItemDetail'
+import OptViewDetail from './components/settings/OptViewDetail'
 import Control from './components/Control'
 import PMenu from './components/ui/PMenu'
 
@@ -80,6 +82,7 @@ export default {
       GridSettings,
       LightingSettings,
       ItemDetail,
+      OptViewDetail,
       ThreeRenderer,
       Control,
       Login,

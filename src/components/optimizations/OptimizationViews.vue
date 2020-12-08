@@ -1,5 +1,5 @@
 <template>
-  <v-card outlined class="ma-0 pa-0">
+  <v-card outlined class="ma-2 pa-0">
     <v-card-title class="justify-center ma-0 pa-0 caption">Iteration</v-card-title>
     <v-card :class="'d-flex justify-space-between'">
       <v-btn x-small @click = "toFirst()"> <v-icon small>mdi-arrow-collapse-left</v-icon> </v-btn>
@@ -7,6 +7,10 @@
       <v-text-field :disabled=true class="centered-input ma-0 pa-0 caption" small v-model="iteration"/>
       <v-btn x-small @click = "next()"> <v-icon small>mdi-arrow-right</v-icon> </v-btn>
       <v-btn x-small @click = "toLast()"> <v-icon small>mdi-arrow-collapse-right</v-icon> </v-btn>
+    </v-card>
+    <v-card>
+      <v-btn x-small block @click="displayAttributes()">Display Attributes</v-btn>
+      <v-btn x-small block @click="exportSTL()">Export STL</v-btn>
     </v-card>
   </v-card>
 </template>
@@ -27,6 +31,13 @@ export default {
     }
   },
   methods: {
+    exportSTL: function () {
+      console.log("export STL")
+    },
+    displayAttributes: function () {
+      this.$store.commit('setActiveOptimization', {optimizationName: this.optimization.name})
+      this.$store.commit('openOptViewDetail')
+    },
     toFirst: function () {
       this.$store.commit('toFirstOptimizationIteration', {optimizationName: this.optimization.name, graphics: this.$graphics})
     },

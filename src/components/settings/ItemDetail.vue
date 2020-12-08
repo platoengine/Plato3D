@@ -1,32 +1,31 @@
 <template>
-  <v-dialog v-model="isOpen" persistent max-width="400px">
+  <v-dialog v-model="isOpen" persistent max-width="300px" origin='top left'>
     <v-card v-if="displayedPrimitive !== null" outlined>
-      <v-card-title> <span class="headline">Volume</span> </v-card-title>
-      <v-card-text>Type: {{displayedPrimitive.definition.Type}}</v-card-text>
-      <v-card-text>Name: {{displayedPrimitive.definition.Name}}</v-card-text>
-      <v-card-text>Id: {{displayedPrimitive.primitiveObjectID}}</v-card-text>
+      <v-card-title class="ma-0 pa-0 pl-2"> <span class="headline">Volume</span> </v-card-title>
+      <v-card-text class="ma-0 pa-0 pl-4">Type: {{displayedPrimitive.definition.Type}}</v-card-text>
+      <v-card-text class="ma-0 pa-0 pl-4">Name: {{displayedPrimitive.definition.Name}}</v-card-text>
+      <v-card-text class="ma-0 pa-0 pl-4">Id: {{displayedPrimitive.primitiveObjectID}}</v-card-text>
     </v-card>
     <v-card v-if="displayedSurface !== null">
       <v-card-title> <span class="headline">Surface</span> </v-card-title>
       <v-card-text>Id: {{displayedSurface.id}}</v-card-text>
     </v-card>
     <v-card outlined>
-      <v-card-title> <span class="headline">Display</span> </v-card-title>
-      <v-card-text>
-        <v-container>
+      <v-card-title class="ma-0 pa-0 pl-2"> <span class="headline">Display</span> </v-card-title>
+      <v-card-text class="pa-0 ma-0">
+        <v-container class="pa-0 ma-0">
             <v-col>
-              <v-text-field dense class="ma-0 pa-0" label="Opacity" v-model="opacityView" @change="setPrimitivePending()"/>
-              <v-checkbox dense class="ma-0 pa-0" label="Visible" v-model="visibleView" @change="setPrimitivePending()"/>
-              <v-checkbox dense class="ma-0 pa-0" label="Wireframe" v-model="wireframeView" @change="setPrimitivePending()"/>
+              <v-row no-gutters>
+                <v-col><v-slider v-model="opacityView" label="Opacity" :min="0.0" :max="1.0" step="0.05"></v-slider></v-col>
+                <v-col cols="1"><v-text-field dense :disabled="true" class="ma-0 pa-0" v-model="opacityView"/></v-col>
+              </v-row>
+              <v-row no-gutters>
+                <v-col><v-checkbox dense class="ma-0 pa-0" label="Visible" v-model="visibleView"/></v-col>
+                <v-col><v-checkbox dense class="ma-0 pa-0" label="Wireframe" v-model="wireframeView"/></v-col>
+              </v-row>
             </v-col>
         </v-container>
       </v-card-text>
-      <v-card-actions>
-        <v-spacer></v-spacer>
-        <v-btn text @click="setDisplayAttributes" :disabled="!primitiveState.pending">Apply</v-btn>
-      </v-card-actions>
-
-
     </v-card>
     <v-btn text @click.stop="isOpen = false">Okay</v-btn>
   </v-dialog>
@@ -70,6 +69,7 @@ export default {
       },
       set: function (newValue) {
         this.primitiveState.opacity = newValue
+        this.setDisplayAttributes()
       }
     },
     wireframeView: {
@@ -79,6 +79,7 @@ export default {
       },
       set: function (newValue) {
         this.primitiveState.wireframe = newValue
+        this.setDisplayAttributes()
       }
     },
     visibleView: {
@@ -88,6 +89,7 @@ export default {
       },
       set: function (newValue) {
         this.primitiveState.visible = newValue
+        this.setDisplayAttributes()
       }
     },
     isOpen: {

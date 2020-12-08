@@ -51,13 +51,24 @@ class Optimization extends ParBase {
     this.initialValue = 0.25 // default value
     this.applyFilter = true // default value 
     this.run = {computeStatus: 'Idle', runDir: 'not set', iterations: [], activeIteration: 0}
+    this.display = {opacity: 1.0, wireframe: false, visible: true}
+  }
+  setDisplayAttributes(graphics, attribute, value) {
+    this.display[attribute] = value
+    if (this.run.iterations.length > 0) {
+      let geomID = this.run.iterations[this.run.activeIteration].geometryID
+      let geom = graphics.scene.getObjectById(geomID)
+      geom.visible = this.display.visible
+      geom.material.opacity = this.display.opacity
+      geom.material.wireframe = this.display.wireframe
+    }
   }
   addIteration (payload) {
     let graphics = payload.graphics
     let iterations = this.run.iterations
 
     // if the last iteration is the active iteration then add the new iteration visible and increment the active iteration
-    let addVisible = true
+    let addVisible = this.display.visible
     let lastIndex = iterations.length - 1
     if (this.run.activeIteration === lastIndex) {
       this.setVisibility(graphics, lastIndex, false)
@@ -66,8 +77,16 @@ class Optimization extends ParBase {
       addVisible = false
     }
     payload.geometry.visible = addVisible
+    payload.geometry.material.transparent = true
+    payload.geometry.material.wireframe = this.display.wireframe
+    payload.geometry.material.opacity = this.display.opacity
     graphics.scene.add(payload.geometry)
-    this.run.iterations.push({geometryID: payload.geometry.id, iteration: payload.iteration, isVisible: addVisible, isWireframe: false})
+    this.run.iterations.push({
+      geometryID: payload.geometry.id,
+      iteration: payload.iteration,
+      isVisible: this.display.visible,
+      isWireframe: this.display.wireframe
+    })
   }
   toFirstIteration(graphics) {
     this.setVisibility(graphics, this.run.activeIteration, false)
@@ -97,8 +116,9 @@ class Optimization extends ParBase {
   setVisibility (graphics, index, visibility) {
     let iteration = this.run.iterations[index]
     let lastGeom = graphics.scene.getObjectById(iteration.geometryID)
-    lastGeom.visible = visibility
-    
+    lastGeom.visible = this.display.visible && visibility
+    lastGeom.material.wireframe = this.display.wireframe
+    lastGeom.material.opacity = this.display.opacity
   }
   resetRun (graphics) {
     this.run.iterations.forEach((iteration) => {

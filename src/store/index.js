@@ -33,7 +33,10 @@ export default new Vuex.Store({
     scenarios: [],
     realizations: [],
     optimizations: [],
-    activeModel: null, // refers to the to which requests and modifications are applied
+    active: {
+      model: null, // refers to the model to which requests and modifications are applied
+      optimization: null // refers to the optimization to which requests and modifications are applied
+    },
     availableModelTypes: null,
     availableScenarioTypes: null,
     events: { type: EventsContainer },
@@ -84,11 +87,11 @@ export default new Vuex.Store({
     setDisplayAttributes (state, {model, payload}) {
       model.setDisplayAttributes(payload)
     },
-    setModelRemoteData ({activeModel}, payload) {
-      activeModel.remote = payload
+    setModelRemoteData ({active}, payload) {
+      active.model.remote = payload
     },
-    addObj ({activeModel}, payload) {
-      activeModel.addPrimitive(payload)
+    addObj ({active}, payload) {
+      active.model.addPrimitive(payload)
     },
     addEventListener ({events}, {aName, aFunction}) {
       events.addListener(aName, aFunction)
@@ -127,9 +130,9 @@ export default new Vuex.Store({
     setActiveModel (state, activeModelName) {
       let activeModelIndex = state.models.findIndex(model => model.name === activeModelName)
       if (activeModelIndex !== -1) {
-        state.activeModel = state.models[activeModelIndex]
+        state.active.model = state.models[activeModelIndex]
       } else {
-        state.activeModel = null
+        state.active.model = null
       }
     },
     addScenario ({scenarios, availableScenarioTypes, uniqueID}, {name, description, type}) {
@@ -256,7 +259,16 @@ export default new Vuex.Store({
         realizations[realizationIndex].modifyView(payload)
       }
     },
-    addOptimization ({optimizations}, {name, description}) {
+    setActiveOptimization ({optimizations, active}, {name}) {
+      let optimizationIndex = optimizations.findIndex(optimization => optimization.name === name)
+      if (optimizationIndex !== -1) {
+        active.optimization = optimizations[optimizationIndex]
+      }
+    },
+    setOptDisplayAttributes ({active}, {graphics, attribute, value}) {
+      active.optimization.setDisplayAttributes(graphics, attribute, value)
+    },
+    addOptimization ({active, optimizations}, {name, description}) {
       const newOptimization = new Optimization()
       // Optimizations are accessed by name, so if 'name' is empty, change it to 'Optimization N'.
       if (name === '') {
@@ -265,6 +277,7 @@ export default new Vuex.Store({
       newOptimization.name = name
       newOptimization.description = description
       optimizations.push(newOptimization)
+      active.optimization = newOptimization
     },
     deleteOptimization ({optimizations}, {name}) {
       let optimizationIndex = optimizations.findIndex(optimization => optimization.name === name)
@@ -284,7 +297,9 @@ export default new Vuex.Store({
       let optimizationIndex = optimizations.findIndex(opt => opt.name === optimization.name)
       if (optimizationIndex !== -1) {
         let opt = optimizations[optimizationIndex]
-        let objectiveIndex = opt.objectives.findIndex(obj => obj.name === objective.name)
+        let objectiveIndex = opt.objectives.findIndex(
+          obj => obj.criterionName === objective.criterionName && obj.scenario.name === objective.scenario.name
+        )
         opt.objectives[objectiveIndex].weight = weight
       }
     },
@@ -336,12 +351,12 @@ export default new Vuex.Store({
         opt.constraints.splice(constraintIndex, 1)
       }
     },
-    modifyOptimizationConstraint ({optimizations}, {optimization, constraint, weight, perVolume}) {
+    modifyOptimizationConstraint ({optimizations}, {optimization, constraint, target, perVolume}) {
       let optimizationIndex = optimizations.findIndex(opt => opt.name === optimization.name)
       if (optimizationIndex !== -1) {
         let opt = optimizations[optimizationIndex]
         let constraintIndex = opt.constraints.findIndex(obj => obj.name === constraint.name)
-        opt.constraints[constraintIndex].weight = weight
+        opt.constraints[constraintIndex].target = target
         opt.constraints[constraintIndex].perVolume = perVolume
       }
     },
@@ -420,8 +435,8 @@ export default new Vuex.Store({
       }
     },
     async uploadExodusModel ({state}, formData) {
-      state.activeModel.file = formData.get('file')
-      state.activeModel.fileName = formData.get('file').name
+      state.active.model.file = formData.get('file')
+      state.active.model.fileName = formData.get('file').name
       const response = await apiService.uploadExodusModel(formData)
       if (response === 'FAILURE') {
         errorHandler.report('server request failed: upload exodus model')
