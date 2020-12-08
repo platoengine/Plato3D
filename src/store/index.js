@@ -10,6 +10,9 @@ import EventsContainer from './modules/events-container'
 
 import AnalyzeScenarioFactory from './modules/analyze/analyze-scenario-factory-module'
 import Realization from './modules/realization-module'
+import Optimization from './modules/optimization-module'
+
+import UniqueID from './modules/unique-id'
 
 
 
@@ -29,14 +32,20 @@ export default new Vuex.Store({
     models: [],
     scenarios: [],
     realizations: [],
-    activeModel: null, // refers to the to which requests and modifications are applied
+    optimizations: [],
+    active: {
+      model: null, // refers to the model to which requests and modifications are applied
+      optimization: null // refers to the optimization to which requests and modifications are applied
+    },
     availableModelTypes: null,
     availableScenarioTypes: null,
     events: { type: EventsContainer },
-    session: { type: SessionContainer }
+    session: { type: SessionContainer },
+    uniqueID: { type: UniqueID }
   },
   mutations: {
     initialize (state) {
+      state.uniqueID = new UniqueID()
       state.availableModelTypes = ['Exodus', 'OpenCSM (coming soon)', 'Cogent (coming soon)']
       state.events = new EventsContainer()
       state.session = new SessionContainer()
@@ -78,11 +87,11 @@ export default new Vuex.Store({
     setDisplayAttributes (state, {model, payload}) {
       model.setDisplayAttributes(payload)
     },
-    setModelRemoteData ({activeModel}, payload) {
-      activeModel.remote = payload
+    setModelRemoteData ({active}, payload) {
+      active.model.remote = payload
     },
-    addObj ({activeModel}, payload) {
-      activeModel.addPrimitive(payload)
+    addObj ({active}, payload) {
+      active.model.addPrimitive(payload)
     },
     addEventListener ({events}, {aName, aFunction}) {
       events.addListener(aName, aFunction)
@@ -121,12 +130,12 @@ export default new Vuex.Store({
     setActiveModel (state, activeModelName) {
       let activeModelIndex = state.models.findIndex(model => model.name === activeModelName)
       if (activeModelIndex !== -1) {
-        state.activeModel = state.models[activeModelIndex]
+        state.active.model = state.models[activeModelIndex]
       } else {
-        state.activeModel = null
+        state.active.model = null
       }
     },
-    addScenario ({scenarios, availableScenarioTypes}, {name, description, type}) {
+    addScenario ({scenarios, availableScenarioTypes, uniqueID}, {name, description, type}) {
       let newScenario = null
       let hostPhysics = availableScenarioTypes.get(type).type
       let hostCode = availableScenarioTypes.get(type).code
@@ -143,6 +152,7 @@ export default new Vuex.Store({
       newScenario.type = type
       newScenario.hostPhysics = availableScenarioTypes.get(type).type
       newScenario.hostCode = availableScenarioTypes.get(type).code
+      newScenario.id = uniqueID.newID()
       scenarios.push(newScenario)
     },
     deleteScenario ({scenarios}, {name}) {
@@ -218,6 +228,13 @@ export default new Vuex.Store({
       }
       realizations.push(newRealization)
     },
+    setRealizationAttributes ({realizations}, {currentName, realizationAttributes}) {
+      let realizationIndex = realizations.findIndex(realization => realization.name === currentName)
+      if (realizationIndex !== -1) {
+        realizations[realizationIndex].name = realizationAttributes.name
+        realizations[realizationIndex].description = realizationAttributes.description
+      }
+    },
     deleteRealization ({realizations}, {name}) {
       let realizationIndex = realizations.findIndex(realization => realization.name === name)
       if (realizationIndex !== -1) {
@@ -242,7 +259,173 @@ export default new Vuex.Store({
         realizations[realizationIndex].modifyView(payload)
       }
     },
-
+    setActiveOptimization ({optimizations, active}, {name}) {
+      let optimizationIndex = optimizations.findIndex(optimization => optimization.name === name)
+      if (optimizationIndex !== -1) {
+        active.optimization = optimizations[optimizationIndex]
+      }
+    },
+    setOptDisplayAttributes ({active}, {graphics, attribute, value}) {
+      active.optimization.setDisplayAttributes(graphics, attribute, value)
+    },
+    addOptimization ({active, optimizations}, {name, description}) {
+      const newOptimization = new Optimization()
+      // Optimizations are accessed by name, so if 'name' is empty, change it to 'Optimization N'.
+      if (name === '') {
+        name = 'Optimization ' + optimizations.length.toString()
+      }
+      newOptimization.name = name
+      newOptimization.description = description
+      optimizations.push(newOptimization)
+      active.optimization = newOptimization
+    },
+    deleteOptimization ({optimizations}, {name}) {
+      let optimizationIndex = optimizations.findIndex(optimization => optimization.name === name)
+      if (optimizationIndex !== -1) {
+        optimizations.splice(optimizationIndex, 1)
+      }
+    },
+    deleteOptimizationObjective ({optimizations}, {optimization, objective}) {
+      let optimizationIndex = optimizations.findIndex(opt => opt.name === optimization.name)
+      if (optimizationIndex !== -1) {
+        let opt = optimizations[optimizationIndex]
+        let objectiveIndex = opt.objectives.findIndex(obj => obj.name === objective.name)
+        opt.objectives.splice(objectiveIndex, 1)
+      }
+    },
+    modifyOptimizationObjective ({optimizations}, {optimization, objective, weight}) {
+      let optimizationIndex = optimizations.findIndex(opt => opt.name === optimization.name)
+      if (optimizationIndex !== -1) {
+        let opt = optimizations[optimizationIndex]
+        let objectiveIndex = opt.objectives.findIndex(
+          obj => obj.criterionName === objective.criterionName && obj.scenario.name === objective.scenario.name
+        )
+        opt.objectives[objectiveIndex].weight = weight
+      }
+    },
+    setOptimizationAttributes ({optimizations}, {currentName, optimizationAttributes}) {
+      let optimizationIndex = optimizations.findIndex(optimization => optimization.name === currentName)
+      if (optimizationIndex !== -1) {
+        optimizations[optimizationIndex].name = optimizationAttributes.name
+        optimizations[optimizationIndex].description = optimizationAttributes.description
+      }
+    },
+    setOptimizationAttribute ({optimizations}, {name, key, value}) {
+      let optimizationIndex = optimizations.findIndex(optimization => optimization.name === name)
+      if (optimizationIndex !== -1) {
+        optimizations[optimizationIndex].run[key] = value
+      }
+    },
+    setOptimizationKeysValue ({optimizations}, {name, keys, value}) {
+      let optimizationIndex = optimizations.findIndex(optimization => optimization.name === name)
+      if (optimizationIndex !== -1) {
+        let target = optimizations[optimizationIndex]
+        let last = keys.pop()
+        keys.forEach( key => { target = target[key] } )
+        target[last] = value
+      }
+    },
+    addObjectiveToOptimization ({scenarios, optimizations}, {optimizationName, newEntry}) {
+      let optimizationIndex = optimizations.findIndex(optimization => optimization.name === optimizationName)
+      if (optimizationIndex !== -1) {
+        let scenarioIndex = scenarios.findIndex(scenario => scenario.name === newEntry.scenarioName)
+        if (scenarioIndex !== -1) {
+          optimizations[optimizationIndex].addObjective(
+            scenarios[scenarioIndex],
+            newEntry.objectiveName,
+            newEntry.weight)
+        }
+      }
+    },
+    setNormalizeObjectives ({optimizations}, {optimization, normalize}) {
+      let optimizationIndex = optimizations.findIndex(opt => opt.name === optimization.name)
+      if (optimizationIndex !== -1) {
+        optimizations[optimizationIndex].normalizeObjectives = normalize
+      }
+    },
+    deleteOptimizationConstraint ({optimizations}, {optimization, constraint}) {
+      let optimizationIndex = optimizations.findIndex(opt => opt.name === optimization.name)
+      if (optimizationIndex !== -1) {
+        let opt = optimizations[optimizationIndex]
+        let constraintIndex = opt.constraints.findIndex(obj => obj.name === constraint.name)
+        opt.constraints.splice(constraintIndex, 1)
+      }
+    },
+    modifyOptimizationConstraint ({optimizations}, {optimization, constraint, target, perVolume}) {
+      let optimizationIndex = optimizations.findIndex(opt => opt.name === optimization.name)
+      if (optimizationIndex !== -1) {
+        let opt = optimizations[optimizationIndex]
+        let constraintIndex = opt.constraints.findIndex(obj => obj.name === constraint.name)
+        opt.constraints[constraintIndex].target = target
+        opt.constraints[constraintIndex].perVolume = perVolume
+      }
+    },
+    addConstraintToOptimization ({scenarios, optimizations}, {optimizationName, newEntry}) {
+      let optimizationIndex = optimizations.findIndex(optimization => optimization.name === optimizationName)
+      if (optimizationIndex !== -1) {
+        let scenarioIndex = scenarios.findIndex(scenario => scenario.name === newEntry.scenarioName)
+        if (scenarioIndex !== -1) {
+          optimizations[optimizationIndex].addConstraint(scenarios[scenarioIndex], newEntry.constraintName, newEntry.target, newEntry.perVolume)
+        }
+      }
+    },
+    setOptimizationOptimizerPackage ({optimizations}, {optimization, packageName}) {
+      let optimizationIndex = optimizations.findIndex(opt => opt.name === optimization.name)
+      if (optimizationIndex !== -1) {
+        optimizations[optimizationIndex].optimizer.selected = packageName
+      }
+    },
+    setOptimizationOptimizerOption ({optimizations}, {optimization, optionName, optionValue}) {
+      let optimizationIndex = optimizations.findIndex(opt => opt.name === optimization.name)
+      if (optimizationIndex !== -1) {
+        let opt = optimizations[optimizationIndex].optimizer
+        let selected = opt.selected
+        opt.packages[selected][optionName].value = optionValue
+      }
+    },
+    setOptimizationSolverOption ({optimizations}, {optimization, optionName, optionValue}) {
+      let optimizationIndex = optimizations.findIndex(opt => opt.name === optimization.name)
+      if (optimizationIndex !== -1) {
+        let solver = optimizations[optimizationIndex].solver
+        solver[optionName].value = optionValue
+      }
+    },
+    addIterationToOptimization ({optimizations}, payload) {
+      let optimizationIndex = optimizations.findIndex(optimization => optimization.name === payload.optimizationName)
+      if (optimizationIndex !== -1) {
+        optimizations[optimizationIndex].addIteration(payload)
+      }
+    },
+    toFirstOptimizationIteration ({optimizations}, {optimizationName, graphics}) {
+      let optimizationIndex = optimizations.findIndex(optimization => optimization.name === optimizationName)
+      if (optimizationIndex !== -1) {
+        optimizations[optimizationIndex].toFirstIteration(graphics)
+      }
+    },
+    decrementOptimizationIteration ({optimizations}, {optimizationName, graphics}) {
+      let optimizationIndex = optimizations.findIndex(optimization => optimization.name === optimizationName)
+      if (optimizationIndex !== -1) {
+        optimizations[optimizationIndex].decrementActiveIteration(graphics)
+      }
+    },
+    incrementOptimizationIteration ({optimizations}, {optimizationName, graphics}) {
+      let optimizationIndex = optimizations.findIndex(optimization => optimization.name === optimizationName)
+      if (optimizationIndex !== -1) {
+        optimizations[optimizationIndex].incrementActiveIteration(graphics)
+      }
+    },
+    toLastOptimizationIteration ({optimizations}, {optimizationName, graphics}) {
+      let optimizationIndex = optimizations.findIndex(optimization => optimization.name === optimizationName)
+      if (optimizationIndex !== -1) {
+        optimizations[optimizationIndex].toLastIteration(graphics)
+      }
+    },
+    resetOptimizationRun({optimizations}, {optimizationName, graphics}) {
+      let optimizationIndex = optimizations.findIndex(optimization => optimization.name === optimizationName)
+      if (optimizationIndex !== -1) {
+          optimizations[optimizationIndex].resetRun(graphics)
+      }
+    }
   },
   actions: {
     async addRealizationView (state, viewDefinition) {
@@ -252,7 +435,8 @@ export default new Vuex.Store({
       }
     },
     async uploadExodusModel ({state}, formData) {
-      state.activeModel.fileName = formData.get('file').name
+      state.active.model.file = formData.get('file')
+      state.active.model.fileName = formData.get('file').name
       const response = await apiService.uploadExodusModel(formData)
       if (response === 'FAILURE') {
         errorHandler.report('server request failed: upload exodus model')
@@ -276,6 +460,43 @@ export default new Vuex.Store({
         let realization = state.realizations[realizationIndex]
         await dispatch('createRealizationSimulation', {realization: realization})
         await dispatch('startRealizationSimulation', {realization: realization})
+      }
+    },
+    //
+    // optimization actions
+    //
+    async conductOptimizationRun ({dispatch, state, commit}, {optimizationName, graphics}) {
+      let optimizationIndex = state.optimizations.findIndex(optimization => optimization.name === optimizationName)
+      if (optimizationIndex !== -1) {
+        let optimization = state.optimizations[optimizationIndex]
+        if (optimization.run.iterations.length !== 0) {
+          commit('resetOptimizationRun', {optimizationName, graphics})
+        }
+        await dispatch('createOptimizationRun', {optimization: optimization})
+        await dispatch('addOptimizationView', {optimizationName: optimization.name})
+        await dispatch('startOptimizationRun', {optimization: optimization})
+      }
+    },
+    async createOptimizationRun ({state, commit}, {optimization}) {
+      const response = await apiService.createOptimization(state, commit, optimization)
+      if (response === 'FAILURE') {
+        errorHandler.report('server request failed: create optimization')
+      }
+    },
+    async startOptimizationRun ({commit}, {optimization}) {
+      const response = await apiService.startOptimization(commit, optimization)
+      if (response === 'FAILURE') {
+        errorHandler.report('server request failed: start optimization')
+      }
+    },
+    async addOptimizationView ({state}, viewDefinition) {
+      let optimizationIndex = state.optimizations.findIndex(optimization => optimization.name === viewDefinition.optimizationName)
+      if (optimizationIndex !== -1) {
+        viewDefinition.runDir = state.optimizations[optimizationIndex].run.runDir
+        const response = await apiService.createOptimizationView(viewDefinition)
+        if (response === 'FAILURE') {
+          errorHandler.report('server request failed: add optimization view')
+        }
       }
     }
   }

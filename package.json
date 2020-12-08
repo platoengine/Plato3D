@@ -11,6 +11,7 @@
     "axios": "^0.19.2",
     "core-js": "^3.6.4",
     "file-saver": "^2.0.2",
+    "jszip": "^3.5.0",
     "three": "^0.114.0",
     "three-obj-mtl-loader": "^1.0.3",
     "vee-validate": "^3.4.3",
