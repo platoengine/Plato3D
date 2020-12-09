@@ -1,18 +1,19 @@
 <template>
   <v-app id="inspire">
-
     <item-detail/>
     <opt-view-detail/>
 
     <v-app-bar app clipped-left >
       <v-app-bar-nav-icon @click.stop="toggleDrawer()" />
       <v-toolbar-title>Plato3D</v-toolbar-title>
-
       <v-spacer></v-spacer>
-
-      <v-btn icon>
-        <v-icon>mdi-help-circle-outline</v-icon>
-      </v-btn>
+       
+      <p-menu>
+        <template v-slot:button>
+          <v-icon>mdi-help-circle-outline</v-icon>
+        </template>
+        <tooltipToggler />       
+      </p-menu>      
 
       <p-menu>
         <template v-slot:button>
@@ -20,7 +21,7 @@
         </template>
           <v-card>
           <v-textarea outlined class="p-console" style="padding:12px;"
-            :no-resize=true :reverse=true :readonly=true id="error-console"/>
+            :no-resize=true :reverse=true :readonly=true id="error-console" disabled/>
           </v-card>
       </p-menu>
 
@@ -44,7 +45,6 @@
         </template>
         <login/>
       </p-menu>
-
 
     </v-app-bar>
 
@@ -75,6 +75,7 @@ import ItemDetail from './components/settings/ItemDetail'
 import OptViewDetail from './components/settings/OptViewDetail'
 import Control from './components/Control'
 import PMenu from './components/ui/PMenu'
+import TooltipToggler from './components/settings/tooltipToggler'
 
 export default {
   name: 'App',
@@ -86,14 +87,19 @@ export default {
       ThreeRenderer,
       Control,
       Login,
-      PMenu},
+      PMenu,
+      TooltipToggler},
     props: {
       source: String,
     },
     data: () => ({
-      drawerOpen: false
+      drawerOpen: false,
+      disablehelp: false
     }),
     methods: {
+      toggleHelpSetup(){
+        this.disablehelp = !this.disablehelp
+      },
       toggleDrawer: function () {
         this.drawerOpen = !this.drawerOpen
       }

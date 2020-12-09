@@ -41,9 +41,13 @@ export default new Vuex.Store({
     availableScenarioTypes: null,
     events: { type: EventsContainer },
     session: { type: SessionContainer },
-    uniqueID: { type: UniqueID }
+    uniqueID: { type: UniqueID },
+    disabledByUser : false
   },
   mutations: {
+    toggleTooltip(state){
+      state.disabledByUser = !state.disabledByUser
+    },
     initialize (state) {
       state.uniqueID = new UniqueID()
       state.availableModelTypes = ['Exodus', 'OpenCSM (coming soon)', 'Cogent (coming soon)']

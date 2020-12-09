@@ -2,7 +2,7 @@
   <v-card>
     <div v-for="(prop, index) in propertyNames" :key="index">
       <div v-if="displayable(prop)">
-        <display-sub :modify_button="modify_button" :data="getPropertyValue(prop)" :name="getPropertyName(prop)" 
+        <display-sub :modify_button="modify_button" :myKey="prop" :parentObject="data" :data="getPropertyValue(prop)" :name="getPropertyName(prop)" 
          v-on:pending="setPending()" v-on:save="save()"/>
       </div>
     </div>

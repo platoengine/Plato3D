@@ -1,20 +1,23 @@
 <template>
   <v-card>
-  <v-expansion-panel-header>{{this.name}}</v-expansion-panel-header>
-  <v-expansion-panel-content>
-    <v-card class="ma-0 pa-0" color=green>
-      <v-card class="pt-4 ml-2">
-        <display-branch :data="getData()" v-on:pending="setPending()"/>
-        <v-btn block small @click="save()" :disabled="!savePending">Modify</v-btn>
+    <v-expansion-panel-header>
+      <span :style="this.indicator">{{this.name}}</span>
+    </v-expansion-panel-header>
+    <v-expansion-panel-content>
+      <v-card class="ma-0 pa-0" color=green>
+        <v-card class="pt-4 ml-2">
+          <display-branch :data="getData()" v-on:pending="setPending();"/>
+          <v-btn block small @click="save(); printData()" :disabled="!savePending">Modify</v-btn>
+        </v-card>
       </v-card>
-    </v-card>
-  </v-expansion-panel-content>
+    </v-expansion-panel-content>
   </v-card>
 </template>
 
 <script>
 import DisplayBranch from './DisplayBranch'
 import {dynamicCopy, staticCopy} from './ByValue'
+import {singleViewValidation} from './FieldChecker'
 
 export default {
   name: 'single-view',
@@ -26,7 +29,8 @@ export default {
     return {
       openThings: false,
       savePending: false,
-      dataState: {}
+      dataState: {},
+      indicator : {color : 'red'}
     }
   },
   created: function () {
@@ -34,6 +38,18 @@ export default {
       dynamicCopy(this.scenario.modelviews[this.name]['view']['<Template>'], this.dataState)
     } else {
       dynamicCopy(this.scenario.modelviews[this.name]['data'], this.dataState)
+    }
+  },
+  watch: {
+    dataState : {
+      handler: function(){
+        if(singleViewValidation(this.dataState) === true){
+          this.indicator.color = 'green'
+        } else {
+          this.indicator.color = 'red'
+        }
+      },
+    deep: true
     }
   },
   methods: {
@@ -56,7 +72,7 @@ export default {
         })
       this.savePending = false
       this.openThings = false
-    }
+    }   
   }
 }
 </script>

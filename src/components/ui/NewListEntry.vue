@@ -1,8 +1,5 @@
 <template>
   <v-dialog v-model="dialog" persistent max-width="600px">
-    <template v-slot:activator="{ on }">
-      <v-btn small block v-on="on" raised>Create New</v-btn>
-    </template>
     <v-card>
       <v-card-title>{{ title }}</v-card-title>
       <v-card-text>
@@ -30,20 +27,21 @@ import {dynamicCopy, staticCopy} from './ByValue'
 
 export default {
   name: 'new-list-entry',
-  props: ['scenario', 'modelviews', 'name'],
+  props: ['scenario', 'modelviews', 'name', 'dialog'],
   components: {
     DisplayLeaf,
     DisplayBranch
+    
   },
   created: function () {
     dynamicCopy(this.modelviews[this.name]['view']['<Template>'], this.dataState)
   },
   data: function () {
     return {
-      dialog: false,
       newEntryName: '',
       dataState: {},
-      savePending: false
+      savePending: false,
+     
     }
   },
   computed: {
@@ -73,7 +71,7 @@ export default {
       this.savePending = true
     },
     close: function () {
-      this.dialog = false;
+      this.$emit('closeNewListEntryDialog')
     },
     save: function () {
       let newListEntry = {}
@@ -86,6 +84,7 @@ export default {
         })
       this.savePending = false
       this.close()
+      this.$emit('contentEnteredByUser')
     }
   }
 }

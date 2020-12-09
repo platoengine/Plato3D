@@ -1,10 +1,5 @@
 <template>
-  <v-dialog v-model="dialog" persistent max-width="600px">
-    <template v-slot:activator="{ on }">
-      <v-btn small block v-on="on" raised>
-          New Parameter
-      </v-btn>
-    </template>
+  <v-dialog v-model="this.dialog" persistent max-width="600px">
     <v-card>
       <v-card-title>
         <span class="headline">New Parameter</span>
@@ -20,8 +15,8 @@
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn text @click="dialog = false; clear()">Cancel</v-btn>
-        <v-btn text @click="dialog = false; create()" :disabled="!isValid()">Create</v-btn>
+        <v-btn text @click="closeDialog(); clear()">Cancel</v-btn>
+        <v-btn text @click="create(); closeDialog();" :disabled="!isValid()">Create</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -31,9 +26,14 @@
 
 export default {
   name: 'new-parameter',
-  props: ['parentObject'],
+  props: ['parentObject', 'dialog'],
   data: function () {
-    return {name: '', value: '', description: '', dialog: false}
+    return {
+      name: ''
+    , value: ''
+    , description: ''
+    , indicator : {color : 'red'}
+    }
   },
   computed: {
     rules () {
@@ -44,6 +44,9 @@ export default {
     }
   },
   methods: {
+    closeDialog : function() {
+      this.$emit('close');
+    },  
     isValid () {
       return this.name !== '' && this.value !== ''
     },
@@ -65,6 +68,7 @@ export default {
         }
       })
       this.clear()
+      this.$emit('setParamTextColor')  
     },
     clear: function () {
       this.name = ''

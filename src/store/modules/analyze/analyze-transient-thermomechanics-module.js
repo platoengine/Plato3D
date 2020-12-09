@@ -15,9 +15,9 @@ class AnalyzeTransientThermomechanics extends AnalyzeScenarioBase {
             'PDE Constraint': { type: 'string', value: 'Elliptic', fixed: true },
             'Parabolic': {
               'Penalty Function': {
-                'Type': { type: 'string', value: 'SIMP', options: ['SIMP', 'RAMP', 'Heaviside'] },
-                'Exponent': { type: 'double', value: '3.0' },
-                'Minimum Value': { type: 'double', value: '1.0e-3' }
+                'Type': { type: 'string', value: 'SIMP', options: ['SIMP', 'RAMP', 'Heaviside'], tooltip: 'Physics penalty method' },
+                'Exponent': { type: 'double', value: '3.0', tooltip: 'Exponent must be positive' },
+                'Minimum Value': { type: 'double', value: '1.0e-3', tooltip: 'Minimum value of the penalty function range.  Must be non-zero to guarantee stability.' }
               }
             },
             'Time Integration': {
@@ -30,17 +30,6 @@ class AnalyzeTransientThermomechanics extends AnalyzeScenarioBase {
               'Increment tolerance': { type: 'double', value: '0.0' },
               'Residual tolerance': { type: 'double', value: '0.0' }
             }
-          }
-        }
-      },
-      'Domains': {
-        'data': [],
-        'required': true,
-        'view': {
-          'type': 'list-view',
-          '<Template>': {
-            'Element Block': { type: 'string', value: '', options: () => { return this.selectables['blocks'] } },
-            'Material Model': { type: 'string', value: '', options: () => { return this.selectables['Material Models'] } }
           }
         }
       },
@@ -129,6 +118,17 @@ class AnalyzeTransientThermomechanics extends AnalyzeScenarioBase {
                 alias: 'Elastic Stiffness'
               }
             }
+          }
+        }
+      },
+      'Domains': {
+        'data': [],
+        'required': true,
+        'view': {
+          'type': 'list-view',
+          '<Template>': {
+            'Element Block': { type: 'string', value: '', options: () => { return this.selectables['blocks'] } },
+            'Material Model': { type: 'string', value: '', options: () => { return this.selectables['Material Models'] } }
           }
         }
       },

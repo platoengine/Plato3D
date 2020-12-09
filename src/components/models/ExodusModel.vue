@@ -1,7 +1,14 @@
 <template>
   <v-card>
-    <load-model v-if="!loaded" v-on:load-model='loadModel($event)'/>
-    <v-container class="py-0" v-else>
+    <div v-if= "showLoader && (!loaded)">
+      <v-card>
+        <Loader/>
+      </v-card>
+    </div>
+    <div v-if ="!showLoader">
+      <load-model v-if="!loaded" v-on:load-model='loadModel($event)'/>
+    </div>  
+    <v-container class="py-0" v-else>   
       <v-row>
         <v-col class="pa-0 ma-0">
           <template v-for="(item,index) in model.primitives">
@@ -16,19 +23,14 @@
           </template>
         </v-col>
       </v-row>
-    </v-container>
-    <v-card :class="'d-flex justify-space-between'">
-
-      <import-model @load-model="loadModel($event)"/>
-
+    </v-container>  
+    <v-card :class="'d-flex justify-space-between'">   
+      <import-model @load-model="loadModel($event)"/>  
       <delete-model :model="model"/>
-
       <edit-model :model="model"/>
-
       <v-btn small>
         <v-icon>mdi-folder-download</v-icon>
       </v-btn>
-
     </v-card>
   </v-card>
 </template>
@@ -40,6 +42,7 @@ import DeleteModel from './DeleteModel'
 import EditModel from './EditModel'
 import ErrorHandler from '../../store/modules/error-handler-module'
 import {OBJLoader} from 'three-obj-mtl-loader'
+import Loader from '../loadingDialog.vue'
 
 
 const errorHandler = new ErrorHandler()
@@ -51,10 +54,11 @@ export default {
     LoadModel,
     ImportModel,
     DeleteModel,
-    EditModel
+    EditModel,
+    Loader
   },
   data: function () {
-    return {}
+    return { showLoader: false}
   },
   computed: {
     selectedPrimitive: function () {
@@ -91,13 +95,15 @@ export default {
         const loader = new OBJLoader()
         const url = URL.createObjectURL(new Blob([geometryData, 'application/object']))
         loader.load(url, (geometry) => {
+          this.showLoader = false;
           appThis.$store.commit('addObj', {
             modelName: modelName,
             name: geometryName,
             type: geometryType,
             geometry: geometry,
             graphics: appThis.$graphics
-          })
+          });
+          
         }, undefined, function (error) { errorHandler.report(error) })
       }
     })
@@ -105,6 +111,7 @@ export default {
   methods: {
     loadModel: function (eventData) {
       // change the model name to the filename of the loaded model
+      this.showLoader = true;
       let modelName = eventData.get('name')
       this.$store.commit('setModelAttributes', {
         currentName: this.model.name,
@@ -112,8 +119,10 @@ export default {
           name: modelName,
           description: null
         }})
+      
       this.$store.commit('setActiveModel', this.model.name)
       this.$store.dispatch('uploadExodusModel', eventData)
+
     },
     open: function (primitive) {
       this.$store.commit('setActiveModel', this.model.name)
