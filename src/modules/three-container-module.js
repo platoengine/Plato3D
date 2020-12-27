@@ -14,10 +14,11 @@ function ThreeContainer () {
 
   this.initialize = function () {
     if (!this.isInitialized) {
-      this.renderer = new THREE.WebGLRenderer({ antialias: true })
+      this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
       this.renderer.setSize(window.innerWidth, window.innerHeight - 6)
       this.renderer.shadowMap.enabled = true
       this.renderer.shadowMap.type = THREE.PCFSoftShadowMap
+      this.renderer.setClearColor(0x000000, 0.0)
       this.scene = new THREE.Scene()
       this.grid = {X: null, Y: null, Z: null}
       this.lighting = {directional: null, hemisphere: null, ambient: null, spot: null}

@@ -50,9 +50,9 @@
 
     </v-app-bar>
 
-    <v-container class="px-0 fill-height" fluid >
-      <v-row align="center" justify="center" >
-        <v-col class="shrink">
+    <v-container class="px-0 mx-0 fill-height" fluid >
+      <v-row class="pa-0 ma-0" align="center" justify="center" >
+        <v-col class="pa-0 ma-0 shrink">
           <three-renderer/>
         </v-col>
       </v-row>
@@ -145,5 +145,9 @@ export default {
 .v-label {
   font-size: 10px
 }
+#scene {
+  background: linear-gradient(to bottom,  #111111 0%,#999999 100%);
+}
+
 </style>
 

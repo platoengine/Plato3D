@@ -65,11 +65,11 @@ const mutations = {
       const index = model.primitives.findIndex(p => p.primitiveObjectID === primitive.primitiveObjectID)
       if (index !== -1 && index !== state.currentlySelectedPrimitiveIndex) {
         const thisPrimitiveObject = graphics.scene.getObjectById(model.primitives[index].primitiveObjectID)
-        thisPrimitiveObject.children.forEach(c => c.material.color.setHex(0x999999))
+        thisPrimitiveObject.children.forEach(c => c.material.color.setHex(0xFFDA33))
         if (state.currentlySelectedPrimitiveIndex !== -1) {
           const currentID = model.primitives[state.currentlySelectedPrimitiveIndex].primitiveObjectID
           const thatPrimitiveObject = graphics.scene.getObjectById(currentID)
-          thatPrimitiveObject.children.forEach(c => c.material.color.setHex(0x00ff00))
+          thatPrimitiveObject.children.forEach(c => c.material.color.setHex(0x999999))
         }
         state.currentlySelectedPrimitiveIndex = index
       }

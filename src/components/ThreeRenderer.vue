@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div id="scene">
     <div ref="container"></div>
   </div>
 </template>
@@ -47,9 +47,8 @@ export default {
         models.forEach(function (model) {
           for (var j = 0; j < model.primitives.length; j++) {
             const thisPrimitive = model.primitives[ j ]
-            const restoreColor = thisPrimitive.definition.Operation === 'add' ? 0x00ff00 : 0xff0000
             const primitiveObject = this.$graphics.scene.getObjectById(thisPrimitive.primitiveObjectID)
-            primitiveObject.children.forEach(function (kid) { kid.material.color.set(restoreColor) })
+            primitiveObject.children.forEach(function (kid) { kid.material.color.set(0x999999) })
           }
           const intersectables = model.primitives.map(a => this.$graphics.scene.getObjectById(a.primitiveObjectID), this)
           const intersects = this.$graphics.raycaster.intersectObjects(intersectables, true)
@@ -65,7 +64,7 @@ export default {
                 this.$store.commit('openSelected', {model: model, primitive: model.primitives[tIndex], surface: pFace})
                 this.$store.commit('setSelected', {model: model, group: pGroup, surface: pFace})
               } else {
-                pGroup.children.forEach(function (kid) { kid.material.color.set(0x999999) })
+                pGroup.children.forEach(function (kid) { kid.material.color.set(0xFFDA33) })
                 this.$store.commit('openSelected', {model: model, primitive: model.primitives[tIndex], surface: null})
                 this.$store.commit('setSelected', {model: model, group: pGroup, surface: null})
               }
