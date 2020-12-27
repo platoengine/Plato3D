@@ -34,12 +34,35 @@ export default new Vuex.Store({
     realizations: [],
     optimizations: [],
     sceneSettings: {
-      size: 10.0,
-      divs: 10,
-      showX: false,
-      showY: false,
-      showZ: true,
-      AtCenter: true
+      grid: {
+        size: 10.0,
+        divs: 10,
+        showX: false,
+        showY: false,
+        showZ: true,
+        AtCenter: true
+      },
+      lighting: {
+        directional: {
+          display: false,
+          X: 10,
+          Y: 10,
+          Z: 10
+        },
+        hemisphere: {
+          display: true
+        },
+        ambient: {
+          display: true
+        },
+        spot: {
+          display: true,
+          X: 15,
+          Y: 40,
+          Z: 35,
+          angle: 7.5
+        }
+      }
     },
     active: {
       model: null, // refers to the model to which requests and modifications are applied
@@ -104,8 +127,8 @@ export default new Vuex.Store({
     },
     addObj ({active, sceneSettings}, payload) {
       active.model.addPrimitive(payload)
-      sceneSettings.size = payload.graphics.getGridSize()
-      payload.graphics.setGrid(sceneSettings)
+      sceneSettings.grid.size = payload.graphics.getGridSize()
+      payload.graphics.setGrid(sceneSettings.grid)
     },
     addEventListener ({events}, {aName, aFunction}) {
       events.addListener(aName, aFunction)
@@ -149,12 +172,19 @@ export default new Vuex.Store({
         state.active.model = null
       }
     },
-    setSceneSettings ({sceneSettings}, {key, val, graphics}) {
-      sceneSettings[key] = val
-      graphics.setGrid(sceneSettings)
+    setLightingSettings ({sceneSettings}, {keys, val, graphics}) {
+      sceneSettings.lighting[keys[0]][keys[1]] = val
+      graphics.setLighting(sceneSettings.lighting)
     },
-    initializeScene ({sceneSettings}, graphics) {
-      graphics.setGrid(sceneSettings)
+    initializeLighting ({sceneSettings}, graphics) {
+      graphics.setLighting(sceneSettings.lighting)
+    },
+    setGridSettings ({sceneSettings}, {key, val, graphics}) {
+      sceneSettings.grid[key] = val
+      graphics.setGrid(sceneSettings.grid)
+    },
+    initializeGrid ({sceneSettings}, graphics) {
+      graphics.setGrid(sceneSettings.grid)
     },
     addScenario ({scenarios, availableScenarioTypes, uniqueID}, {name, description, type}) {
       let newScenario = null

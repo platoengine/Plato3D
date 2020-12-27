@@ -23,55 +23,64 @@ export default {
   computed: {
     size: {
       set: function(newVal) {
-        this.$store.commit('setSceneSettings', {key: 'size', val: newVal, graphics: this.$graphics})
+        this.$store.commit('setGridSettings', {key: 'size', val: newVal, graphics: this.$graphics})
       },
       get: function() {
-        return this.$store.state.sceneSettings.size
+        return this.$store.state.sceneSettings.grid.size
       }
     },
     divs: {
       set: function(newVal) {
-        this.$store.commit('setSceneSettings', {key: 'divs', val: newVal, graphics: this.$graphics})
+        if (isNaN(parseInt(newVal))) {
+          newVal = 1
+        } else
+        if (newVal > 100) {
+          newVal = 100
+        } else
+        if (newVal <= 0) {
+          newVal = 1
+        }
+        this.$store.commit('setGridSettings', {key: 'divs', val: newVal, graphics: this.$graphics})
       },
       get: function() {
-        return this.$store.state.sceneSettings.divs
+        return this.$store.state.sceneSettings.grid.divs
       }
     },
     displayGridX: {
       set: function(newVal) {
-        this.$store.commit('setSceneSettings', {key: 'showX', val: newVal, graphics: this.$graphics})
+        this.$store.commit('setGridSettings', {key: 'showX', val: newVal, graphics: this.$graphics})
       },
       get: function() {
-        return this.$store.state.sceneSettings.showX
+        return this.$store.state.sceneSettings.grid.showX
       }
     },
     displayGridY: {
       set: function(newVal) {
-        this.$store.commit('setSceneSettings', {key: 'showY', val: newVal, graphics: this.$graphics})
+        this.$store.commit('setGridSettings', {key: 'showY', val: newVal, graphics: this.$graphics})
       },
       get: function() {
-        return this.$store.state.sceneSettings.showY
+        return this.$store.state.sceneSettings.grid.showY
       }
     },
     displayGridZ: {
       set: function(newVal) {
-        this.$store.commit('setSceneSettings', {key: 'showZ', val: newVal, graphics: this.$graphics})
+        this.$store.commit('setGridSettings', {key: 'showZ', val: newVal, graphics: this.$graphics})
       },
       get: function() {
-        return this.$store.state.sceneSettings.showZ
+        return this.$store.state.sceneSettings.grid.showZ
       }
     },
     gridAtCenter: {
       set: function(newVal) {
-        this.$store.commit('setSceneSettings', {key: 'AtCenter', val: newVal, graphics: this.$graphics})
+        this.$store.commit('setGridSettings', {key: 'AtCenter', val: newVal, graphics: this.$graphics})
       },
       get: function() {
-        return this.$store.state.sceneSettings.AtCenter
+        return this.$store.state.sceneSettings.grid.AtCenter
       }
     }
   },
   created: function () {
-    this.$store.commit('initializeScene', this.$graphics)
+    this.$store.commit('initializeGrid', this.$graphics)
   }
 }
 </script>

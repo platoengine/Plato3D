@@ -9,13 +9,6 @@ function ThreeContainer () {
   this.raycaster = {}
   this.mouse = {}
   this.boundingbox = {}
-  this.sceneSettings = {
-    size: 10.0,
-    divs: 10,
-    gridX: false,
-    gridY: false,
-    gridZ: true
-  }
 
   this.isInitialized = false
 
