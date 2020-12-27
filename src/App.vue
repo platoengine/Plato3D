@@ -7,6 +7,8 @@
       <v-app-bar-nav-icon @click.stop="toggleDrawer()" />
       <v-toolbar-title>Plato3D</v-toolbar-title>
       <v-spacer></v-spacer>
+
+      <v-btn icon @click="reset_scene"><v-icon>mdi-cube-scan</v-icon></v-btn>
        
       <p-menu>
         <template v-slot:button>
@@ -102,6 +104,9 @@ export default {
       },
       toggleDrawer: function () {
         this.drawerOpen = !this.drawerOpen
+      },
+      reset_scene: function () {
+        this.$graphics.controls.reset()
       }
     },
     created () {
