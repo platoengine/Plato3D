@@ -31,6 +31,7 @@ class ExodusModel extends ParBase {
     newPrimitive.type = type
     graphics.scene.add(geometry)
     this.primitives.push(newPrimitive)
+    graphics.setBoundingBox(this.primitives)
   }
 
   // loadExodus (graphics, modelData) {

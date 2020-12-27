@@ -33,6 +33,14 @@ export default new Vuex.Store({
     scenarios: [],
     realizations: [],
     optimizations: [],
+    sceneSettings: {
+      size: 10.0,
+      divs: 10,
+      showX: false,
+      showY: false,
+      showZ: true,
+      AtCenter: true
+    },
     active: {
       model: null, // refers to the model to which requests and modifications are applied
       optimization: null // refers to the optimization to which requests and modifications are applied
@@ -94,8 +102,10 @@ export default new Vuex.Store({
     setModelRemoteData ({active}, payload) {
       active.model.remote = payload
     },
-    addObj ({active}, payload) {
+    addObj ({active, sceneSettings}, payload) {
       active.model.addPrimitive(payload)
+      sceneSettings.size = payload.graphics.getGridSize()
+      payload.graphics.setGrid(sceneSettings)
     },
     addEventListener ({events}, {aName, aFunction}) {
       events.addListener(aName, aFunction)
@@ -138,6 +148,13 @@ export default new Vuex.Store({
       } else {
         state.active.model = null
       }
+    },
+    setSceneSettings ({sceneSettings}, {key, val, graphics}) {
+      sceneSettings[key] = val
+      graphics.setGrid(sceneSettings)
+    },
+    initializeScene ({sceneSettings}, graphics) {
+      graphics.setGrid(sceneSettings)
     },
     addScenario ({scenarios, availableScenarioTypes, uniqueID}, {name, description, type}) {
       let newScenario = null

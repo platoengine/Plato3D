@@ -8,6 +8,14 @@ function ThreeContainer () {
   this.controls = {}
   this.raycaster = {}
   this.mouse = {}
+  this.boundingbox = {}
+  this.sceneSettings = {
+    size: 10.0,
+    divs: 10,
+    gridX: false,
+    gridY: false,
+    gridZ: true
+  }
 
   this.isInitialized = false
 
@@ -24,19 +32,43 @@ function ThreeContainer () {
       this.camera.position.z = 5
       this.controls = new OrbitControls(this.camera, this.renderer.domElement)
       this.mouse = new THREE.Vector2()
+      let min = new THREE.Vector3(-5.0,-5.0,-5.0)
+      let max = new THREE.Vector3( 5.0, 5.0, 5.0)
+      this.boundingbox = new THREE.Box3(min, max)
       this.raycaster = new THREE.Raycaster()
 
       this.isInitialized = true
     }
   }
 
-  this.setGrid = function ({size, divs, showX, showY, showZ}) {
+  this.setBoundingBox = function (primitives) {
+    this.boundingbox = new THREE.Box3()
+    primitives.forEach((p) => { this.boundingbox.expandByObject(this.scene.getObjectById(p.primitiveObjectID)) }, this)
+  }
+
+  this.getGridSize = function () {
+    let sizes = [this.boundingbox.max.x - this.boundingbox.min.x,
+                 this.boundingbox.max.y - this.boundingbox.min.y,
+                 this.boundingbox.max.z - this.boundingbox.min.z]
+    if (sizes[0] > sizes[1] && sizes[0] > sizes[2]) { return 2.0*sizes[0] }
+    if (sizes[1] > sizes[2] && sizes[1] > sizes[0]) { return 2.0*sizes[1] }
+    if (sizes[2] > sizes[0] && sizes[2] > sizes[1]) { return 2.0*sizes[2] }
+  }
+
+  this.setGrid = function (sceneSettings) {
+    const {size, divs, showX, showY, showZ, AtCenter} = sceneSettings
     if (this.grid.X != null) {
       this.scene.remove(this.grid.X)
     }
     if (showX) {
       this.grid.X = new THREE.GridHelper(size, divs, 0xff0000, 0x994444)
       this.grid.X.rotation.z = Math.PI * 0.5
+      this.grid.X.position.x = (this.boundingbox.max.x + this.boundingbox.min.x)/2.0
+      this.grid.X.position.y = (this.boundingbox.max.y + this.boundingbox.min.y)/2.0
+      this.grid.X.position.z = (this.boundingbox.max.z + this.boundingbox.min.z)/2.0
+      if (!AtCenter) {
+        this.grid.X.position.x -= size/2.0
+      }
       this.scene.add(this.grid.X)
     }
     if (this.grid.Y != null) {
@@ -44,6 +76,12 @@ function ThreeContainer () {
     }
     if (showY) {
       this.grid.Y = new THREE.GridHelper(size, divs, 0x00ff00, 0x449944)
+      this.grid.Y.position.x = (this.boundingbox.max.x + this.boundingbox.min.x)/2.0
+      this.grid.Y.position.y = (this.boundingbox.max.y + this.boundingbox.min.y)/2.0
+      this.grid.Y.position.z = (this.boundingbox.max.z + this.boundingbox.min.z)/2.0
+      if (!AtCenter) {
+        this.grid.Y.position.y -= size/2.0
+      }
       this.scene.add(this.grid.Y)
     }
     if (this.grid.Z != null) {
@@ -52,6 +90,12 @@ function ThreeContainer () {
     if (showZ) {
       this.grid.Z = new THREE.GridHelper(size, divs, 0x0000ff, 0x444499)
       this.grid.Z.rotation.x = Math.PI * 0.5
+      this.grid.Z.position.x = (this.boundingbox.max.x + this.boundingbox.min.x)/2.0
+      this.grid.Z.position.y = (this.boundingbox.max.y + this.boundingbox.min.y)/2.0
+      this.grid.Z.position.z = (this.boundingbox.max.z + this.boundingbox.min.z)/2.0
+      if (!AtCenter) {
+        this.grid.Z.position.z -= size/2.0
+      }
       this.scene.add(this.grid.Z)
     }
   }

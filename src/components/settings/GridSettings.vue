@@ -9,7 +9,7 @@
             <v-checkbox dense class="ma-0 pa-0" :label="`X: ${displayGridX.toString()}`" v-model="displayGridX"/>
             <v-checkbox dense class="ma-0 pa-0" :label="`Y: ${displayGridY.toString()}`" v-model="displayGridY"/>
             <v-checkbox dense class="ma-0 pa-0" :label="`Z: ${displayGridZ.toString()}`" v-model="displayGridZ"/>
-            <v-btn block @click="apply">Apply</v-btn>
+            <v-checkbox dense class="ma-0 pa-0" :label="`At origin: ${displayGridZ.toString()}`" v-model="gridAtCenter"/>
           </v-col>
         </v-row>
       </v-container>
@@ -20,28 +20,58 @@
 <script>
 export default {
   name: 'grid-settings',
-  data: function () {
-    return {
-      size: 40,
-      divs: 40,
-      displayGridX: false,
-      displayGridY: false,
-      displayGridZ: true
+  computed: {
+    size: {
+      set: function(newVal) {
+        this.$store.commit('setSceneSettings', {key: 'size', val: newVal, graphics: this.$graphics})
+      },
+      get: function() {
+        return this.$store.state.sceneSettings.size
+      }
+    },
+    divs: {
+      set: function(newVal) {
+        this.$store.commit('setSceneSettings', {key: 'divs', val: newVal, graphics: this.$graphics})
+      },
+      get: function() {
+        return this.$store.state.sceneSettings.divs
+      }
+    },
+    displayGridX: {
+      set: function(newVal) {
+        this.$store.commit('setSceneSettings', {key: 'showX', val: newVal, graphics: this.$graphics})
+      },
+      get: function() {
+        return this.$store.state.sceneSettings.showX
+      }
+    },
+    displayGridY: {
+      set: function(newVal) {
+        this.$store.commit('setSceneSettings', {key: 'showY', val: newVal, graphics: this.$graphics})
+      },
+      get: function() {
+        return this.$store.state.sceneSettings.showY
+      }
+    },
+    displayGridZ: {
+      set: function(newVal) {
+        this.$store.commit('setSceneSettings', {key: 'showZ', val: newVal, graphics: this.$graphics})
+      },
+      get: function() {
+        return this.$store.state.sceneSettings.showZ
+      }
+    },
+    gridAtCenter: {
+      set: function(newVal) {
+        this.$store.commit('setSceneSettings', {key: 'AtCenter', val: newVal, graphics: this.$graphics})
+      },
+      get: function() {
+        return this.$store.state.sceneSettings.AtCenter
+      }
     }
   },
   created: function () {
-    this.apply()
-  },
-  methods: {
-    apply: function () {
-      this.$graphics.setGrid({
-        size: this.size,
-        divs: this.divs,
-        showX: this.displayGridX,
-        showY: this.displayGridY,
-        showZ: this.displayGridZ
-      })
-    }
+    this.$store.commit('initializeScene', this.$graphics)
   }
 }
 </script>
