@@ -12,13 +12,6 @@
        
       <p-menu>
         <template v-slot:button>
-          <v-icon>mdi-help-circle-outline</v-icon>
-        </template>
-        <tooltipToggler />       
-      </p-menu>      
-
-      <p-menu>
-        <template v-slot:button>
           <v-icon>mdi-console</v-icon>
         </template>
           <v-card>
@@ -29,21 +22,33 @@
 
       <p-menu>
         <template v-slot:button>
-          <v-icon>mdi-lightbulb-outline</v-icon>
-       </template>
-        <lighting-settings/>
-      </p-menu>
-
-      <p-menu>
-        <template v-slot:button>
-          <v-icon>mdi-border-all</v-icon>
+          <v-icon>mdi-cube-outline</v-icon>
         </template>
-        <grid-settings/>
+        <p-menu>
+          <template v-slot:button>
+            <v-icon>mdi-help-circle-outline</v-icon>
+          </template>
+          <tooltipToggler />       
+        </p-menu>      
+
+        <p-menu>
+          <template v-slot:button>
+            <v-icon>mdi-lightbulb-outline</v-icon>
+         </template>
+          <lighting-settings/>
+        </p-menu>
+
+        <p-menu>
+          <template v-slot:button>
+            <v-icon>mdi-border-all</v-icon>
+          </template>
+          <grid-settings/>
+        </p-menu>
       </p-menu>
 
       <p-menu>
         <template v-slot:button>
-          <v-icon>mdi-cog-outline</v-icon>
+          <v-icon>mdi-login-variant</v-icon>
         </template>
         <login/>
       </p-menu>

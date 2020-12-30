@@ -65,6 +65,7 @@ export default new Vuex.Store({
       }
     },
     active: {
+      project: null, // only defined if project has been saved
       model: null, // refers to the model to which requests and modifications are applied
       optimization: null // refers to the optimization to which requests and modifications are applied
     },
@@ -115,6 +116,27 @@ export default new Vuex.Store({
       }
       session.data.projects = []
       session.data.activeproject = null
+    },
+    storeUserProjects ({session}, retrievedprojects) {
+      for (var i = 0; i < retrievedprojects.length; i++) {
+        Vue.set(session.data.projects, i, retrievedprojects[i])
+      }
+    },
+    addUserProject ({session}, newproject) {
+      session.data.projects.push(newproject)
+    },
+    setActiveProject ({active}, activeproject) {
+      active.project = activeproject
+    },
+    updateUserProject ({session}, updatedproject) {
+      const projects = session.data.projects
+      let projectIndex = projects.findIndex(project => project.projectname === updatedproject.projectname)
+      if (projectIndex !== -1) {
+        Vue.set(projects, projectIndex, updatedproject)
+      }
+    },
+    deleteUserProject ({session}, projectIndex) {
+      session.data.projects.splice(projectIndex, 1)
     },
     setEventSource ({events}, server) {
       events.setSource(server)
@@ -479,6 +501,49 @@ export default new Vuex.Store({
     }
   },
   actions: {
+    async saveProject ({state, commit}, {name}) {
+      if (state.active.project !== null ) {
+        errorHandler.report("Internal error: called 'saveProject' instead of 'updateProject'")
+      }
+      else
+      {
+        const projectdata = {} //todo
+        const response = await apiService.saveProject(projectdata, name)
+        if (response.data.savestatus) {
+          errorHandler.report(`save status: ${response.data.savestatus}`)
+          let projects = state.session.data.projects
+          var lastProjectIndex = projects.length
+          commit('addUserProject', response.data.newproject)
+          commit('setActiveProject', projects[lastProjectIndex])
+        } else if (!response.data.unique) {
+          errorHandler.report(`Internal error: project ${name} already exists`)
+        } else {
+          errorHandler.report("Internal error: unknown server error")
+        }
+      }
+    },
+    async updateProject ({state, commit}) {
+      const projectdata = {} // todo
+      const response = await apiService.updateProject(projectdata, state.active.project.name, state.session.data.username, state.active.project.DateCreated)
+      if (response.success) {
+        errorHandler.report('project saved')
+        commit('updateUserProject', response.newproject)
+      } else {
+        errorHandler.report('error! project NOT saved')
+      }
+    },
+    async deleteProject ({session}, {projectID}) {
+      // delete from server
+      let response = await apiService.deleteProject(projectID)
+  
+      // delete from client
+      if (response.success) {
+        let projectIndex = session.data.projects.findIndex(project => project._id === projectID)
+        if (projectIndex !== -1) {
+          this.$store.commit('deleteUserProject', projectIndex)
+        }
+      }
+    },
     async addRealizationView (state, viewDefinition) {
       const response = await apiService.createRealizationView(viewDefinition)
       if (response === 'FAILURE') {

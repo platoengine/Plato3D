@@ -12,16 +12,27 @@ export class APIService {
       token
     }).then(response => response.data)
   }
-  saveScene (sceneData, projectName) {
+  saveProject (projectData, projectName) {
     const {token, username, server} = this.getSession()
-    errorHandler.report(`saveScene: ${projectName}`)
-    const url = `${server}/api/savescene`
+    errorHandler.report(`saveProject: ${projectName}`)
+    const url = `${server}/api/saveproject`
     return axios.post(url, {
-      sceneData,
+      projectData,
       projectName,
       username,
       token
     })
+  }
+  updateProject (projectData, projectName, username, dateCreated) {
+    const {token, server} = this.getSession()
+    const url = `${server}/api/updateproject`
+    return axios.post(url, {
+      projectData,
+      projectName,
+      username,
+      dateCreated,
+      token
+    }).then(response => response.data)
   }
   registerUser (username, email, password) {
     // const {server} = this.getSession()
@@ -74,17 +85,6 @@ export class APIService {
     errorHandler.report(`loading projects for user: ${username}`)
     return axios.post(url, {
       username,
-      token
-    }).then(response => response.data)
-  }
-  updateProject (sceneData, projectName, username, dateCreated) {
-    const {token, server} = this.getSession()
-    const url = `${server}/api/updateproject`
-    return axios.post(url, {
-      sceneData,
-      projectName,
-      username,
-      dateCreated,
       token
     }).then(response => response.data)
   }

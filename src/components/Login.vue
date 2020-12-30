@@ -1,14 +1,15 @@
 <template>
-    <v-card>
+    <v-card min-width="300px">
       <v-form @submit.prevent>
         <v-container>
+          <v-card outlined class="mb-2 pa-1">
           <v-row v-if="!loggedIn">
             <v-col>
               <v-text-field dense v-model="server" label="Server"/>
               <v-text-field dense v-model="username" label="Username"/>
               <span v-if="loginerrors != null" style="color:red"> {{ loginError }} </span>
               <v-text-field dense v-model="password" label="Password" type="password"/>
-              <v-btn block @click="loginUser">login</v-btn>
+              <v-btn small block @click="loginUser">login</v-btn>
               <register/>
             </v-col>
           </v-row>
@@ -16,8 +17,12 @@
             <v-col>
               <v-text-field dense v-model="server" label="Server" :disabled="true"/>
               <v-text-field dense v-model="username" label="Username" :disabled="true"/>
-              <v-btn block @click="logoutUser">log out</v-btn>
+              <v-btn small block @click="logoutUser">log out</v-btn>
             </v-col>
+          </v-row>
+          </v-card>
+          <v-row v-if="loggedIn">
+            <projects/>
           </v-row>
         </v-container>
       </v-form>
@@ -28,18 +33,19 @@
 import ErrorHandler from '../store/modules/error-handler-module'
 import {APIService} from '../store/modules/rest-api-module'
 import Register from './Register'
+import Projects from './Projects'
 
 const apiService = new APIService()
 const errorHandler = new ErrorHandler()
 
 export default {
   name: 'login',
-  props: ['scene'],
   data: function () {
     return {server: 'http://127.0.0.1:3000', username: '', password: '', loginerrors: ''}
   },
   components: {
-    Register
+    Register,
+    Projects
   },
   computed: {
     loginError: function () {
