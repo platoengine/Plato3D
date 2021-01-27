@@ -13,7 +13,7 @@ class AnalyzeScenarioBase extends ParBase {
     super()
     this.tw = new TeuchosWriter()
     this.tp = new TeuchosParser()
-    this._type = ''
+    this.type = ''
     this.hostPhysics = ''
     this.hostCode = 'Analyze'
     this.geometry = {
@@ -23,12 +23,6 @@ class AnalyzeScenarioBase extends ParBase {
     this.selectables = {}
     this.modelviews = {}
     this.outputData = {}
-  }
-  get type () {
-    return this._type
-  }
-  set type (newValue) {
-    this._type = newValue
   }
   getViewData (viewname) {
     let data = this.modelviews[viewname]['data']

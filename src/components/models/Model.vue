@@ -12,7 +12,7 @@ export default {
   props: ['model'],
   computed: {
     type: function () {
-      return this.model._type
+      return this.model.type
     }
   },
   components: {

@@ -1,5 +1,5 @@
 <template>
-    <v-card min-width="300px">
+    <v-card min-width="300px" max-width="325px">
       <v-form @submit.prevent>
         <v-container>
           <v-card outlined class="mb-2 pa-1">
@@ -33,7 +33,7 @@
 import ErrorHandler from '../store/modules/error-handler-module'
 import {APIService} from '../store/modules/rest-api-module'
 import Register from './Register'
-import Projects from './Projects'
+import Projects from './projects/Projects'
 
 const apiService = new APIService()
 const errorHandler = new ErrorHandler()

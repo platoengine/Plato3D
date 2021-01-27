@@ -14,7 +14,7 @@ import Optimization from './modules/optimization-module'
 
 import UniqueID from './modules/unique-id'
 
-
+import {OBJLoader} from 'three-obj-mtl-loader'
 
 
 const apiService = new APIService()
@@ -62,6 +62,13 @@ export default new Vuex.Store({
           Z: 35,
           angle: 7.5
         }
+      }
+    },
+    packProjectData: function (thumbnail) {
+      return {
+        thumbnail: thumbnail,
+        models: this.models,
+        scenarios: this.scenarios
       }
     },
     active: {
@@ -125,6 +132,20 @@ export default new Vuex.Store({
     addUserProject ({session}, newproject) {
       session.data.projects.push(newproject)
     },
+    closeUserProject (state, {graphics}) {
+      state.models.forEach(model => {model.destructor(graphics)})
+      state.models = []
+
+      state.scenarios = []
+
+      state.realizations.forEach(realization => {realization.destructor(graphics)})
+      state.realizations = []
+
+      state.optimizations.forEach(optimization => {optimization.destructor(graphics)})
+      state.optimizations = []
+
+      state.active.project = null
+    },
     setActiveProject ({active}, activeproject) {
       active.project = activeproject
     },
@@ -137,6 +158,9 @@ export default new Vuex.Store({
     },
     deleteUserProject ({session}, projectIndex) {
       session.data.projects.splice(projectIndex, 1)
+    },
+    setProjectThumbnail ({active}, image) {
+      active.project.thumbnail = image
     },
     setEventSource ({events}, server) {
       events.setSource(server)
@@ -171,7 +195,7 @@ export default new Vuex.Store({
     deleteModel ({models}, {name, graphics}) {
       let modelIndex = models.findIndex(model => model.name === name)
       if (modelIndex !== -1) {
-        models[modelIndex].clearModel(graphics)
+        models[modelIndex].destructor(graphics)
         models.splice(modelIndex, 1)
       }
     },
@@ -498,16 +522,73 @@ export default new Vuex.Store({
       if (optimizationIndex !== -1) {
           optimizations[optimizationIndex].resetRun(graphics)
       }
+    },
+    setModelData(state, modelData) {
+      let newModel = null
+      if (modelData.type === 'ExodusModel') {
+        newModel = new ExodusModel()
+        newModel.importData(modelData)
+      }
+      state.models.push(newModel)
+    },
+    setScenarioData(state, scenarioData) {
+      console.log(scenarioData)
     }
   },
   actions: {
-    async saveProject ({state, commit}, {name}) {
+    async loadProject ({dispatch, commit}, payload) {
+      commit('setActiveProject', payload.project)
+      dispatch('unpackProjectData', payload)
+    },
+    async unpackProjectData ({dispatch}, payload) {
+      let graphics = payload.graphics
+      // load models
+      let models = payload.project.projectdata.models
+      models.forEach(model => { dispatch('loadExodusModel', {model, graphics}) })
+
+      // load scenarios
+      let scenarios = payload.project.projectdata.scenarios
+      scenarios.forEach(scenario => { dispatch('loadScenario', {scenario}) })
+    },
+    async loadScenario ({commit}, {scenario}) {
+      commit('setScenarioData', scenario)
+    },
+    async loadExodusModel ({commit}, {model, graphics}) {
+      commit('setModelData', model)
+      commit('setActiveModel', model.name)
+      commit('addEventListener', {
+        aName: 'modelGeometryData', 
+        aFunction: function (event) {
+          const {data} = event
+          const dataObject = JSON.parse(data)
+          const {modelName, name: geometryName, type: geometryType, data: geometryData} = dataObject
+          const loader = new OBJLoader()
+          const url = URL.createObjectURL(new Blob([geometryData, 'application/object']))
+          loader.load(url, (geometry) => {
+            this.showLoader = false;
+            commit('addObj', {
+              modelName: modelName,
+              name: geometryName,
+              type: geometryType,
+              geometry: geometry,
+              graphics: graphics
+            });
+          })
+        }
+      })
+      const response = await apiService.loadExodusModel(model)
+      if (response === 'FAILURE') {
+        errorHandler.report('server request failed: loadExodusModel')
+      }
+    },
+    async saveProject ({state, commit}, {name, graphics}) {
       if (state.active.project !== null ) {
         errorHandler.report("Internal error: called 'saveProject' instead of 'updateProject'")
       }
       else
       {
-        const projectdata = {} //todo
+        const thumbnail = graphics.renderer.domElement.toDataURL( 'image/png' );
+        const projectdata = state.packProjectData(thumbnail)
         const response = await apiService.saveProject(projectdata, name)
         if (response.data.savestatus) {
           errorHandler.report(`save status: ${response.data.savestatus}`)
@@ -515,6 +596,7 @@ export default new Vuex.Store({
           var lastProjectIndex = projects.length
           commit('addUserProject', response.data.newproject)
           commit('setActiveProject', projects[lastProjectIndex])
+          commit('setProjectThumbnail', thumbnail)
         } else if (!response.data.unique) {
           errorHandler.report(`Internal error: project ${name} already exists`)
         } else {
@@ -522,8 +604,8 @@ export default new Vuex.Store({
         }
       }
     },
-    async updateProject ({state, commit}) {
-      const projectdata = {} // todo
+    async updateProject ({state, commit}, {thumbnail}) {
+      const projectdata = {thumbnail: thumbnail} // todo
       const response = await apiService.updateProject(projectdata, state.active.project.name, state.session.data.username, state.active.project.DateCreated)
       if (response.success) {
         errorHandler.report('project saved')
@@ -531,6 +613,11 @@ export default new Vuex.Store({
       } else {
         errorHandler.report('error! project NOT saved')
       }
+    },
+    async updateAndCloseProject ({dispatch, commit}, {graphics}) {
+      const screenshot = graphics.renderer.domElement.toDataURL( 'image/png' );
+      await dispatch('updateProject', {thumbnail: screenshot})
+      commit('closeUserProject', {graphics: graphics})
     },
     async deleteProject ({session}, {projectID}) {
       // delete from server

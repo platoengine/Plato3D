@@ -8,10 +8,10 @@
     <div v-if ="!showLoader">
       <load-model v-if="!loaded" v-on:load-model='loadModel($event)'/>
     </div>  
-    <v-container class="py-0" v-else>   
+    <v-container class="py-0">   
       <v-row>
         <v-col class="pa-0 ma-0">
-          <template v-for="(item,index) in model.primitives">
+          <template v-for="(item,index) in primitives">
             <v-hover v-slot:default="{ hover }" :key="index">
               <v-card @click="select(item)" :elevation="hover ? 12 : 2" :class="{ 'on-hover': hover }">
                 <v-card-actions>
@@ -61,6 +61,9 @@ export default {
     return { showLoader: false}
   },
   computed: {
+    primitives: function () {
+      return this.model.primitives
+    },
     selectedPrimitive: function () {
       return this.$store.state.ui.showItemDetailPrimitive
     },
@@ -93,7 +96,7 @@ export default {
         const dataObject = JSON.parse(data)
         const {modelName, name: geometryName, type: geometryType, data: geometryData} = dataObject
         const loader = new OBJLoader()
-        const url = URL.createObjectURL(new Blob([geometryData, 'application/object']))
+        const url = URL.createObjectURL(new Blob([geometryData]))
         loader.load(url, (geometry) => {
           this.showLoader = false;
           appThis.$store.commit('addObj', {

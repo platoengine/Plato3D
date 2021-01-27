@@ -14,7 +14,7 @@ function ThreeContainer () {
 
   this.initialize = function () {
     if (!this.isInitialized) {
-      this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
+      this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true })
       this.renderer.setSize(window.innerWidth, window.innerHeight - 6)
       this.renderer.shadowMap.enabled = true
       this.renderer.shadowMap.type = THREE.PCFSoftShadowMap
@@ -44,9 +44,9 @@ function ThreeContainer () {
     let sizes = [this.boundingbox.max.x - this.boundingbox.min.x,
                  this.boundingbox.max.y - this.boundingbox.min.y,
                  this.boundingbox.max.z - this.boundingbox.min.z]
-    if (sizes[0] > sizes[1] && sizes[0] > sizes[2]) { return 2.0*sizes[0] }
-    if (sizes[1] > sizes[2] && sizes[1] > sizes[0]) { return 2.0*sizes[1] }
-    if (sizes[2] > sizes[0] && sizes[2] > sizes[1]) { return 2.0*sizes[2] }
+    if (sizes[0] >= sizes[1] && sizes[0] >= sizes[2]) { return 2.0*sizes[0] }
+    if (sizes[1] >= sizes[2] && sizes[1] >= sizes[0]) { return 2.0*sizes[1] }
+    if (sizes[2] >= sizes[0] && sizes[2] >= sizes[1]) { return 2.0*sizes[2] }
   }
 
   this.setGrid = function (sceneSettings) {

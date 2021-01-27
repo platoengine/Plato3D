@@ -53,6 +53,11 @@ class Optimization extends ParBase {
     this.run = {computeStatus: 'Idle', runDir: 'not set', iterations: [], activeIteration: 0}
     this.display = {opacity: 1.0, wireframe: false, visible: true}
   }
+  destructor (graphics) {
+    this.run.iterations.forEach(iteration => {
+      graphics.scene.remove(graphics.scene.getObjectById(iteration.geometryID))
+    })
+  }
   setDisplayAttributes(graphics, attribute, value) {
     this.display[attribute] = value
     if (this.run.iterations.length > 0) {

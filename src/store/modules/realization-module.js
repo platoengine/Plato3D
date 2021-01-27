@@ -39,6 +39,12 @@ class Realization extends ParBase {
       this.simulation.views.splice(viewIndex, 1)
     }
   }
+  destructor(graphics) {
+    this.simulation.views.forEach(view => {
+      graphics.scene.remove(graphics.scene.getObjectById(view.geometryID))
+    })
+    this.simulation.views = []
+  }
 }
 
 export default Realization

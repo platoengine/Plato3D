@@ -9,11 +9,16 @@ class ExodusModel extends ParBase {
 
     this.primitives = []
 
-    this._type = 'ExodusModel'
+    this.type = 'ExodusModel'
   }
 
   range () {
     return []
+  }
+
+  importData (modelData) {
+    super.importData(modelData)
+    this.displayAttributes = modelData.displayAttributes
   }
 
   addPrimitive (payload) {
@@ -36,7 +41,7 @@ class ExodusModel extends ParBase {
 
   // loadExodus (graphics, modelData) {
   // }
-  clearModel (graphics) {
+  destructor (graphics) {
     this.primitives.forEach(function (primitive) {
       graphics.scene.remove(graphics.scene.getObjectById(primitive.primitiveObjectID))
     })

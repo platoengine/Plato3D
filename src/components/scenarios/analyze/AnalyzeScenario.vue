@@ -65,7 +65,7 @@ export default {
   created: function() {
     this.attributesState.description = this.scenario.description
     if(this.$store.state.models.length == 1){
-      this.selectedModelName = this.$store.state.models[0]._name
+      this.selectedModelName = this.$store.state.models[0].name
     }
   },
   watch: {

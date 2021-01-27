@@ -6,7 +6,7 @@
         v-for="(item,index) in models"
         :key="index"
       >
-        <v-expansion-panel-header>{{item.name}}</v-expansion-panel-header>
+        <v-expansion-panel-header>{{name(item)}}</v-expansion-panel-header>
         <v-expansion-panel-content id="expansion-panel">
           <model :model="item" :displayID="index"/>
         </v-expansion-panel-content>
@@ -34,6 +34,11 @@ export default {
   computed: {
     models: function () {
       return this.$store.state.models
+    }
+  },
+  methods: {
+    name: function (arg) {
+      return arg.name
     }
   }
 }

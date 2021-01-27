@@ -114,6 +114,19 @@ export class APIService {
       })
     .then(response => response.data)
   }
+  loadExodusModel (model) {
+    const {token, username, server} = this.getSession()
+
+    const url = `${server}/jobs/load-exodus-model`
+    errorHandler.report('loading exodus model')
+    return axios.post(url, {
+      token,
+      username,
+      exoFileName: model.remote.remoteName,
+      exoFilePath: model.remote.remotePath,
+      modelName: model.name
+    }).then(response => response.data)
+  }
   createSimulation (state, commit, realization) {
     const {token, username, server} = this.getSession()
 
