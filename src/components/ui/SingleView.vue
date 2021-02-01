@@ -27,7 +27,6 @@ export default {
   },
   data: function () {
     return {
-      openThings: false,
       savePending: false,
       dataState: {},
       indicator : {color : 'red'}
@@ -39,6 +38,7 @@ export default {
     } else {
       dynamicCopy(this.scenario.modelviews[this.name]['data'], this.dataState)
     }
+    this.save()
   },
   watch: {
     dataState : {
@@ -56,9 +56,6 @@ export default {
     getData: function () {
       return this.dataState
     },
-    toggleThings: function () {
-      this.openThings = !this.openThings
-    },
     setPending: function () {
       this.savePending = true
     },
@@ -71,7 +68,6 @@ export default {
           data: staticState
         })
       this.savePending = false
-      this.openThings = false
     }   
   }
 }
