@@ -26,6 +26,7 @@ class AnalyzeStaticThermal extends AnalyzeScenarioBase {
       },
       'Material Models': {
         'data': [],
+        'required': true,
         'view': {
           'type': 'list-view',
           '<Template>': {
@@ -59,14 +60,24 @@ class AnalyzeStaticThermal extends AnalyzeScenarioBase {
       },
       'Criteria': {
         'data': [],
+        'required': false,
         'view': {
           'type': 'list-view',
           '<Template>': {
             'Type': { type: 'string', value: 'Scalar Function', options: ['Scalar Function'] },
-            'Scalar Function Type': {
+            'Linear': { type: 'bool', value: 'false', options: ['true', 'false'] },
+            'Linear Scalar Function Type': {
               type: 'string',
               value: 'Volume',
-              options: ['Volume', 'Internal Thermal Energy', 'Flux P-Norm']
+              options: ['Volume'],
+              conditionalView: ['Linear', 'true'],
+              alias: 'Scalar Function Type'
+            },
+            'Scalar Function Type': {
+              type: 'string',
+              value: 'Internal Thermal Energy',
+              options: ['Internal Thermal Energy', 'Flux P-Norm'],
+              conditionalView: ['Linear', 'false']
             },
             'Exponent': { type: 'double', value: '6.0', conditionalView: ['Scalar Function Type', 'Flux P-Norm'] },
             'Penalty Function': {
