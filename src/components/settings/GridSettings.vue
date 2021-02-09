@@ -4,8 +4,8 @@
       <v-container>
         <v-row>
           <v-col cols="12">
-            <v-text-field dense class="ma-0 pa-0" v-model="size" label="Size"/>
-            <v-text-field dense class="ma-0 pa-0" v-model="divs" label="Divs"/>
+            <v-text-field autocomplete="off" dense class="ma-0 pa-0" v-model="size" label="Size"/>
+            <v-text-field autocomplete="off" dense class="ma-0 pa-0" v-model="divs" label="Divs"/>
             <v-checkbox dense class="ma-0 pa-0" :label="`X: ${displayGridX.toString()}`" v-model="displayGridX"/>
             <v-checkbox dense class="ma-0 pa-0" :label="`Y: ${displayGridY.toString()}`" v-model="displayGridY"/>
             <v-checkbox dense class="ma-0 pa-0" :label="`Z: ${displayGridZ.toString()}`" v-model="displayGridZ"/>

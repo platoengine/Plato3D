@@ -8,16 +8,16 @@
             <v-checkbox dense class="ma-0 pa-0" :label="`Ambient: ${ambient_display.toString()}`" v-model="ambient_display"/>
             <v-card outlined class="mb-2">
               <v-checkbox dense class="ma-0 pa-0" :label="`Directional: ${directional_display.toString()}`" v-model="directional_display"/>
-              <v-text-field dense class="ma-0 pa-0" v-model="directional_X" label="X"/>
-              <v-text-field dense class="ma-0 pa-0" v-model="directional_Y" label="Y"/>
-              <v-text-field dense class="ma-0 pa-0" v-model="directional_Z" label="Z"/>
+              <v-text-field autocomplete="off" dense class="ma-0 pa-0" v-model="directional_X" label="X"/>
+              <v-text-field autocomplete="off" dense class="ma-0 pa-0" v-model="directional_Y" label="Y"/>
+              <v-text-field autocomplete="off" dense class="ma-0 pa-0" v-model="directional_Z" label="Z"/>
             </v-card>
             <v-card outlined class="mb-2">
               <v-checkbox dense class="ma-0 pa-0" :label="`Spotlight: ${spot_display.toString()}`" v-model="spot_display"/>
-              <v-text-field dense class="ma-0 pa-0" v-model="spot_X" label="X"/>
-              <v-text-field dense class="ma-0 pa-0" v-model="spot_Y" label="Y"/>
-              <v-text-field dense class="ma-0 pa-0" v-model="spot_Z" label="Z"/>
-              <v-text-field dense class="ma-0 pa-0" v-model="spot_angle" label="Angle"/>
+              <v-text-field autocomplete="off" dense class="ma-0 pa-0" v-model="spot_X" label="X"/>
+              <v-text-field autocomplete="off" dense class="ma-0 pa-0" v-model="spot_Y" label="Y"/>
+              <v-text-field autocomplete="off" dense class="ma-0 pa-0" v-model="spot_Z" label="Z"/>
+              <v-text-field autocomplete="off" dense class="ma-0 pa-0" v-model="spot_angle" label="Angle"/>
             </v-card>
           </v-col>
         </v-row>

@@ -37,6 +37,7 @@ class ExodusModel extends ParBase {
     graphics.scene.add(geometry)
     this.primitives.push(newPrimitive)
     graphics.setBoundingBox(this.primitives)
+    graphics.zoomToScene()
   }
 
   // loadExodus (graphics, modelData) {

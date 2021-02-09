@@ -8,7 +8,7 @@
       <v-card-text>
         <v-select label="Scenario" dense class="ml-2 ma-0 pa-0" v-on:change="setPending()" v-model="selectedScenario" :items="getScenarios()"/>
         <v-select label="Criterion" :disabled="selectedScenario===''" dense class="ml-2 ma-0 pa-0" v-on:change="setPending()" v-model="selectedCriterion" :items="getCriteria()"/>
-        <v-text-field label="Weight" dense class="ml-2 ma-0 pa-0 body-2" v-on:input="setPending()" v-model="weightValue"/>
+        <v-text-field autocomplete="off" label="Weight" dense class="ml-2 ma-0 pa-0 body-2" v-on:input="setPending()" v-model="weightValue"/>
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>

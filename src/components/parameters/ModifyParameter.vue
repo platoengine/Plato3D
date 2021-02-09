@@ -1,7 +1,7 @@
 <template>
   <v-card>
     <v-card-text>
-      <v-text-field dense class="ma-0 pa-0" v-model="value" label="Value"/>
+      <v-text-field autocomplete="off" dense class="ma-0 pa-0" v-model="value" label="Value"/>
       <v-textarea outlined dense :no-resize=true rows=3 class="ma-0 pa-0" v-model="description" label="Description"/>
     </v-card-text>
     <v-card-actions>

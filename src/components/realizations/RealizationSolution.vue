@@ -1,7 +1,7 @@
 <template>
   <v-card class="ma-0 pa-0" color=green>
     <v-card class="pt-4 ml-2">
-      <v-text-field dense class="ml-2 ma-0 pa-0 caption" v-model="solutionStatus" label="Status" disabled/>
+      <v-text-field autocomplete="off" dense class="ml-2 ma-0 pa-0 caption" v-model="solutionStatus" label="Status" disabled/>
       <v-btn text block small @click="compute()" :disabled="pending==false">Compute</v-btn>
     </v-card>
     <v-dialog v-model="showErrors" persistent max-width="600px">

@@ -7,8 +7,8 @@
       <v-card-text>
         <v-container>
             <v-col>
-              <v-text-field dense class="ma-0 pa-0" :rules="rules" v-model="name" label="Name"/>
-              <v-text-field dense class="ma-0 pa-0" v-model="value" label="Value"/>
+              <v-text-field autocomplete="off" dense class="ma-0 pa-0" :rules="rules" v-model="name" label="Name"/>
+              <v-text-field autocomplete="off" dense class="ma-0 pa-0" v-model="value" label="Value"/>
               <v-textarea outlined dense class="ma-0 pa-0" v-model="description" label="Description"/>
             </v-col>
         </v-container>

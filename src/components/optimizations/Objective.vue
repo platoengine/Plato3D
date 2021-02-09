@@ -2,7 +2,7 @@
   <v-card color=green>
     <v-card outlined class="ml-2">
       <v-card-text>
-        <v-text-field dense class="ma-0 pa-0" v-model="weight" label="Weight"/>
+        <v-text-field autocomplete="off" dense class="ma-0 pa-0" v-model="weight" label="Weight"/>
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>

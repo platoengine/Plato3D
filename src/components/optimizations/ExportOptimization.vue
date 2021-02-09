@@ -16,7 +16,7 @@
           <span class="headline">Export</span>
         </v-card-title>
         <v-card-text>
-          <v-text-field dense class="ma-0 pa-0" v-model="values.Basename" label="Basename"/>
+          <v-text-field autocomplete="off" dense class="ma-0 pa-0" v-model="values.Basename" label="Basename"/>
           <v-checkbox dense class="ma-0 pa-0" v-model="values.includeMeshFile" label="Include mesh file"/>
         </v-card-text>
       </v-card>

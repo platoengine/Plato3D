@@ -639,7 +639,18 @@ export default new Vuex.Store({
     },
     async uploadExodusModel ({state}, formData) {
       state.active.model.file = formData.get('file')
-      state.active.model.fileName = formData.get('file').name
+
+      // If a {csm,CSM} file is sent to uploadExodusModel(), the file is converted
+      // to an exodus file on the server.  In input files (i.e., scenario definitions),
+      // the model must be referred to as basename.exo, so change the fileName to reflect that.
+      let fileName = formData.get('file').name
+      let tokens = fileName.split('.')
+      let last = tokens.pop()
+      if (last === 'csm' || last === 'CSM') {
+        fileName = tokens.join('.') + '.exo'
+      }
+      state.active.model.fileName = fileName
+
       const response = await apiService.uploadExodusModel(formData)
       if (response === 'FAILURE') {
         errorHandler.report('server request failed: upload exodus model')

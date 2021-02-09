@@ -1,7 +1,7 @@
 <template>
   <v-card class="ma-0 pa-0" color=green>
     <v-card class="pt-4 ml-2">
-      <v-text-field dense class="ml-2 ma-0 pa-0 caption" @change="pending=true" v-model="numProcs" label="# Processors"/>
+      <v-text-field autocomplete="off" dense class="ml-2 ma-0 pa-0 caption" @change="pending=true" v-model="numProcs" label="# Processors"/>
       <v-btn text block small @click="save()" :disabled="pending==false">Update</v-btn>
     </v-card>
   </v-card>

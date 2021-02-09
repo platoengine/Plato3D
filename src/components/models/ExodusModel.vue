@@ -114,8 +114,10 @@ export default {
   methods: {
     loadModel: function (eventData) {
       // change the model name to the filename of the loaded model
+      //
       this.showLoader = true;
       let modelName = eventData.get('name')
+
       this.$store.commit('setModelAttributes', {
         currentName: this.model.name,
         modelAttributes: {
@@ -123,7 +125,12 @@ export default {
           description: null
         }})
       
+      // set the newly loaded model as the active model.
+      //
       this.$store.commit('setActiveModel', this.model.name)
+
+      // upload the model to the back-end which triggers SSEs that load the model into the scene.
+      //
       this.$store.dispatch('uploadExodusModel', eventData)
 
     },

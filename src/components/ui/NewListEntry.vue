@@ -84,7 +84,6 @@ export default {
         })
       this.savePending = false
       this.close()
-      this.$emit('contentEnteredByUser')
     }
   }
 }

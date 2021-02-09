@@ -7,7 +7,7 @@
       <single-view :scenario="this.scenario" :modelviews="this.modelviews" :name="this.name"/>
     </v-card>
     <v-card v-else-if="this.viewType === 'list-view'">
-      <list-view :scenario="this.scenario" :modelviews="this.modelviews" :name="this.name"/>
+      <list-view @open-panel="openPanel()" :scenario="this.scenario" :modelviews="this.modelviews" :name="this.name"/>
     </v-card>
   </div>
 </template>
@@ -40,6 +40,11 @@ export default {
         return tParent.isActive(this.modelviews);
       }
       return true
+    }
+  },
+  methods: {
+    openPanel: function () {
+      this.$emit('open-panel')
     }
   }
 }

@@ -1,5 +1,5 @@
 <template>
-      <v-text-field :label=getName dense class="ml-2 ma-0 pa-0 body-2" v-model="getValue"/>
+      <v-text-field autocomplete="off" :label=getName dense class="ml-2 ma-0 pa-0 body-2" v-model="getValue"/>
 </template>
 
 <script>

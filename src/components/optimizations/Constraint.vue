@@ -3,7 +3,7 @@
     <v-card outlined class="ml-2">
       <v-card-text>
         <v-card outlined class="pl-2 pr-2">
-        <v-text-field dense class="ma-0 pa-0" v-model="target" label="Target Value"/>
+        <v-text-field autocomplete="off" dense class="ma-0 pa-0" v-model="target" label="Target Value"/>
         <v-checkbox dense class="ma-0 pa-0" v-model="perVolume" label="Per Volume"/>
         </v-card>
       </v-card-text>

@@ -5,18 +5,18 @@
           <v-card outlined class="mb-2 pa-1">
           <v-row v-if="!loggedIn">
             <v-col>
-              <v-text-field dense v-model="server" label="Server"/>
-              <v-text-field dense v-model="username" label="Username"/>
+              <v-text-field autocomplete="off" dense v-model="server" label="Server"/>
+              <v-text-field autocomplete="off" dense v-model="username" label="Username"/>
               <span v-if="loginerrors != null" style="color:red"> {{ loginError }} </span>
-              <v-text-field dense v-model="password" label="Password" type="password"/>
+              <v-text-field autocomplete="off" dense v-model="password" label="Password" type="password"/>
               <v-btn small block @click="loginUser">login</v-btn>
               <register/>
             </v-col>
           </v-row>
           <v-row v-else>
             <v-col>
-              <v-text-field dense v-model="server" label="Server" :disabled="true"/>
-              <v-text-field dense v-model="username" label="Username" :disabled="true"/>
+              <v-text-field autocomplete="off" dense v-model="server" label="Server" :disabled="true"/>
+              <v-text-field autocomplete="off" dense v-model="username" label="Username" :disabled="true"/>
               <v-btn small block @click="logoutUser">log out</v-btn>
             </v-col>
           </v-row>

@@ -1,6 +1,6 @@
 <template>
   <v-checkbox v-if="isCheckbox()" dense class="ml-2 ma-0 pa-0 body-2" v-model="checkboxValue" :label="checkboxName" v-on:change="setPending()"/>
-  <v-text-field v-else dense class="ml-2 ma-0 pa-0 body-2" v-model="parameterValue" :label="name" v-on:input="setPending()"/>
+  <v-text-field autocomplete="off" v-else dense class="ml-2 ma-0 pa-0 body-2" v-model="parameterValue" :label="name" v-on:input="setPending()"/>
 </template>
 
 <script>

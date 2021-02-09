@@ -3,18 +3,18 @@
     <v-expansion-panel-header>
       <span :style="this.getListColor">{{this.name}} </span>
       <span class="d-flex justify-end" tile >
-        <v-tooltip top>
+        <v-tooltip right open-delay=500 close-delay=100>
           <template v-slot:activator="{ on, attrs }">
-            <v-btn  text depressed small tile id="no-background-hover" class= "add" style="{padding:1px; font-size:17px;}" v-bind="attrs" v-on="on" @click="createNewListEntry()" @click.native.stop>&#x2B;</v-btn>
+            <v-btn text depressed small min-width=25px id="no-background-hover" v-bind="attrs" v-on="on" @click="createNewListEntry()" @click.native.stop><v-icon small>mdi-plus</v-icon></v-btn>
           </template>
           <span>Add</span>
         </v-tooltip>
-        <NewListEntry :dialog = "this.newListEntryDialogVisibility"  @contentEnteredByUser="contentSpecified()" @closeNewListEntryDialog = "closeNewListEntryDialog()" :modelviews = "this.modelviews" :name = "this.name" :scenario="this.scenario"/>
+        <NewListEntry :dialog = "this.newListEntryDialogVisibility" @closeNewListEntryDialog = "closeNewListEntryDialog()" :modelviews = "this.modelviews" :name = "this.name" :scenario="this.scenario"/>
       </span>   
     </v-expansion-panel-header>
     <v-expansion-panel-content>
-      <v-expansion-panel v-if="this.noneSelected">
-        <v-card-subtitle class="ml-2 font-italic">
+      <v-expansion-panel v-if="myList.length === 0">
+        <v-card-subtitle class="ma-2 pa-0 font-italic">
           None
         </v-card-subtitle>
       </v-expansion-panel>
@@ -22,7 +22,7 @@
         <v-card class="ml-2">
           <new-list-entry :scenario="this.scenario" :modelviews="this.modelviews" :name="this.name"/>
           <v-expansion-panels  accordion>
-            <v-expansion-panel v-for="(item,index) in this.scenario.modelviews[this.name]['data']" :key="index">
+            <v-expansion-panel v-for="(item,index) in myList" :key="index">
               <list-entry :scenario="scenario" :data="item" :name="name" @change-color ="changeIndicatorColor(index, $event)"/>
             </v-expansion-panel>
           </v-expansion-panels>
@@ -63,20 +63,21 @@ export default {
       let val = vals.reduce( (acc, cur) => { return acc && cur }, true ) 
       let retVal = val === true ? {color: 'green'} : {color: 'red'} 
       return retVal
+    },
+    myList: function () {
+      return this.scenario.modelviews[this.name]['data'];
     }
   },
   methods: {
     changeIndicatorColor: function(entry, color) {
       Vue.set(this.indicator, entry, color)
     },
-    contentSpecified() {
-      this.noneSelected = false
-    },
     closeNewListEntryDialog:function() {
       this.newListEntryDialogVisibility = false
     },
     createNewListEntry: function() {
       this.newListEntryDialogVisibility = true
+      this.$emit('open-panel')
     },
     getIndicatorColor: function(entry) {
       if (Object.prototype.hasOwnProperty.call(this.indicator, entry)) {
@@ -96,8 +97,5 @@ export default {
 #no-background-hover::before {
   background-color: transparent !important; 
 
-}
-.add:hover {
-  color:green;
 }
 </style>

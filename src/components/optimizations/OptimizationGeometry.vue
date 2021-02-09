@@ -2,8 +2,8 @@
   <v-card class="ma-0 pa-0" color=green>
     <v-card class="pt-4 ml-2">
       <v-card outlined class="pl-2 pr-2">
-        <v-text-field label="Filter Radius" dense class="ml-2 ma-0 pa-0 body-2" v-model="filterRadius"/>
-        <v-text-field label="Initial Value" dense class="ml-2 ma-0 pa-0 body-2" v-model="initialValue"/>
+        <v-text-field autocomplete="off" label="Filter Radius" dense class="ml-2 ma-0 pa-0 body-2" v-model="filterRadius"/>
+        <v-text-field autocomplete="off" label="Initial Value" dense class="ml-2 ma-0 pa-0 body-2" v-model="initialValue"/>
 <!--
         <v-checkbox label="Apply Filter" dense class="ml-2 ma-0 pa-0 body-2" v-model="applyFilter"/>
 -->

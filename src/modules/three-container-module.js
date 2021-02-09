@@ -135,6 +135,30 @@ function ThreeContainer () {
       this.scene.add(this.lighting.spot)
     }
   }
+  this.zoomToScene = function () {
+
+    let camera = this.camera
+    let controls = this.controls
+    let boundingBox = this.boundingbox
+
+    let center = new THREE.Vector3()
+    boundingBox.getCenter(center)
+
+    let size = new THREE.Vector3()
+    boundingBox.getSize(size)
+
+    let cameraZ = 2.0*Math.max( size.x, size.y )
+
+    camera.position.x = center.x
+    camera.position.y = center.y
+    camera.position.z = cameraZ
+
+    camera.updateProjectionMatrix()
+
+    controls.target = center
+
+    controls.saveState()
+  }
 }
 
 export default ThreeContainer

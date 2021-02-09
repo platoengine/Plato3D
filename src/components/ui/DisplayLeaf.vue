@@ -10,7 +10,8 @@
             @set-value="setData(entry,$event)" :key="index" :data="data[entry]" :name="entry"/>
         </div>
         <div v-else>
-          <v-text-field v-bind="attrs" v-on="on" :label=name :disabled="fixed" dense class="ml-2 ma-0 pa-0 body-2" v-on:input="setPending()" v-model="parameterValue">
+          <!-- 'autocomplete="new-password"' below is a hack to get chrome to not autocomplete. 'autocomplete="off"' doesn't work. -->
+          <v-text-field autocomplete="new-password" v-bind="attrs" v-on="on" :label=name :disabled="fixed" dense class="ml-2 ma-0 pa-0 body-2" v-on:input="setPending()" v-model="parameterValue">
           </v-text-field>
         </div>
       </div>

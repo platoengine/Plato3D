@@ -4,7 +4,7 @@
     <v-card :class="'d-flex justify-space-between'">
       <v-btn x-small @click = "toFirst()"> <v-icon small>mdi-arrow-collapse-left</v-icon> </v-btn>
       <v-btn x-small @click = "prev()"> <v-icon small>mdi-arrow-left</v-icon> </v-btn>
-      <v-text-field :disabled=true class="centered-input ma-0 pa-0 caption" small v-model="iteration"/>
+      <v-text-field autocomplete="off" :disabled=true class="centered-input ma-0 pa-0 caption" small v-model="iteration"/>
       <v-btn x-small @click = "next()"> <v-icon small>mdi-arrow-right</v-icon> </v-btn>
       <v-btn x-small @click = "toLast()"> <v-icon small>mdi-arrow-collapse-right</v-icon> </v-btn>
     </v-card>
