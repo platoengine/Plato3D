@@ -23,6 +23,12 @@ export default {
   components: {
     OptimizationViews
   },
+  /*data : function() {
+    return {
+      fx : [],
+      iter : []
+    }
+  },*/
   computed: {
     buttonName: function () {
       if (this.optimization.run.iterations.length === 0) {
@@ -72,8 +78,38 @@ export default {
           appThis.$store.commit('addIterationToOptimization', {optimizationName: optimizationName, iteration: iteration, geometry: mesh, graphics: graphics})
         }, undefined, function (error) { errorHandler.report(error) })
       }
-    })
-
+    });
+    this.$store.commit('addEventListener', {
+      aName: 'convergencePlotData',
+      aFunction: function (event) {
+        const {isTrusted, data, origin} = event
+        errorHandler.report('source: ' + origin)
+        errorHandler.report('trusted source: ' + isTrusted)
+        const dataObject = JSON.parse(data)
+        const {optimizationName, data: dataIn} = dataObject
+        alert(JSON.stringify(optimizationName))
+        let arrayOfLines = dataIn.match(/[^\r\n]+/g);
+        /*let dataArray = dataIn.split(' ')*/
+        let headerline = arrayOfLines[0].split(" ");
+        headerline = headerline.filter(item => item);
+        let indexOfIter = headerline.indexOf('Iter')
+        let indexOfFX = headerline.indexOf('F(X)')
+        let fx_ = []
+          let iter_ = []
+        for(let index in arrayOfLines){
+          if(index == 0){ continue;}
+          if(index == arrayOfLines.length-1){break;}
+          let lineArray = arrayOfLines[index].split(" ")
+          lineArray = lineArray.filter(item => item);
+          
+          fx_.push(lineArray[indexOfFX])
+          iter_.push(lineArray[indexOfIter])
+        }
+        //this.fx = fx_
+        //this.iter = iter_
+        appThis.$store.dispatch('plotConvergence', {optimizationName: optimizationName, x : fx_, y : iter_})
+      }
+    });
   }
 }
 </script>

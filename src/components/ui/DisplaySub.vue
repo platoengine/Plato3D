@@ -3,7 +3,9 @@
     <div v-if="isBranch(this.data)">
       <v-expansion-panels accordion>
         <v-expansion-panel>
-          <v-expansion-panel-header>{{this.name}}<Indicator v-bind:style="this.getBranchColor"/></v-expansion-panel-header>
+          <v-expansion-panel-header>
+            <span v-bind:style="this.getBranchColor">{{this.name}}</span>
+          </v-expansion-panel-header>
           <v-expansion-panel-content>
             <v-card class="ma-0 pa-0" color=green>
               <v-card class="ml-2 pt-3">
@@ -30,7 +32,6 @@
 <script>
 import DisplayBranch from './DisplayBranch'
 import DisplayLeaf from './DisplayLeaf'
-import Indicator from './Indicator'
 import {allFieldsSpecified} from './FieldChecker'
 
 export default {
@@ -48,8 +49,7 @@ export default {
   },
   components: {
     DisplayBranch,
-    DisplayLeaf,
-    Indicator
+    DisplayLeaf
   },
   data: function () {
     return {

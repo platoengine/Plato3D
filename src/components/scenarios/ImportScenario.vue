@@ -11,12 +11,13 @@
       </div>
       </div>
     </form>
+    <ImportError @closeImportErrorDialog ="closeDialog()" :dialog = 'dialog'/>
   </v-card>
 </template>
 
 <script>
   import { importFile } from './file-import'
-
+  import ImportError from './ImportError'
   const STATUS_INITIAL = 0
   const STATUS_SAVING = 1
   const STATUS_SUCCESS = 2
@@ -24,6 +25,7 @@
 
   export default {
     name: 'import-scenario',
+    components : {ImportError},
     props: {
       name: {
         type: String,
@@ -35,7 +37,8 @@
         loadError: null,
         currentStatus: null,
         loadFieldName: 'scenarios',
-        visibleImport: false
+        visibleImport: false,
+        dialog : false
       }
     },
     computed: {
@@ -47,6 +50,9 @@
       reset () {
         this.currentStatus = STATUS_INITIAL
         this.loadError = null
+      },
+      closeDialog() {
+        this.dialog = false
       },
       save (formData) {
         this.currentStatus = STATUS_SAVING
@@ -64,6 +70,7 @@
           .catch(err => {
             this.loadError = err.response
             this.currentStatus = STATUS_FAILED
+            this.dialog = true
           })
         this.currentStatus = STATUS_SUCCESS
         this.visibleImport = false

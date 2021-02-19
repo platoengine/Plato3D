@@ -5,8 +5,7 @@
     <v-expansion-panels :focusable=true accordion>
       <v-expansion-panel v-for="(item, index) in parentObject.parameters" :key="index">
         <v-expansion-panel-header>
-          {{item.ParameterName}}
-          <Indicator v-bind:style="[!indicator[index]?{ 'color': 'green'} : indicator[index]]"/>
+          <span v-bind:style="[!indicator[index]?{ 'color': 'green'} : indicator[index]]"> {{item.ParameterName}}</span>
         </v-expansion-panel-header>
         <v-expansion-panel-content>
           <v-card color=green>
@@ -24,7 +23,6 @@
 <script>
 import NewParameter from './NewParameter'
 import ModifyParameter from './ModifyParameter'
-import Indicator from '../ui/Indicator'
 import Vue from 'vue'
 
 export default {
@@ -32,8 +30,7 @@ export default {
   props: ['parentObject', 'newParameterDialogVisibility'],
   components: {
     NewParameter,
-    ModifyParameter,
-    Indicator
+    ModifyParameter
   },
   data: function() {
     return {
