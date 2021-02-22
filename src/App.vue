@@ -12,7 +12,8 @@
         <template v-slot:button>
           <v-icon>mdi-help-circle-outline</v-icon>
         </template>
-        <tooltipToggler />       
+        <tooltipToggler />
+        <Help/>
       </p-menu>      
 
       <p-menu>
@@ -76,7 +77,7 @@ import OptViewDetail from './components/settings/OptViewDetail'
 import Control from './components/Control'
 import PMenu from './components/ui/PMenu'
 import TooltipToggler from './components/settings/tooltipToggler'
-
+import Help from './components/Help'
 export default {
   name: 'App',
     components: {
@@ -88,13 +89,14 @@ export default {
       Control,
       Login,
       PMenu,
-      TooltipToggler},
+      TooltipToggler,
+      Help
+    },
     props: {
       source: String,
     },
     data: () => ({
-      drawerOpen: false,
-      disablehelp: false
+      drawerOpen: false
     }),
     methods: {
       toggleHelpSetup(){
