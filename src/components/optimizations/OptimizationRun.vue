@@ -87,27 +87,7 @@ export default {
         errorHandler.report('trusted source: ' + isTrusted)
         const dataObject = JSON.parse(data)
         const {optimizationName, data: dataIn} = dataObject
-        alert(JSON.stringify(optimizationName))
-        let arrayOfLines = dataIn.match(/[^\r\n]+/g);
-        /*let dataArray = dataIn.split(' ')*/
-        let headerline = arrayOfLines[0].split(" ");
-        headerline = headerline.filter(item => item);
-        let indexOfIter = headerline.indexOf('Iter')
-        let indexOfFX = headerline.indexOf('F(X)')
-        let fx_ = []
-          let iter_ = []
-        for(let index in arrayOfLines){
-          if(index == 0){ continue;}
-          if(index == arrayOfLines.length-1){break;}
-          let lineArray = arrayOfLines[index].split(" ")
-          lineArray = lineArray.filter(item => item);
-          
-          fx_.push(lineArray[indexOfFX])
-          iter_.push(lineArray[indexOfIter])
-        }
-        //this.fx = fx_
-        //this.iter = iter_
-        appThis.$store.dispatch('plotConvergence', {optimizationName: optimizationName, x : fx_, y : iter_})
+        appThis.$store.commit('plotConvergence', {optimizationName: optimizationName, plotData: dataIn})
       }
     });
   }

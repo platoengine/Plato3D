@@ -126,7 +126,7 @@ export default {
   methods: {
     criterionName: function (criterion) {
       return `${criterion.scenario.name}: ${criterion.criterionName}`
-    },  
+    }
   },
   components: {
 //    Parameters,

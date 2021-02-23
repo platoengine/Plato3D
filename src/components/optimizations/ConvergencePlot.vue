@@ -1,6 +1,13 @@
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 <template>
-  <Plotly :data="data" :layout="layout" :display-mode-bar="false"></Plotly>
+ <div class = "plot">
+  <Plotly @doubleclick = "openPlot()" :layout="thumbnailLayout" :display-mode-bar="false"></Plotly>
+   <v-dialog v-model="plotOpen" persistent max-width="500px">
+  <Plotly :layout="openGraphLayout" :display-mode-bar="false"></Plotly> 
+    <v-btn block @click="plotOpen=false">Close</v-btn>
+    </v-dialog>
+ </div>
+ 
 </template>
 <script>
 import { Plotly } from 'vue-plotly'
@@ -10,23 +17,15 @@ export default {
   components: {
     Plotly
   },
-  props : ['x', 'y'],
+  //props : ['optimizationName'],
   data: function(){
     return{
-      data:[{
-        //x: this.$store.convergencePlotDataX[0],
-        //y: this.$store.convergencePlotDataY[0],
-        x: ['1','5','10','1000000000'],
-        y: ['1','5','10', '1000000000'],
-        type:"scatter",
-        marker: {
-          color: 'rgb(75, 174, 79)',
-          size: 12
-        }
-      }],
-      layout:{
+      thumbnailLayout:{
         title: "Convergence Plot",
-        height : "100",
+        yaxis: {fixedrange: true},
+        xaxis:{fixedrange:true},
+        height: 100,
+        width: 202,
         font :{
           size :10
         },
@@ -39,8 +38,47 @@ export default {
         }//,
         //paper_bgcolor: '#7f7f7f',
         //plot_bgcolor: '#c7c7c7'
-      }
+      },
+      openGraphLayout:{
+      title: "Convergence Plot",
+        yaxis: {fixedrange: true},
+        xaxis:{fixedrange:true},
+        //autosize:true,
+        height: 500,
+        width: 500,
+        font :{
+          size :10
+        },
+        margin : {
+          l:50,
+          r:50,
+          b:50,
+          t:70,
+          pad:0
+        }
+      },
+      //Plot Data Format
+      /*data:[{
+       // x: this.$store.convergencePlotDataX[this.optimizationName],
+        //y: this.$store.convergencePlotDataY[this.optimizationName],
+        //x: ['1','5','10','1000000000000'],
+        //y: ['1','5','10', '1000000000000'],
+        type:"scatter",
+        marker: {
+          color: 'rgb(75, 174, 79)',
+          size: 12
+        }
+      }],*/
+      staticPlot: true,
+      plotOpen: false,
+      convData : []
     }
-  }
+  },
+ methods :{
+    openPlot: function(){
+      this.plotOpen = true
+    }
+  }  
 }
+
 </script>

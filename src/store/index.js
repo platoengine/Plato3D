@@ -43,8 +43,7 @@ export default new Vuex.Store({
     session: { type: SessionContainer },
     uniqueID: { type: UniqueID },
     disabledByUser : false,
-    convergencePlotDataX : [],
-    convergencePlotDataY : []
+    convergencePlotData : {}
   },
   mutations: {
     toggleTooltip(state){
@@ -402,13 +401,12 @@ export default new Vuex.Store({
         optimizations[optimizationIndex].addIteration(payload)
       }
     },
-    plotConvergence({optimizations, convergencePlotDataX, convergencePlotDataY}, {optimizationName, x, y}) {
-     let optimizationIndex = optimizations.findIndex(optimization => optimization.name === optimizationName)
-     if (optimizationIndex !== -1) {
-       convergencePlotDataX[optimizationIndex].push(x)
-       convergencePlotDataY[optimizationIndex].push(y)
-     }
-     //alert(JSON.stringify(convergencePlotDataX))
+    plotConvergence({optimizations, convergencePlotData}, {optimizationName, plotData}) {
+      let optimizationIndex = optimizations.findIndex(optimization => optimization.name === optimizationName)
+      if (optimizationIndex !== -1) {
+        convergencePlotData[optimizationName] = plotData
+      }
+      alert(JSON.stringify(convergencePlotData))
     },
     toFirstOptimizationIteration ({optimizations}, {optimizationName, graphics}) {
       let optimizationIndex = optimizations.findIndex(optimization => optimization.name === optimizationName)
