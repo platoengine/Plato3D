@@ -1,13 +1,12 @@
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 <template>
- <div class = "plot">
-  <Plotly @doubleclick = "openPlot()" :layout="thumbnailLayout" :display-mode-bar="false"></Plotly>
-   <v-dialog v-model="plotOpen" persistent max-width="500px">
-  <Plotly :layout="openGraphLayout" :display-mode-bar="false"></Plotly> 
-    <v-btn block @click="plotOpen=false">Close</v-btn>
+  <div class = "plot">
+    <Plotly @doubleclick = "openPlot()" :layout="thumbnailLayout" :display-mode-bar="false"></Plotly>
+    <v-dialog v-model="plotOpen" persistent max-width="500px">
+      <Plotly :layout="openGraphLayout" :display-mode-bar="false"></Plotly> 
+      <v-btn block @click="plotOpen=false">Close</v-btn>
     </v-dialog>
- </div>
- 
+  </div>
 </template>
 <script>
 import { Plotly } from 'vue-plotly'
