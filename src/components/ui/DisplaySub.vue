@@ -10,9 +10,8 @@
             <v-card class="ma-0 pa-0" color=green>
               <v-card class="ml-2 pt-3">
                 <display-branch :data="this.data" :name="dataName" v-on:pending="setPending()"/>
-                <v-btn v-if="this.modify_button" small block @click="save()" :disabled="!savePending" type="button">
-                  Modify
-                </v-btn>
+                <v-btn v-if="this.modify_button" small block @click="save()" :disabled="!savePending" type="button"> Modify </v-btn>
+                <v-btn v-if="this.remove_button" small block @click="remove()" type="button"> Remove </v-btn>
               </v-card>
             </v-card>
           </v-expansion-panel-content>
@@ -41,11 +40,8 @@ export default {
     parentObject: Object,
     data: Object,
     name: String,
-    modify_button: {
-      type: Boolean,
-      required: false,
-      default: false
-    }
+    modify_button: { type: Boolean, required: false, default: false },
+    remove_button: { type: Boolean, required: false, default: false }
   },
   components: {
     DisplayBranch,
@@ -111,6 +107,9 @@ export default {
     }
   },
   methods: {
+    remove: function () {
+      this.$emit('remove')
+    },
     save: function () {
       this.$emit('save')
       this.savePending = false

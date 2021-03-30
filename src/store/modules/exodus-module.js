@@ -32,6 +32,7 @@ class ExodusModel extends ParBase {
     let type = payload.type
     let newPrimitive = new ModelPrimitive()
     newPrimitive.definition.Name = name
+    newPrimitive.definition.ID = payload.id
     newPrimitive.primitiveObjectID = geometry.id
     newPrimitive.type = type
     graphics.scene.add(geometry)

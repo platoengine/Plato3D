@@ -59,14 +59,24 @@ class AnalyzeStaticThermal extends AnalyzeScenarioBase {
       },
       'Criteria': {
         'data': [],
+        'required': false,
         'view': {
           'type': 'list-view',
           '<Template>': {
             'Type': { type: 'string', value: 'Scalar Function', options: ['Scalar Function'] },
-            'Scalar Function Type': {
+            'Linear': { type: 'bool', value: 'false', options: ['true', 'false'] },
+            'Linear Scalar Function Type': {
               type: 'string',
               value: 'Volume',
-              options: ['Volume', 'Internal Thermal Energy', 'Flux P-Norm']
+              options: ['Volume'],
+              conditionalView: ['Linear', 'true'],
+              alias: 'Scalar Function Type'
+            },
+            'Scalar Function Type': {
+              type: 'string',
+              value: 'Internal Elastic Energy',
+              options: ['Internal Thermal Energy', 'Flux P-Norm'],
+              conditionalView: ['Linear', 'false']
             },
             'Exponent': { type: 'double', value: '6.0', conditionalView: ['Scalar Function Type', 'Flux P-Norm'] },
             'Penalty Function': {
@@ -96,7 +106,7 @@ class AnalyzeStaticThermal extends AnalyzeScenarioBase {
             'Type': { type: 'string', value: 'Zero Value', options: ['Zero Value', 'Fixed Value'] },
             'Index': { type: 'int', value: '0', options: ['0'] },
             'Value': { type: 'double', value: '0.0', conditionalView: ['Type', 'Fixed Value'] },
-            'Sides': { type: 'string', value: '', options: () => { return this.selectables['nodesets'] } }
+            'Sides': { type: 'string', value: '', options: () => { return this.selectables['nodesets'].concat(this.selectables['sidesets']) } }
 
           }
         }

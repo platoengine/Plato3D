@@ -289,6 +289,12 @@ export default new Vuex.Store({
         scenarios[scenarioIndex].setListData(dataName, data)
       }
     },
+    removeScenarioListData ({scenarios}, {scenarioName, dataName, entryName}) {
+      let scenarioIndex = scenarios.findIndex(scenario => scenario.name === scenarioName)
+      if (scenarioIndex !== -1) {
+        scenarios[scenarioIndex].removeListData(dataName, entryName)
+      }
+    },
     loadScenario ({scenarios}, definition) {
       // Scenarios are accessed by name, so if 'name' is empty, change it to 'Scenario N'.
       if (definition.name === '') {
@@ -521,6 +527,12 @@ export default new Vuex.Store({
       let optimizationIndex = optimizations.findIndex(optimization => optimization.name === optimizationName)
       if (optimizationIndex !== -1) {
           optimizations[optimizationIndex].resetRun(graphics)
+      }
+    },
+    setOptimizationFixedBlock({optimizations}, {optimizationName, model, block, isFixed}) {
+      let optimizationIndex = optimizations.findIndex(optimization => optimization.name === optimizationName)
+      if (optimizationIndex !== -1) {
+        optimizations[optimizationIndex].setFixedBlock(model, block, isFixed)
       }
     },
     setModelData(state, modelData) {

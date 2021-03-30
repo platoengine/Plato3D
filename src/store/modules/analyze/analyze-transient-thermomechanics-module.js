@@ -205,7 +205,7 @@ class AnalyzeTransientThermomechanics extends AnalyzeScenarioBase {
             'Type': { type: 'string', value: 'Zero Value', options: ['Zero Value', 'Fixed Value'] },
             'Index': { type: 'int', value: '0', options: ['0', '1', '2', '3'] },
             'Value': { type: 'double', value: '0.0', conditionalView: ['Type', 'Fixed Value'] },
-            'Sides': { type: 'string', value: '', options: () => { return this.selectables['nodesets'] } }
+            'Sides': { type: 'string', value: '', options: () => { return this.selectables['nodesets'].concat(this.selectables['sidesets']) } }
           }
         }
       }

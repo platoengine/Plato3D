@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="dialog" persistent max-width="600px">
+  <v-dialog v-model="dialog" persistent max-width="400px">
     <v-card>
       <v-card-title>{{ title }}</v-card-title>
       <v-card-text>
@@ -83,7 +83,9 @@ export default {
           data: newListEntry
         })
       this.savePending = false
+      this.newEntryName = ''
       this.close()
+      dynamicCopy(this.modelviews[this.name]['view']['<Template>'], this.dataState)
     }
   }
 }

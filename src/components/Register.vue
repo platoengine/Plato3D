@@ -90,17 +90,10 @@ export default {
   methods: {
     registerNewUser () {
       this.dialog=false
-      apiService.registerUser(this.username, this.email, this.password).then((response) => {
-        if (response.Authenticated) {
-          var usertoken = response.token
-          localStorage.setItem('token', usertoken)
-          localStorage.setItem('username', this.username)
-          this.$store.commit('updateAuthentication', this.username, usertoken)
-          apiService.loadUsersProjects(usertoken, this.username).then(data => {
-            this.$store.commit('storeUserProjects', data)
-          })
-        } else {
-          this.registrationerrors = 'this username is already taken'
+      let appThis = this
+      apiService.registerUser(appThis.username, appThis.email, appThis.password).then((response) => {
+        if (!response.Authenticated) {
+          appThis.registrationerrors = 'appThis username is already taken'
         }
       })
     },

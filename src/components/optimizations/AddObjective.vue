@@ -43,7 +43,29 @@ export default {
   },
   methods: {
     getScenarios: function () {
-      return this.$store.state.scenarios.map(s => s.name)
+      let returnScenarios = []
+      // if the optimization has any objectives or constraints, only list scenarios that are based on
+      // the same model.  (Plato doesn't currrently support multi-model optimizations.)
+      if (this.optimization.objectives.length === 0 && this.optimization.constraints.length === 0) {
+        returnScenarios = this.$store.state.scenarios.map(s => s.name)
+      } else
+      if (this.optimization.objectives.length > 0) {
+        // there's an objective defined.  only show criteria that used the same underlying model.
+        let modelName = this.optimization.objectives[0].scenario.geometry.body.modelName
+        let scenarios = this.$store.state.scenarios.filter(s => s.geometry.body.modelName === modelName)
+        returnScenarios = scenarios.map(s => s.name)
+
+      } else
+      if (this.optimization.constraints.length > 0) {
+        // there's a constraint defined.  only show criteria that used the same underlying model.
+        let modelName = this.optimization.constraints[0].scenario.geometry.body.modelName
+        let scenarios = this.$store.state.scenarios.filter(s => s.geometry.body.modelName === modelName)
+        returnScenarios = scenarios.map(s => s.name)
+      }
+      if (returnScenarios.length === 1) {
+        this.selectedScenario = returnScenarios[0]
+      }
+      return returnScenarios
     },
     getCriteria: function () {
       if (this.selectedScenario!=='') {
