@@ -151,7 +151,7 @@ export class APIService {
       })
       .then(response => {
         commit('setSimulationAttribute', {name: realization.name, key: 'computeStatus', value: 'created'})
-        commit('setSimulationAttribute', {name: realization.name, key: 'inputFile', value: response.data})
+        commit('setSimulationAttribute', {name: realization.name, key: 'runDir', value: response.data})
       })
     }
   }
@@ -163,11 +163,10 @@ export class APIService {
     const url = `${server}/jobs/start-simulation`
 
     if (hostCode === 'Analyze') {
-      let inputFileName = realization.simulation.inputFile
       return axios.post(url, {
         token,
         username,
-        payload: {inputFileName: inputFileName, useMPI: false, hostCode: hostCode}
+        payload: {runDir: realization.simulation.runDir, useMPI: false, hostCode: hostCode}
       }).then(() => {
         commit('setSimulationAttribute', {name: realization.name, key: 'computeStatus', value: 'started'})
       })

@@ -49,6 +49,7 @@ export default {
       this.$store.dispatch('addRealizationView',
         {
           realizationName: this.parentObject.name,
+          runDir: this.parentObject.simulation.runDir,
           scriptName: this.parentObject.scenario.availableViewTypes[this.selectedView],
           viewName: this.selectedView
         }

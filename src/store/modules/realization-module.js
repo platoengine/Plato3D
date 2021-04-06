@@ -6,7 +6,7 @@ class Realization extends ParBase {
     super()
     this.scenario = null
     this.resources = {numProcs: 1}
-    this.simulation = {inputFile: '', computeStatus: '', availableViewTypes: {}, views: []}
+    this.simulation = {runDir: '', computeStatus: '', availableViewTypes: {}, views: []}
   }
   addView (payload) {
     let graphics = payload.graphics
