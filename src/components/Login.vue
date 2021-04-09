@@ -5,11 +5,13 @@
           <v-card outlined class="mb-2 pa-1">
           <v-row v-if="!loggedIn">
             <v-col>
-              <v-text-field autocomplete="off" dense v-model="server" label="Server"/>
-              <v-text-field autocomplete="off" dense v-model="username" label="Username"/>
-              <span v-if="loginerrors != null" style="color:red"> {{ loginError }} </span>
-              <v-text-field autocomplete="off" dense v-model="password" label="Password" type="password"/>
-              <v-btn small block @click="loginUser">login</v-btn>
+              <v-form @submit.prevent="loginUser">
+                <v-text-field autocomplete="off" dense v-model="server" label="Server"/>
+                <v-text-field autocomplete="off" dense v-model="username" label="Username"/>
+                <span v-if="loginerrors != null" style="color:red"> {{ loginError }} </span>
+                <v-text-field autocomplete="off" dense v-model="password" label="Password" type="password"/>
+                <v-btn small block type="submit">login</v-btn>
+              </v-form>
               <register/>
             </v-col>
           </v-row>
