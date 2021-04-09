@@ -135,16 +135,25 @@ class AnalyzeThermomechanics extends AnalyzeScenarioBase {
       },
       'Criteria': {
         'data': [],
+        'required': false,
         'view': {
           'type': 'list-view',
           '<Template>': {
             'Type': { type: 'string', value: 'Scalar Function', options: ['Scalar Function'] },
-            'Scalar Function Type': {
+            'Linear': { type: 'bool', value: 'false', options: ['true', 'false'] },
+            'Linear Scalar Function Type': {
               type: 'string',
               value: 'Volume',
-              options: ['Volume', 'Internal Thermal Energy', 'Flux P-Norm']
+              options: ['Volume'],
+              conditionalView: ['Linear', 'true'],
+              alias: 'Scalar Function Type'
             },
-            'Exponent': { type: 'double', value: '6.0', conditionalView: ['Scalar Function Type', 'Flux P-Norm'] },
+            'Scalar Function Type': {
+              type: 'string',
+              value: 'Internal Thermoelastic Energy',
+              options: ['Internal Thermoelastic Energy']
+              conditionalView: ['Linear', 'false'],
+            },
             'Penalty Function': {
               'Type': { type: 'string', value: 'SIMP', options: ['SIMP', 'RAMP', 'Heaviside'] },
               'Exponent': { type: 'double', value: '3.0' },

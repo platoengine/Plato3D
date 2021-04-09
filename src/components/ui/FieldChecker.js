@@ -8,8 +8,14 @@ function checkForConditionalView(prefix, key){
   return false
 }
   
+//
+// this function ignores the 'alias' attribute
+//
 export function allFieldsSpecified(prefix, key, flag){
-  if(!('value' in prefix[key])&& prefix[key] instanceof Object){
+  if (key === 'alias') {
+    return flag
+  }
+  if(prefix[key] instanceof Object && !('value' in prefix[key])){
     if(checkForConditionalView(prefix, key) === false){
       const keys = Object.keys(prefix[key])
       if( !(key === 'conditionalView' || key === 'conditionalValue')){

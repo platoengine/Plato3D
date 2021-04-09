@@ -26,6 +26,7 @@ class AnalyzeStaticThermal extends AnalyzeScenarioBase {
       },
       'Material Models': {
         'data': [],
+        'required': true,
         'view': {
           'type': 'list-view',
           '<Template>': {
@@ -74,7 +75,7 @@ class AnalyzeStaticThermal extends AnalyzeScenarioBase {
             },
             'Scalar Function Type': {
               type: 'string',
-              value: 'Internal Elastic Energy',
+              value: 'Internal Thermal Energy',
               options: ['Internal Thermal Energy', 'Flux P-Norm'],
               conditionalView: ['Linear', 'false']
             },

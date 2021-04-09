@@ -82,6 +82,8 @@ export default {
           newEntryName: this.newEntryName,
           data: newListEntry
         })
+      dynamicCopy(this.modelviews[this.name]['view']['<Template>'], this.dataState)
+      this.newEntryName = ''
       this.savePending = false
       this.newEntryName = ''
       this.close()
