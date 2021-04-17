@@ -14,7 +14,7 @@ import Optimization from './modules/optimization-module'
 
 import UniqueID from './modules/unique-id'
 
-
+import {OBJLoader} from 'three-obj-mtl-loader'
 
 
 const apiService = new APIService()
@@ -33,7 +33,46 @@ export default new Vuex.Store({
     scenarios: [],
     realizations: [],
     optimizations: [],
+    sceneSettings: {
+      grid: {
+        size: 10.0,
+        divs: 10,
+        showX: false,
+        showY: false,
+        showZ: true,
+        AtCenter: true
+      },
+      lighting: {
+        directional: {
+          display: false,
+          X: 10,
+          Y: 10,
+          Z: 10
+        },
+        hemisphere: {
+          display: true
+        },
+        ambient: {
+          display: true
+        },
+        spot: {
+          display: true,
+          X: 15,
+          Y: 40,
+          Z: 35,
+          angle: 7.5
+        }
+      }
+    },
+    packProjectData: function (thumbnail) {
+      return {
+        thumbnail: thumbnail,
+        models: this.models,
+        scenarios: this.scenarios
+      }
+    },
     active: {
+      project: null, // only defined if project has been saved
       model: null, // refers to the model to which requests and modifications are applied
       optimization: null // refers to the optimization to which requests and modifications are applied
     },
@@ -86,6 +125,44 @@ export default new Vuex.Store({
       session.data.projects = []
       session.data.activeproject = null
     },
+    storeUserProjects ({session}, retrievedprojects) {
+      for (var i = 0; i < retrievedprojects.length; i++) {
+        Vue.set(session.data.projects, i, retrievedprojects[i])
+      }
+    },
+    addUserProject ({session}, newproject) {
+      session.data.projects.push(newproject)
+    },
+    closeUserProject (state, {graphics}) {
+      state.models.forEach(model => {model.destructor(graphics)})
+      state.models = []
+
+      state.scenarios = []
+
+      state.realizations.forEach(realization => {realization.destructor(graphics)})
+      state.realizations = []
+
+      state.optimizations.forEach(optimization => {optimization.destructor(graphics)})
+      state.optimizations = []
+
+      state.active.project = null
+    },
+    setActiveProject ({active}, activeproject) {
+      active.project = activeproject
+    },
+    updateUserProject ({session}, updatedproject) {
+      const projects = session.data.projects
+      let projectIndex = projects.findIndex(project => project.projectname === updatedproject.projectname)
+      if (projectIndex !== -1) {
+        Vue.set(projects, projectIndex, updatedproject)
+      }
+    },
+    deleteUserProject ({session}, projectIndex) {
+      session.data.projects.splice(projectIndex, 1)
+    },
+    setProjectThumbnail ({active}, image) {
+      active.project.thumbnail = image
+    },
     setEventSource ({events}, server) {
       events.setSource(server)
     },
@@ -95,8 +172,10 @@ export default new Vuex.Store({
     setModelRemoteData ({active}, payload) {
       active.model.remote = payload
     },
-    addObj ({active}, payload) {
+    addObj ({active, sceneSettings}, payload) {
       active.model.addPrimitive(payload)
+      sceneSettings.grid.size = payload.graphics.getGridSize()
+      payload.graphics.setGrid(sceneSettings.grid)
     },
     addEventListener ({events}, {aName, aFunction}) {
       events.addListener(aName, aFunction)
@@ -117,7 +196,7 @@ export default new Vuex.Store({
     deleteModel ({models}, {name, graphics}) {
       let modelIndex = models.findIndex(model => model.name === name)
       if (modelIndex !== -1) {
-        models[modelIndex].clearModel(graphics)
+        models[modelIndex].destructor(graphics)
         models.splice(modelIndex, 1)
       }
     },
@@ -139,6 +218,20 @@ export default new Vuex.Store({
       } else {
         state.active.model = null
       }
+    },
+    setLightingSettings ({sceneSettings}, {keys, val, graphics}) {
+      sceneSettings.lighting[keys[0]][keys[1]] = val
+      graphics.setLighting(sceneSettings.lighting)
+    },
+    initializeLighting ({sceneSettings}, graphics) {
+      graphics.setLighting(sceneSettings.lighting)
+    },
+    setGridSettings ({sceneSettings}, {key, val, graphics}) {
+      sceneSettings.grid[key] = val
+      graphics.setGrid(sceneSettings.grid)
+    },
+    initializeGrid ({sceneSettings}, graphics) {
+      graphics.setGrid(sceneSettings.grid)
     },
     addScenario ({scenarios, availableScenarioTypes, uniqueID}, {name, description, type}) {
       let newScenario = null
@@ -195,6 +288,12 @@ export default new Vuex.Store({
       let scenarioIndex = scenarios.findIndex(scenario => scenario.name === scenarioName)
       if (scenarioIndex !== -1) {
         scenarios[scenarioIndex].setListData(dataName, data)
+      }
+    },
+    removeScenarioListData ({scenarios}, {scenarioName, dataName, entryName}) {
+      let scenarioIndex = scenarios.findIndex(scenario => scenario.name === scenarioName)
+      if (scenarioIndex !== -1) {
+        scenarios[scenarioIndex].removeListData(dataName, entryName)
       }
     },
     loadScenario ({scenarios}, definition) {
@@ -437,9 +536,121 @@ export default new Vuex.Store({
       if (optimizationIndex !== -1) {
           optimizations[optimizationIndex].resetRun(graphics)
       }
+    },
+    setOptimizationFixedBlock({optimizations}, {optimizationName, model, block, isFixed}) {
+      let optimizationIndex = optimizations.findIndex(optimization => optimization.name === optimizationName)
+      if (optimizationIndex !== -1) {
+        optimizations[optimizationIndex].setFixedBlock(model, block, isFixed)
+      }
+    },
+    setModelData(state, modelData) {
+      let newModel = null
+      if (modelData.type === 'ExodusModel') {
+        newModel = new ExodusModel()
+        newModel.importData(modelData)
+      }
+      state.models.push(newModel)
+    },
+    setScenarioData(state, scenarioData) {
+      console.log(scenarioData)
     }
   },
   actions: {
+    async loadProject ({dispatch, commit}, payload) {
+      commit('setActiveProject', payload.project)
+      dispatch('unpackProjectData', payload)
+    },
+    async unpackProjectData ({dispatch}, payload) {
+      let graphics = payload.graphics
+      // load models
+      let models = payload.project.projectdata.models
+      models.forEach(model => { dispatch('loadExodusModel', {model, graphics}) })
+
+      // load scenarios
+      let scenarios = payload.project.projectdata.scenarios
+      scenarios.forEach(scenario => { dispatch('loadScenario', {scenario}) })
+    },
+    async loadScenario ({commit}, {scenario}) {
+      commit('setScenarioData', scenario)
+    },
+    async loadExodusModel ({commit}, {model, graphics}) {
+      commit('setModelData', model)
+      commit('setActiveModel', model.name)
+      commit('addEventListener', {
+        aName: 'modelGeometryData', 
+        aFunction: function (event) {
+          const {data} = event
+          const dataObject = JSON.parse(data)
+          const {modelName, name: geometryName, type: geometryType, data: geometryData} = dataObject
+          const loader = new OBJLoader()
+          const url = URL.createObjectURL(new Blob([geometryData, 'application/object']))
+          loader.load(url, (geometry) => {
+            this.showLoader = false;
+            commit('addObj', {
+              modelName: modelName,
+              name: geometryName,
+              type: geometryType,
+              geometry: geometry,
+              graphics: graphics
+            });
+          })
+        }
+      })
+      const response = await apiService.loadExodusModel(model)
+      if (response === 'FAILURE') {
+        errorHandler.report('server request failed: loadExodusModel')
+      }
+    },
+    async saveProject ({state, commit}, {name, graphics}) {
+      if (state.active.project !== null ) {
+        errorHandler.report("Internal error: called 'saveProject' instead of 'updateProject'")
+      }
+      else
+      {
+        const thumbnail = graphics.renderer.domElement.toDataURL( 'image/png' );
+        const projectdata = state.packProjectData(thumbnail)
+        const response = await apiService.saveProject(projectdata, name)
+        if (response.data.savestatus) {
+          errorHandler.report(`save status: ${response.data.savestatus}`)
+          let projects = state.session.data.projects
+          var lastProjectIndex = projects.length
+          commit('addUserProject', response.data.newproject)
+          commit('setActiveProject', projects[lastProjectIndex])
+          commit('setProjectThumbnail', thumbnail)
+        } else if (!response.data.unique) {
+          errorHandler.report(`Internal error: project ${name} already exists`)
+        } else {
+          errorHandler.report("Internal error: unknown server error")
+        }
+      }
+    },
+    async updateProject ({state, commit}, {thumbnail}) {
+      const projectdata = {thumbnail: thumbnail} // todo
+      const response = await apiService.updateProject(projectdata, state.active.project.name, state.session.data.username, state.active.project.DateCreated)
+      if (response.success) {
+        errorHandler.report('project saved')
+        commit('updateUserProject', response.newproject)
+      } else {
+        errorHandler.report('error! project NOT saved')
+      }
+    },
+    async updateAndCloseProject ({dispatch, commit}, {graphics}) {
+      const screenshot = graphics.renderer.domElement.toDataURL( 'image/png' );
+      await dispatch('updateProject', {thumbnail: screenshot})
+      commit('closeUserProject', {graphics: graphics})
+    },
+    async deleteProject ({session}, {projectID}) {
+      // delete from server
+      let response = await apiService.deleteProject(projectID)
+  
+      // delete from client
+      if (response.success) {
+        let projectIndex = session.data.projects.findIndex(project => project._id === projectID)
+        if (projectIndex !== -1) {
+          this.$store.commit('deleteUserProject', projectIndex)
+        }
+      }
+    },
     async addRealizationView (state, viewDefinition) {
       const response = await apiService.createRealizationView(viewDefinition)
       if (response === 'FAILURE') {
@@ -448,7 +659,18 @@ export default new Vuex.Store({
     },
     async uploadExodusModel ({state}, formData) {
       state.active.model.file = formData.get('file')
-      state.active.model.fileName = formData.get('file').name
+
+      // If a {csm,CSM} file is sent to uploadExodusModel(), the file is converted
+      // to an exodus file on the server.  In input files (i.e., scenario definitions),
+      // the model must be referred to as basename.exo, so change the fileName to reflect that.
+      let fileName = formData.get('file').name
+      let tokens = fileName.split('.')
+      let last = tokens.pop()
+      if (last === 'csm' || last === 'CSM') {
+        fileName = tokens.join('.') + '.exo'
+      }
+      state.active.model.fileName = fileName
+
       const response = await apiService.uploadExodusModel(formData)
       if (response === 'FAILURE') {
         errorHandler.report('server request failed: upload exodus model')

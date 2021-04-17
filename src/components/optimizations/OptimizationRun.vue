@@ -1,7 +1,7 @@
 <template>
   <v-card class="ma-0 pa-0" color=green>
     <v-card class="pt-4 ml-2">
-      <v-text-field dense class="ml-2 ma-0 pa-0 caption" v-model="runStatus" label="Status"/>
+      <v-text-field autocomplete="off" dense class="ml-2 ma-0 pa-0 caption" v-model="runStatus" label="Status"/>
       <v-btn text block small @click="run()" :disabled="pending">{{buttonName}}</v-btn>
       <optimization-views :optimization="optimization"/>
     </v-card>

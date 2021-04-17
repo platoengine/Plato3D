@@ -2,8 +2,9 @@
   <v-card>
     <div v-for="(prop, index) in propertyNames" :key="index">
       <div v-if="displayable(prop)">
-        <display-sub :modify_button="modify_button" :myKey="prop" :parentObject="data" :data="getPropertyValue(prop)" :name="getPropertyName(prop)" 
-         v-on:pending="setPending()" v-on:save="save()"/>
+        <display-sub :modify_button="modify_button" :remove_button="remove_button"
+          :myKey="prop" :parentObject="data" :data="getPropertyValue(prop)" :name="getPropertyName(prop)"
+          v-on:pending="setPending()" v-on:save="save()" v-on:remove="remove()"/>
       </div>
     </div>
   </v-card>
@@ -15,16 +16,9 @@ export default {
   name: 'display-branch',
   props: {
     data: Object,
-    modify_button: {
-      type: Boolean,
-      required: false,
-      default: false
-    },
-    name: {
-      type: String,
-      required: false,
-      default: ''
-    }
+    modify_button: { type: Boolean, required: false, default: false },
+    remove_button: { type: Boolean, required: false, default: false },
+    name: { type: String, required: false, default: '' }
   },
   components: {
     DisplaySub: () => import('./DisplaySub')
@@ -38,6 +32,9 @@ export default {
   methods: {
     save: function () {
       this.$emit('save')
+    },
+    remove: function () {
+      this.$emit('remove')
     },
     setPending: function () {
       this.$emit('pending')

@@ -16,7 +16,7 @@
           <span class="headline">Export</span>
         </v-card-title>
         <v-card-text>
-          <v-text-field dense class="ma-0 pa-0" v-model="values.Filename" label="Filename"/>
+          <v-text-field autocomplete="off" ense class="ma-0 pa-0" v-model="values.Filename" label="Filename"/>
         </v-card-text>
       </v-card>
     </div>

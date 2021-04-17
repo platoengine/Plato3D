@@ -12,16 +12,27 @@ export class APIService {
       token
     }).then(response => response.data)
   }
-  saveScene (sceneData, projectName) {
+  saveProject (projectData, projectName) {
     const {token, username, server} = this.getSession()
-    errorHandler.report(`saveScene: ${projectName}`)
-    const url = `${server}/api/savescene`
+    errorHandler.report(`saveProject: ${projectName}`)
+    const url = `${server}/api/saveproject`
     return axios.post(url, {
-      sceneData,
+      projectData,
       projectName,
       username,
       token
     })
+  }
+  updateProject (projectData, projectName, username, dateCreated) {
+    const {token, server} = this.getSession()
+    const url = `${server}/api/updateproject`
+    return axios.post(url, {
+      projectData,
+      projectName,
+      username,
+      dateCreated,
+      token
+    }).then(response => response.data)
   }
   registerUser (username, email, password) {
     // const {server} = this.getSession()
@@ -77,17 +88,6 @@ export class APIService {
       token
     }).then(response => response.data)
   }
-  updateProject (sceneData, projectName, username, dateCreated) {
-    const {token, server} = this.getSession()
-    const url = `${server}/api/updateproject`
-    return axios.post(url, {
-      sceneData,
-      projectName,
-      username,
-      dateCreated,
-      token
-    }).then(response => response.data)
-  }
   createRealizationView (viewDefinition) {
     const {token, username, server} = this.getSession()
 
@@ -114,6 +114,19 @@ export class APIService {
       })
     .then(response => response.data)
   }
+  loadExodusModel (model) {
+    const {token, username, server} = this.getSession()
+
+    const url = `${server}/jobs/load-exodus-model`
+    errorHandler.report('loading exodus model')
+    return axios.post(url, {
+      token,
+      username,
+      exoFileName: model.remote.remoteName,
+      exoFilePath: model.remote.remotePath,
+      modelName: model.name
+    }).then(response => response.data)
+  }
   createSimulation (state, commit, realization) {
     const {token, username, server} = this.getSession()
 
@@ -138,7 +151,7 @@ export class APIService {
       })
       .then(response => {
         commit('setSimulationAttribute', {name: realization.name, key: 'computeStatus', value: 'created'})
-        commit('setSimulationAttribute', {name: realization.name, key: 'inputFile', value: response.data})
+        commit('setSimulationAttribute', {name: realization.name, key: 'runDir', value: response.data})
       })
     }
   }
@@ -150,11 +163,10 @@ export class APIService {
     const url = `${server}/jobs/start-simulation`
 
     if (hostCode === 'Analyze') {
-      let inputFileName = realization.simulation.inputFile
       return axios.post(url, {
         token,
         username,
-        payload: {inputFileName: inputFileName, useMPI: false, hostCode: hostCode}
+        payload: {runDir: realization.simulation.runDir, useMPI: false, hostCode: hostCode}
       }).then(() => {
         commit('setSimulationAttribute', {name: realization.name, key: 'computeStatus', value: 'started'})
       })

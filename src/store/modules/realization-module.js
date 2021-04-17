@@ -6,7 +6,7 @@ class Realization extends ParBase {
     super()
     this.scenario = null
     this.resources = {numProcs: 1}
-    this.simulation = {inputFile: '', computeStatus: '', availableViewTypes: {}, views: []}
+    this.simulation = {runDir: '', computeStatus: '', availableViewTypes: {}, views: []}
   }
   addView (payload) {
     let graphics = payload.graphics
@@ -38,6 +38,12 @@ class Realization extends ParBase {
       graphics.scene.remove(graphics.scene.getObjectById(this.simulation.views[viewIndex].geometryID))
       this.simulation.views.splice(viewIndex, 1)
     }
+  }
+  destructor(graphics) {
+    this.simulation.views.forEach(view => {
+      graphics.scene.remove(graphics.scene.getObjectById(view.geometryID))
+    })
+    this.simulation.views = []
   }
 }
 

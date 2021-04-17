@@ -13,7 +13,7 @@
         <v-form @submit.prevent ref="form" v-model="valid" lazy-validation>
         <v-container>
             <v-col>
-              <v-text-field dense class="ma-0 pa-0" :rules="rules" @change="pending=true" v-model="state.name" label="Name"/>
+              <v-text-field autocomplete="off" dense class="ma-0 pa-0" :rules="rules" @change="pending=true" v-model="state.name" label="Name"/>
               <v-textarea outlined dense class="ma-0 pa-0" @input="pending=true" v-model="state.description" label="Description"/>
             </v-col>
         </v-container>

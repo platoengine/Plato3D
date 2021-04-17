@@ -7,25 +7,27 @@
     </div>
     <div v-if ="!showLoader">
       <load-model v-if="!loaded" v-on:load-model='loadModel($event)'/>
-    </div>  
-    <v-container class="py-0" v-else>   
-      <v-row>
-        <v-col class="pa-0 ma-0">
-          <template v-for="(item,index) in model.primitives">
-            <v-hover v-slot:default="{ hover }" :key="index">
-              <v-card @click="select(item)" :elevation="hover ? 12 : 2" :class="{ 'on-hover': hover }">
-                <v-card-actions>
-                  <v-btn small @click="open(item)"> <v-icon dense>mdi-information-outline</v-icon></v-btn>
-                  <div class="entity-title">{{item.definition.Name}}</div>
-                </v-card-actions>
-              </v-card>
-            </v-hover>
-          </template>
-        </v-col>
-      </v-row>
-    </v-container>  
-    <v-card :class="'d-flex justify-space-between'">   
-      <import-model @load-model="loadModel($event)"/>  
+    </div>
+    <v-card :class="'d-flex justify-space-between'">
+      <v-container>
+        <v-row>
+          <v-col class="pa-0 ma-0">
+            <template v-for="(item,index) in primitives">
+              <v-hover v-slot:default="{ hover }" :key="index">
+                <v-card @click="select(item)" :elevation="hover ? 12 : 2" :class="{ 'on-hover': hover }">
+                  <v-card-actions>
+                    <v-btn small @click="open(item)"> <v-icon dense>mdi-information-outline</v-icon></v-btn>
+                    <div class="entity-title">{{item.definition.Name}}</div>
+                  </v-card-actions>
+                </v-card>
+              </v-hover>
+            </template>
+          </v-col>
+        </v-row>
+      </v-container>
+    </v-card>
+    <v-card :class="'d-flex justify-space-between'">
+      <import-model @load-model="loadModel($event)"/>
       <delete-model :model="model"/>
       <edit-model :model="model"/>
       <v-btn small>
@@ -61,6 +63,9 @@ export default {
     return { showLoader: false}
   },
   computed: {
+    primitives: function () {
+      return this.model.primitives
+    },
     selectedPrimitive: function () {
       return this.$store.state.ui.showItemDetailPrimitive
     },
@@ -91,19 +96,20 @@ export default {
         errorHandler.report('source: ' + origin)
         errorHandler.report('trusted source: ' + isTrusted)
         const dataObject = JSON.parse(data)
-        const {modelName, name: geometryName, type: geometryType, data: geometryData} = dataObject
+        const {modelName, name: geometryName, type: geometryType, id: geometryID, data: geometryData} = dataObject
         const loader = new OBJLoader()
-        const url = URL.createObjectURL(new Blob([geometryData, 'application/object']))
+        const url = URL.createObjectURL(new Blob([geometryData]))
         loader.load(url, (geometry) => {
           this.showLoader = false;
           appThis.$store.commit('addObj', {
             modelName: modelName,
             name: geometryName,
+            id: geometryID,
             type: geometryType,
             geometry: geometry,
             graphics: appThis.$graphics
           });
-          
+
         }, undefined, function (error) { errorHandler.report(error) })
       }
     })
@@ -111,16 +117,23 @@ export default {
   methods: {
     loadModel: function (eventData) {
       // change the model name to the filename of the loaded model
+      //
       this.showLoader = true;
       let modelName = eventData.get('name')
+
       this.$store.commit('setModelAttributes', {
         currentName: this.model.name,
         modelAttributes: {
           name: modelName,
           description: null
         }})
-      
+
+      // set the newly loaded model as the active model.
+      //
       this.$store.commit('setActiveModel', this.model.name)
+
+      // upload the model to the back-end which triggers SSEs that load the model into the scene.
+      //
       this.$store.dispatch('uploadExodusModel', eventData)
 
     },

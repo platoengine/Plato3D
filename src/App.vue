@@ -16,6 +16,8 @@
         <Help/>
       </p-menu>      
 
+      <v-btn icon @click="reset_scene"><v-icon>mdi-cube-scan</v-icon></v-btn>
+       
       <p-menu>
         <template v-slot:button>
           <v-icon>mdi-console</v-icon>
@@ -28,30 +30,42 @@
 
       <p-menu>
         <template v-slot:button>
-          <v-icon>mdi-lightbulb-outline</v-icon>
-       </template>
-        <lighting-settings/>
-      </p-menu>
-
-      <p-menu>
-        <template v-slot:button>
-          <v-icon>mdi-border-all</v-icon>
+          <v-icon>mdi-cube-outline</v-icon>
         </template>
-        <grid-settings/>
+        <p-menu>
+          <template v-slot:button>
+            <v-icon>mdi-help-circle-outline</v-icon>
+          </template>
+          <tooltipToggler />       
+        </p-menu>      
+
+        <p-menu>
+          <template v-slot:button>
+            <v-icon>mdi-lightbulb-outline</v-icon>
+         </template>
+          <lighting-settings/>
+        </p-menu>
+
+        <p-menu>
+          <template v-slot:button>
+            <v-icon>mdi-border-all</v-icon>
+          </template>
+          <grid-settings/>
+        </p-menu>
       </p-menu>
 
       <p-menu>
         <template v-slot:button>
-          <v-icon>mdi-cog-outline</v-icon>
+          <v-icon>mdi-login-variant</v-icon>
         </template>
         <login/>
       </p-menu>
 
     </v-app-bar>
 
-    <v-container class="px-0 fill-height" fluid >
-      <v-row align="center" justify="center" >
-        <v-col class="shrink">
+    <v-container class="px-0 mx-0 fill-height" fluid >
+      <v-row class="pa-0 ma-0" align="center" justify="center" >
+        <v-col class="pa-0 ma-0 shrink">
           <three-renderer/>
         </v-col>
       </v-row>
@@ -104,6 +118,9 @@ export default {
       },
       toggleDrawer: function () {
         this.drawerOpen = !this.drawerOpen
+      },
+      reset_scene: function () {
+        this.$graphics.controls.reset()
       }
     },
     created () {
@@ -142,5 +159,9 @@ export default {
 .v-label {
   font-size: 10px
 }
+#scene {
+  background: linear-gradient(to bottom,  #111111 0%,#999999 100%);
+}
+
 </style>
 

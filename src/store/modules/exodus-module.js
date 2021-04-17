@@ -9,11 +9,16 @@ class ExodusModel extends ParBase {
 
     this.primitives = []
 
-    this._type = 'ExodusModel'
+    this.type = 'ExodusModel'
   }
 
   range () {
     return []
+  }
+
+  importData (modelData) {
+    super.importData(modelData)
+    this.displayAttributes = modelData.displayAttributes
   }
 
   addPrimitive (payload) {
@@ -27,15 +32,18 @@ class ExodusModel extends ParBase {
     let type = payload.type
     let newPrimitive = new ModelPrimitive()
     newPrimitive.definition.Name = name
+    newPrimitive.definition.ID = payload.id
     newPrimitive.primitiveObjectID = geometry.id
     newPrimitive.type = type
     graphics.scene.add(geometry)
     this.primitives.push(newPrimitive)
+    graphics.setBoundingBox(this.primitives)
+    graphics.zoomToScene()
   }
 
   // loadExodus (graphics, modelData) {
   // }
-  clearModel (graphics) {
+  destructor (graphics) {
     this.primitives.forEach(function (primitive) {
       graphics.scene.remove(graphics.scene.getObjectById(primitive.primitiveObjectID))
     })
@@ -54,8 +62,8 @@ class ExodusModel extends ParBase {
     var opacity = thisPrimitive.displayAttributes.opacity * this.displayAttributes.opacity
     let wireframe = itemDisplayAttributes.wireframe
     let visible = itemDisplayAttributes.visible
-    var restoreColor = thisPrimitive.definition.Operation === 'add' ? 0x00ff00 : 0xff0000
     const primitiveObject = graphics.scene.getObjectById(thisPrimitive.primitiveObjectID)
+    var restoreColor = primitiveObject.children[0].material.color.getHex()
     primitiveObject.children.forEach(function (kid) {
       kid.material = new THREE.MeshPhysicalMaterial({
         color: restoreColor,

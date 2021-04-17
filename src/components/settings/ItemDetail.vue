@@ -17,7 +17,7 @@
             <v-col>
               <v-row no-gutters>
                 <v-col><v-slider v-model="opacityView" label="Opacity" :min="0.0" :max="1.0" step="0.05"></v-slider></v-col>
-                <v-col cols="1"><v-text-field dense :disabled="true" class="ma-0 pa-0" v-model="opacityView"/></v-col>
+                <v-col cols="1"><v-text-field autocomplete="off" dense :disabled="true" class="ma-0 pa-0" v-model="opacityView"/></v-col>
               </v-row>
               <v-row no-gutters>
                 <v-col><v-checkbox dense class="ma-0 pa-0" label="Visible" v-model="visibleView"/></v-col>

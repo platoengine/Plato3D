@@ -50,8 +50,14 @@ class Optimization extends ParBase {
     this.filterRadius = 2.48 // default value 
     this.initialValue = 0.25 // default value
     this.applyFilter = true // default value 
+    this.fixedBlocks = {}
     this.run = {computeStatus: 'Idle', runDir: 'not set', iterations: [], activeIteration: 0}
     this.display = {opacity: 1.0, wireframe: false, visible: true}
+  }
+  destructor (graphics) {
+    this.run.iterations.forEach(iteration => {
+      graphics.scene.remove(graphics.scene.getObjectById(iteration.geometryID))
+    })
   }
   setDisplayAttributes(graphics, attribute, value) {
     this.display[attribute] = value
@@ -189,27 +195,35 @@ class Optimization extends ParBase {
       }
     }, this)
   }
-  addBoundsOperations(xw) {
-    this.addBranch({
+  addBoundsOperations(xw, fixedIndices) {
+    let lowerOp = {
       Operation: {
         Function: "SetLowerBounds",
         Name: "Calculate Lower Bounds",
         Input: { ArgumentName: "Lower Bound Value"},
         Output: { ArgumentName: "Lower Bound Vector"},
-        FixedBlocks: { Index: "2" },
         Discretization: "density"
       }
-    }, xw)
-    this.addBranch({
+    }
+    lowerOp["Operation"]["FixedBlocks"] = {}
+    fixedIndices.forEach((fb, i) => {
+      lowerOp["Operation"]["FixedBlocks"][`Index__${i}`] = fb.toString()
+    })
+    this.addBranch(lowerOp, xw)
+    let upperOp = {
       Operation: {
         Function: "SetUpperBounds",
         Name: "Calculate Upper Bounds",
         Input: { ArgumentName: "Upper Bound Value"},
         Output: { ArgumentName: "Upper Bound Vector"},
-        FixedBlocks: { Index: "2" },
         Discretization: "density"
       }
-    }, xw)
+    }
+    upperOp["Operation"]["FixedBlocks"] = {}
+    fixedIndices.forEach((fb, i) => {
+      upperOp["Operation"]["FixedBlocks"][`Index__${i}`] = fb.toString()
+    })
+    this.addBranch(upperOp, xw)
   }
   setupInitialization({platoApp, interfaceFile}) {
     // add operation declarations to platoApp file
@@ -222,7 +236,7 @@ class Optimization extends ParBase {
           ArgumentName: "Initialized Field"
         },
         Uniform: {
-          Value: 0.2 //TODO
+          Value: this.initialValue
         }
       }
     }, platoApp)
@@ -460,13 +474,13 @@ class Optimization extends ParBase {
       }
     }, interfaceFile)
   }
-  setupBounds({platoApp, interfaceFile}) {
+  setupBounds({platoApp, interfaceFile}, fixedIndices) {
     this.addSharedData({Name: "Lower Bound Value", Type: "Scalar", Layout: "Global", OwnerName: "PlatoMain", UserName: "PlatoMain"}, interfaceFile)
     this.addSharedData({Name: "Upper Bound Value", Type: "Scalar", Layout: "Global", OwnerName: "PlatoMain", UserName: "PlatoMain"}, interfaceFile)
     this.addSharedData({Name: "Lower Bound Vector", Type: "Scalar", Layout: "Nodal Field", OwnerName: "PlatoMain", UserName: "PlatoMain"}, interfaceFile)
     this.addSharedData({Name: "Upper Bound Vector", Type: "Scalar", Layout: "Nodal Field", OwnerName: "PlatoMain", UserName: "PlatoMain"}, interfaceFile)
 
-    this.addBoundsOperations(platoApp)
+    this.addBoundsOperations(platoApp, fixedIndices)
     this.addBoundsStages(interfaceFile)
   }
   addCriterionOperation(aObj, analyzeApp) {
@@ -764,7 +778,7 @@ class Optimization extends ParBase {
     this.objectives.forEach((obj) => {
       let objName = `${obj.scenario.name}:${obj.criterionName}`
       newStage["Stage"][`Operation__${objName}`] = {
-        Name: `Compute ${objName} Gradient`,
+        Name: `Compute ${objName}${(this.objectives.length === 1 ? ' Gradient' : '')}`, // TODO: until states are cached
         PerformerName: "Analyze",
         Input: {
           ArgumentName: "Topology",
@@ -950,16 +964,7 @@ class Optimization extends ParBase {
   inputFileName(aName){
     return `${aName.replace(" ", "_")}.xml`
   }
-  toDOM (models) {
-    let retVal = {}
-
-    let config = {
-      interfaceFile: new XMLWriter(true),
-      platoApp: new XMLWriter(true),
-      platoInput: new XMLWriter(true),
-      analyzeApp: new XMLWriter(true)
-    }
-
+  uniqueScenarios() {
     let uniqueScenarios = []
     this.constraints.forEach((con) => {
       let index = uniqueScenarios.findIndex((s) => s.name === con.scenario.name )
@@ -973,6 +978,63 @@ class Optimization extends ParBase {
         uniqueScenarios.push(obj.scenario)
       }
     })
+    return uniqueScenarios
+  }
+  uniqueModels() {
+    let uniqueScenarios = this.uniqueScenarios()
+    let uniqueModels = []
+    uniqueScenarios.forEach((scenario) => {
+      let modelName = scenario.geometry.body.modelName
+      let index = uniqueModels.findIndex((m) => m === modelName )
+      if (index === -1) {
+        uniqueModels.push(modelName)
+      }
+    })
+    return uniqueModels
+  }
+  setFixedBlock(model, block, isFixed) {
+    if (isFixed) {
+      let index = this.fixedBlocks[model].findIndex( name => name === block )
+      if (index === -1) {
+        this.fixedBlocks[model].push(block)
+      }
+    } else {
+      let index = this.fixedBlocks[model].findIndex( name => name === block )
+      if (index !== -1) {
+        this.fixedBlocks[model].splice(index, 1)
+      }
+    }
+  }
+  indicesFromBlocks(blocks, models) {
+    let indices = []
+    Object.keys(blocks).forEach( key => {
+      let modelIndex = models.findIndex( m => m.name === key )
+      if (modelIndex !== -1) {
+        let model = models[modelIndex]
+        let blockNames = blocks[key]
+        blockNames.forEach( blockName => {
+          model.primitives.forEach( p => {
+            if (p.type === 'block' && p.definition.Name === blockName) {
+              indices.push(p.definition.ID)
+            }
+          })
+        })
+      }
+    })
+    return indices
+  }
+  toDOM (models) {
+    let retVal = {}
+
+
+    let config = {
+      interfaceFile: new XMLWriter(true),
+      platoApp: new XMLWriter(true),
+      platoInput: new XMLWriter(true),
+      analyzeApp: new XMLWriter(true)
+    }
+
+    let uniqueScenarios = this.uniqueScenarios()
     
     // write analyzeInput file for each scenario
     uniqueScenarios.forEach((scenario) => {
@@ -981,7 +1043,10 @@ class Optimization extends ParBase {
 
     this.setupPerformers(config)
     this.setupSharedData(config)
-    this.setupBounds(config)
+
+    let fixedIndices = this.indicesFromBlocks(this.fixedBlocks, models)
+    this.setupBounds(config, fixedIndices)
+
     this.setupFilter(config)
 
     this.setupObjectiveCriteria(config)
@@ -1056,9 +1121,23 @@ class Optimization extends ParBase {
   }
   addObjective(scenario, criterionName, weight) {
     this.objectives.push({scenario: scenario, criterionName: criterionName, weight: weight}) 
+
+    let uniqueModels = this.uniqueModels()
+    uniqueModels.forEach(modelName => {
+      if (!(modelName in this.fixedBlocks)){
+        this.fixedBlocks[modelName] = []
+      }
+    })
   }
   addConstraint(scenario, criterionName, target, perVolume) {
     this.constraints.push({scenario: scenario, criterionName: criterionName, target: target, perVolume: perVolume}) 
+
+    let uniqueModels = this.uniqueModels()
+    uniqueModels.forEach(modelName => {
+      if (!(modelName in this.fixedBlocks)){
+        this.fixedBlocks[modelName] = []
+      }
+    })
   }
 }
 

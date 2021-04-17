@@ -15,19 +15,19 @@
             <v-card-text>
               <validation-observer>
                 <validation-provider rules="required|alpha_num" name="Username" v-slot="{ errors }">
-                  <v-text-field v-model="username" label="Username" :error-messages="errors"/>
+                  <v-text-field autocomplete="off" v-model="username" label="Username" :error-messages="errors"/>
                 </validation-provider>
                 <validation-provider rules="required|email" name="email" v-slot="{ errors }">
-                  <v-text-field v-model="email" label="Email address" :error-messages="errors"/>
+                  <v-text-field autocomplete="off" v-model="email" label="Email address" :error-messages="errors"/>
                 </validation-provider>
                 <validation-provider rules="required|email" name="confirmEmail" v-slot="{ errors }">
-                  <v-text-field v-model="confirmemail" label="Confirm Email" :error-messages="errors"/>
+                  <v-text-field autocomplete="off" v-model="confirmemail" label="Confirm Email" :error-messages="errors"/>
                 </validation-provider>
                 <validation-provider rules="required|min:6" name="password" v-slot="{ errors }">
-                  <v-text-field v-model="password" type="password" label="Password" :error-messages="errors"/>
+                  <v-text-field autocomplete="off" v-model="password" type="password" label="Password" :error-messages="errors"/>
                 </validation-provider>
                 <validation-provider rules="required|confirmed:password" name="confirmPassword" v-slot="{ errors }">
-                  <v-text-field v-model="confirmpassword" type="password" label="Confirm Password" :error-messages="errors"/>
+                  <v-text-field autocomplete="off" v-model="confirmpassword" type="password" label="Confirm Password" :error-messages="errors"/>
                 </validation-provider>
               </validation-observer>
             </v-card-text>
@@ -90,17 +90,10 @@ export default {
   methods: {
     registerNewUser () {
       this.dialog=false
-      apiService.registerUser(this.username, this.email, this.password).then((response) => {
-        if (response.Authenticated) {
-          var usertoken = response.token
-          localStorage.setItem('token', usertoken)
-          localStorage.setItem('username', this.username)
-          this.$store.commit('updateAuthentication', this.username, usertoken)
-          apiService.loadUsersProjects(usertoken, this.username).then(data => {
-            this.$store.commit('storeUserProjects', data)
-          })
-        } else {
-          this.registrationerrors = 'this username is already taken'
+      let appThis = this
+      apiService.registerUser(appThis.username, appThis.email, appThis.password).then((response) => {
+        if (!response.Authenticated) {
+          appThis.registrationerrors = 'appThis username is already taken'
         }
       })
     },

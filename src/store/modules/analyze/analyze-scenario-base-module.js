@@ -13,7 +13,7 @@ class AnalyzeScenarioBase extends ParBase {
     super()
     this.tw = new TeuchosWriter()
     this.tp = new TeuchosParser()
-    this._type = ''
+    this.type = ''
     this.hostPhysics = ''
     this.hostCode = 'Analyze'
     this.geometry = {
@@ -23,12 +23,6 @@ class AnalyzeScenarioBase extends ParBase {
     this.selectables = {}
     this.modelviews = {}
     this.outputData = {}
-  }
-  get type () {
-    return this._type
-  }
-  set type (newValue) {
-    this._type = newValue
   }
   getViewData (viewname) {
     let data = this.modelviews[viewname]['data']
@@ -71,13 +65,27 @@ class AnalyzeScenarioBase extends ParBase {
   setOptionData (dataName, data) {
     this.modelviews[dataName]['data'] = data
   }
-  setListData (dataName, data) {
+  removeListData (dataName, entryName) {
     let thisData = this.modelviews[dataName]['data']
-    let entryName = Object.keys(data)[0]
     if (Array.isArray(thisData)) {
       let entryIndex = thisData.findIndex((el) => { return Object.prototype.hasOwnProperty.call(el, entryName) })
       if (entryIndex !== -1) {
-        this.modelviews[dataName]['data'][entryIndex] = data
+        thisData.splice(entryIndex, 1)
+        let selectables = this.selectables[dataName]
+        let keyIndex = selectables.findIndex(entry => entry === entryName)
+        if (keyIndex !== -1) {
+          Vue.delete(selectables, keyIndex)
+        }
+      }
+    }
+  }
+  setListData (dataName, data) {
+    let thisData = this.modelviews[dataName]['data']
+    let entryName = Object.keys(data)[0] // the onl key is the name of the list entry
+    if (Array.isArray(thisData)) {
+      let entryIndex = thisData.findIndex((el) => { return Object.prototype.hasOwnProperty.call(el, entryName) })
+      if (entryIndex !== -1) {
+        thisData[entryIndex] = data
         Vue.set(this.selectables[dataName], entryIndex, entryName)
       }
     }

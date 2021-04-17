@@ -9,7 +9,7 @@
         <v-select label="Scenario" dense class="ml-2 ma-0 pa-0" v-on:change="setPending()" v-model="selectedScenario" :items="getScenarios()"/>
         <v-select label="Criterion" :disabled="selectedScenario===''" dense class="ml-2 ma-0 pa-0" v-on:change="setPending()" v-model="selectedCriterion" :items="getCriteria()"/>
         <v-card outlined class="pl-2 pr-2">
-          <v-text-field label="Target Value" dense class="ml-2 ma-0 pa-0 body-2" v-on:input="setPending()" v-model="targetValue"/>
+          <v-text-field autocomplete="off" label="Target Value" dense class="ml-2 ma-0 pa-0 body-2" v-on:input="setPending()" v-model="targetValue"/>
           <v-checkbox label="Per Volume" dense class="ml-2 ma-0 pa-0 body-2" v-on:input="setPending()" v-model="perVolume"/>
         </v-card>
       </v-card-text>
@@ -47,7 +47,29 @@ export default {
   },
   methods: {
     getScenarios: function () {
-      return this.$store.state.scenarios.map(s => s.name)
+      let returnScenarios = []
+      // if the optimization has any objectives or constraints, only list scenarios that are based on
+      // the same model.  (Plato doesn't currrently support multi-model optimizations.)
+      if (this.optimization.objectives.length === 0 && this.optimization.constraints.length === 0) {
+        returnScenarios = this.$store.state.scenarios.map(s => s.name)
+      } else
+      if (this.optimization.objectives.length > 0) {
+        // there's an objective defined.  only show criteria that used the same underlying model.
+        let modelName = this.optimization.objectives[0].scenario.geometry.body.modelName
+        let scenarios = this.$store.state.scenarios.filter(s => s.geometry.body.modelName === modelName)
+        returnScenarios = scenarios.map(s => s.name)
+
+      } else
+      if (this.optimization.constraints.length > 0) {
+        // there's a constraint defined.  only show criteria that used the same underlying model.
+        let modelName = this.optimization.constraints[0].scenario.geometry.body.modelName
+        let scenarios = this.$store.state.scenarios.filter(s => s.geometry.body.modelName === modelName)
+        returnScenarios = scenarios.map(s => s.name)
+      }
+      if (returnScenarios.length === 1) {
+        this.selectedScenario = returnScenarios[0]
+      }
+      return returnScenarios
     },
     getCriteria: function () {
       if (this.selectedScenario!=='') {
