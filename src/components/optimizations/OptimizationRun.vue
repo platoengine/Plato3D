@@ -4,6 +4,12 @@
       <v-text-field autocomplete="off" dense class="ml-2 ma-0 pa-0 caption" v-model="runStatus" label="Status"/>
       <v-btn text block small @click="run()" :disabled="pending">{{buttonName}}</v-btn>
       <optimization-views :optimization="optimization"/>
+<!-- plotly refuses to react to changing data.  The Vue plugin shows that data are
+     being updated, but the plots aren't reacting.  Perhaps plotly just sucks.
+      <v-card>
+        <plot :optimizationName="optimization.name"/>
+      </v-card>
+-->
     </v-card>
   </v-card>
 </template>
@@ -12,6 +18,8 @@
 import ErrorHandler from '../../store/modules/error-handler-module'
 import {PLYLoader} from '../../store/modules/ply-loader'
 import {PLYToMesh} from '../../store/modules/ply-to-mesh'
+// import plot from './ConvergencePlot'
+
 import * as THREE from 'three'
 
 const errorHandler = new ErrorHandler()
@@ -21,7 +29,8 @@ export default {
   name: 'optimization-run',
   props: ['optimization'],
   components: {
-    OptimizationViews
+    OptimizationViews,
+    // plot
   },
   /*data : function() {
     return {
@@ -87,6 +96,7 @@ export default {
         errorHandler.report('trusted source: ' + isTrusted)
         const dataObject = JSON.parse(data)
         const {optimizationName, data: dataIn} = dataObject
+        console.log("received convergence data.  committing.")
         appThis.$store.commit('plotConvergence', {optimizationName: optimizationName, plotData: dataIn})
       }
     });

@@ -53,6 +53,7 @@ class Optimization extends ParBase {
     this.fixedBlocks = {}
     this.run = {computeStatus: 'Idle', runDir: 'not set', iterations: [], activeIteration: 0}
     this.display = {opacity: 1.0, wireframe: false, visible: true}
+    this.convergenceData = [{x: [], y: [], type: 'scatter'}]
   }
   destructor (graphics) {
     this.run.iterations.forEach(iteration => {

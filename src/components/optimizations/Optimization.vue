@@ -82,9 +82,6 @@
 -->
       </v-expansion-panels>
     </v-card>
-    <v-card>
-      <plot/>
-    </v-card>
     <v-card :class="'d-flex justify-space-between'">
       <edit-optimization :optimization="optimization"/>
       <delete-optimization :optimization="optimization"/>
@@ -106,7 +103,6 @@ import OptimizationOptimizer from './OptimizationOptimizer'
 import OptimizationSolver from './OptimizationSolver'
 import OptimizationGeometry from './OptimizationGeometry'
 import OptimizationRun from './OptimizationRun'
-import plot from './ConvergencePlot'
 
 //import RealizationResources from './RealizationResources'
 
@@ -140,8 +136,7 @@ export default {
     OptimizationOptimizer,
     OptimizationSolver,
     OptimizationGeometry,
-    OptimizationRun,
-    plot
+    OptimizationRun
   }
 }
 </script>

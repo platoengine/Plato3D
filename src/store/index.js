@@ -500,12 +500,15 @@ export default new Vuex.Store({
         optimizations[optimizationIndex].addIteration(payload)
       }
     },
-    plotConvergence({optimizations, convergencePlotData}, {optimizationName, plotData}) {
+    plotConvergence({optimizations}, {optimizationName, plotData}) {
       let optimizationIndex = optimizations.findIndex(optimization => optimization.name === optimizationName)
       if (optimizationIndex !== -1) {
-        convergencePlotData[optimizationName] = plotData
+        let opt = optimizations[optimizationIndex]
+        plotData.x.forEach( (val, i) => {
+          Vue.set(opt.convergenceData[0].x, i, val)
+          Vue.set(opt.convergenceData[0].y, i, plotData.y[i])
+        })
       }
-      alert(JSON.stringify(convergencePlotData))
     },
     toFirstOptimizationIteration ({optimizations}, {optimizationName, graphics}) {
       let optimizationIndex = optimizations.findIndex(optimization => optimization.name === optimizationName)
