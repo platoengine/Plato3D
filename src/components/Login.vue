@@ -12,7 +12,7 @@
                 <v-text-field autocomplete="off" dense v-model="password" label="Password" type="password"/>
                 <v-btn small block type="submit">login</v-btn>
               </v-form>
-              <register/>
+              <register :server="server" />
             </v-col>
           </v-row>
           <v-row v-else>
