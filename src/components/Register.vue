@@ -67,6 +67,12 @@ export default {
     ValidationProvider,
     ValidationObserver
   },
+  props: {
+    server: {
+      type: String,
+      required: true
+    }
+  },
   computed: {
     isAuthenticated: function () {
       return this.$store.state.session.authenticated
@@ -91,7 +97,7 @@ export default {
     registerNewUser () {
       this.dialog=false
       let appThis = this
-      apiService.registerUser(appThis.username, appThis.email, appThis.password).then((response) => {
+      apiService.registerUser(appThis.server, appThis.username, appThis.email, appThis.password).then((response) => {
         if (!response.Authenticated) {
           appThis.registrationerrors = 'appThis username is already taken'
         }

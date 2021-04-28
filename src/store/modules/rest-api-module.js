@@ -34,9 +34,8 @@ export class APIService {
       token
     }).then(response => response.data)
   }
-  registerUser (username, email, password) {
-    // const {server} = this.getSession()
-    const url = `http://localhost:3000/register`
+  registerUser (server, username, email, password) {
+    const url = `${server}/register`
     return axios.post(url, {
       username,
       email,
