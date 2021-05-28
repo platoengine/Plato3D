@@ -720,6 +720,16 @@ export default new Vuex.Store({
         errorHandler.report('server request failed: create optimization')
       }
     },
+    async getOptimizationSTL ({state}, {optimizationName}) {
+      let optimizationIndex = state.optimizations.findIndex(optimization => optimization.name === optimizationName)
+      if (optimizationIndex !== -1) {
+        let optimization = state.optimizations[optimizationIndex]
+        const response = await apiService.getOptimizationSTL(optimization)
+        if (response === 'FAILURE') {
+          errorHandler.report('server request failed: get optimization STL')
+        }
+      }
+    },
     async startOptimizationRun ({commit}, {optimization}) {
       const response = await apiService.startOptimization(commit, optimization)
       if (response === 'FAILURE') {

@@ -1,5 +1,7 @@
 import axios from 'axios'
 import ErrorHandler from './error-handler-module'
+//import { saveAs } from 'file-saver'
+
 
 const errorHandler = new ErrorHandler()
 
@@ -192,6 +194,33 @@ export class APIService {
         commit('setOptimizationAttribute', {name: optimization.name, key: 'computeStatus', value: 'created'})
         commit('setOptimizationAttribute', {name: optimization.name, key: 'runDir', value: response.data})
       })
+  }
+  getOptimizationSTL (optimization) {
+    const {token, username, server} = this.getSession()
+
+    const url = `${server}/jobs/get-optimization-stl`
+
+    console.log(`token: ${token}`)
+    return axios.post(url, {
+      token,
+      username,
+      payload: {runDir: optimization.run.runDir}
+    }).then(
+      response => {
+        console.log(`response: ${response}`)
+        //let blob = new Blob([response.request.response], {type: 'utf-8'})
+        //let blob = new Blob([response.data], {type: 'application/pdf'})
+        //let blob = new Blob([response.data])
+        const link = document.createElement('a')
+        //link.href = URL.createObjectURL(blob)
+        link.href = URL.createObjectURL(response)
+        const label = 'test.pdf'
+        link.download = label
+        link.click()
+        URL.revokeObjectURL(link.href)
+        //saveAs(blob, 'test.png')
+      }
+    )
   }
   startOptimization (commit, optimization) {
     const {token, username, server} = this.getSession()

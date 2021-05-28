@@ -17,6 +17,8 @@
 
 <script>
 
+import { saveAs } from 'file-saver'
+
 export default {
   name: 'optimization-views',
   props: ['optimization'],
@@ -30,9 +32,23 @@ export default {
       }
     }
   },
+  mounted () {
+    this.$store.commit('addEventListener', {
+      aName: 'exportSTL',
+      aFunction: function (event) {
+        const {data} = event
+        const dataObject = JSON.parse(data)
+        const fileName = dataObject.fileName
+        const stlData = dataObject.data
+        let blob = new Blob([stlData], {type: 'application/object'})
+        saveAs(blob, fileName)
+      }
+    })
+  },
   methods: {
     exportSTL: function () {
       console.log("export STL")
+      this.$store.dispatch('getOptimizationSTL', {optimizationName: this.optimization.name})
     },
     displayAttributes: function () {
       this.$store.commit('setActiveOptimization', {optimizationName: this.optimization.name})
