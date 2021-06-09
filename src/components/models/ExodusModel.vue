@@ -1,11 +1,12 @@
 <template>
   <v-card>
-    <div v-if= "showLoader && (!loaded)">
-      <v-card>
-        <Loader/>
-      </v-card>
+    <div v-if= "isLoading && (!loaded)">
+      <div class="text-center">
+        <div class="text-h6">Loading</div>
+        <div><v-progress-linear indeterminate color="primary" ></v-progress-linear></div>
+      </div>
     </div>
-    <div v-if ="!showLoader">
+    <div v-if ="!isLoading">
       <load-model v-if="!loaded" v-on:load-model='loadModel($event)'/>
     </div>
     <v-card :class="'d-flex justify-space-between'">
@@ -44,7 +45,6 @@ import DeleteModel from './DeleteModel'
 import EditModel from './EditModel'
 import ErrorHandler from '../../store/modules/error-handler-module'
 import {OBJLoader} from 'three-obj-mtl-loader'
-import Loader from '../loadingDialog.vue'
 
 
 const errorHandler = new ErrorHandler()
@@ -56,11 +56,10 @@ export default {
     LoadModel,
     ImportModel,
     DeleteModel,
-    EditModel,
-    Loader
+    EditModel
   },
   data: function () {
-    return { showLoader: false}
+    return { isLoading: false}
   },
   computed: {
     primitives: function () {
@@ -100,7 +99,7 @@ export default {
         const loader = new OBJLoader()
         const url = URL.createObjectURL(new Blob([geometryData]))
         loader.load(url, (geometry) => {
-          this.showLoader = false;
+          this.isLoading = false;
           appThis.$store.commit('addObj', {
             modelName: modelName,
             name: geometryName,
@@ -118,7 +117,7 @@ export default {
     loadModel: function (eventData) {
       // change the model name to the filename of the loaded model
       //
-      this.showLoader = true;
+      this.isLoading = true;
       let modelName = eventData.get('name')
 
       this.$store.commit('setModelAttributes', {

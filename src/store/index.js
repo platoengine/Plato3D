@@ -702,6 +702,16 @@ export default new Vuex.Store({
     //
     // optimization actions
     //
+    async cancelOptimizationRun ({state}, {optimizationName}) {
+      let optimizationIndex = state.optimizations.findIndex(optimization => optimization.name === optimizationName)
+      if (optimizationIndex !== -1) {
+        let optimization = state.optimizations[optimizationIndex]
+        const response = await apiService.cancelOptimization(optimization)
+        if (response === 'FAILURE') {
+          errorHandler.report('server request failed: cancel optimization')
+        }
+      }
+    },
     async conductOptimizationRun ({dispatch, state, commit}, {optimizationName, graphics}) {
       let optimizationIndex = state.optimizations.findIndex(optimization => optimization.name === optimizationName)
       if (optimizationIndex !== -1) {

@@ -4,10 +4,11 @@
     <opt-view-detail/>
 
     <v-app-bar app clipped-left >
-      <v-app-bar-nav-icon @click.stop="toggleDrawer()" />
+      <v-app-bar-nav-icon :disabled="loggedIn===false" @click.stop="toggleDrawer()" />
       <v-toolbar-title>Plato3D</v-toolbar-title>
       <v-spacer></v-spacer>
        
+      <div v-if="loggedIn">
       <p-menu>
         <template v-slot:button>
           <v-icon>mdi-help-circle-outline</v-icon>
@@ -53,10 +54,11 @@
           <grid-settings/>
         </p-menu>
       </p-menu>
+      </div>
 
       <p-menu>
         <template v-slot:button>
-          <v-icon>mdi-login-variant</v-icon>
+          <v-icon>mdi-power</v-icon>
         </template>
         <login/>
       </p-menu>
@@ -112,6 +114,11 @@ export default {
     data: () => ({
       drawerOpen: false
     }),
+    computed: {
+      loggedIn: function () {
+        return this.$store.state.session.data.authenticated
+      }
+    },
     methods: {
       toggleHelpSetup(){
         this.disablehelp = !this.disablehelp

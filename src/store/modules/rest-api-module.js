@@ -167,15 +167,31 @@ export class APIService {
       return axios.post(url, {
         token,
         username,
-        payload: {runDir: realization.simulation.runDir, useMPI: false, hostCode: hostCode}
+        payload: {
+          runDir: realization.simulation.runDir,
+          useMPI: false,
+          hostCode: hostCode,
+          name: realization.name
+        }
       }).then(() => {
-        commit('setSimulationAttribute', {name: realization.name, key: 'computeStatus', value: 'started'})
+        commit('setSimulationAttribute', {name: realization.name, key: 'computeStatus', value: 'running'})
       })
     }
   }
   //
   // optimization services
   //
+  cancelOptimization (optimization) {
+    const {token, username, server} = this.getSession()
+
+    const url = `${server}/jobs/cancel-optimization`
+
+    return axios.post(url, {
+      token,
+      username,
+      payload: {runDir: optimization.run.runDir}
+    })
+  }
   createOptimization (state, commit, optimization) {
     const {token, username, server} = this.getSession()
 
@@ -205,20 +221,15 @@ export class APIService {
       token,
       username,
       payload: {runDir: optimization.run.runDir}
-    }).then(
+    }, { responseType: 'blob'}).then(
       response => {
-        console.log(`response: ${response}`)
-        //let blob = new Blob([response.request.response], {type: 'utf-8'})
-        //let blob = new Blob([response.data], {type: 'application/pdf'})
-        //let blob = new Blob([response.data])
+        let blob = new Blob([response.data])
         const link = document.createElement('a')
-        //link.href = URL.createObjectURL(blob)
-        link.href = URL.createObjectURL(response)
-        const label = 'test.pdf'
+        link.href = URL.createObjectURL(blob)
+        const label = 'design.stl'
         link.download = label
         link.click()
         URL.revokeObjectURL(link.href)
-        //saveAs(blob, 'test.png')
       }
     )
   }
@@ -230,9 +241,12 @@ export class APIService {
     return axios.post(url, {
       token,
       username,
-      payload: {runDir: optimization.run.runDir}
+      payload: {
+        runDir: optimization.run.runDir,
+        name: optimization.name
+      }
     }).then(() => {
-      commit('setOptimizationAttribute', {name: optimization.name, key: 'computeStatus', value: 'started'})
+      commit('setOptimizationAttribute', {name: optimization.name, key: 'computeStatus', value: 'running'})
     })
   }
   createOptimizationView (viewDefinition) {

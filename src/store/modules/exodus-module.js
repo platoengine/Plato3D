@@ -35,6 +35,10 @@ class ExodusModel extends ParBase {
     newPrimitive.definition.ID = payload.id
     newPrimitive.primitiveObjectID = geometry.id
     newPrimitive.type = type
+    if (type === 'block') {
+      geometry.children[0].material.wireframe = true
+      newPrimitive.displayAttributes.wireframe = true
+    }
     graphics.scene.add(geometry)
     this.primitives.push(newPrimitive)
     graphics.setBoundingBox(this.primitives)

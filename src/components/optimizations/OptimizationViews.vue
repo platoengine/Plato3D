@@ -40,7 +40,7 @@ export default {
         const dataObject = JSON.parse(data)
         const fileName = dataObject.fileName
         const stlData = dataObject.data
-        let blob = new Blob([stlData], {type: 'application/object'})
+        let blob = new Blob([stlData], {type: 'application/pdf'})
         saveAs(blob, fileName)
       }
     })
