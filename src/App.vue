@@ -1,6 +1,7 @@
 <template>
   <v-app id="inspire">
     <item-detail/>
+    <p-important-info/>
     <opt-view-detail/>
 
     <v-app-bar app clipped-left >
@@ -24,8 +25,11 @@
           <v-icon>mdi-console</v-icon>
         </template>
           <v-card>
+          <v-card-text class="pa-0">
           <v-textarea outlined class="p-console" style="padding:12px;"
             :no-resize=true :reverse=true :readonly=true id="error-console" disabled/>
+          <v-btn x-small block @click="openConsole()">Open Console</v-btn>
+          </v-card-text>
           </v-card>
       </p-menu>
 
@@ -85,6 +89,7 @@
 
 <script>
 import Login from './components/Login'
+import PImportantInfo from './components/ui/PImportantInfo'
 import GridSettings from './components/settings/GridSettings'
 import ThreeRenderer from './components/ThreeRenderer'
 import LightingSettings from './components/settings/LightingSettings'
@@ -98,6 +103,7 @@ export default {
   name: 'App',
     components: {
       GridSettings,
+      PImportantInfo,
       LightingSettings,
       ItemDetail,
       OptViewDetail,
@@ -128,6 +134,9 @@ export default {
       },
       reset_scene: function () {
         this.$graphics.controls.reset()
+      },
+      openConsole: function () {
+        this.$store.commit('setSystemInfoModalState', true)
       }
     },
     created () {

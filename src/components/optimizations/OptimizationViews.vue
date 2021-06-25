@@ -9,15 +9,28 @@
       <v-btn x-small @click = "toLast()"> <v-icon small>mdi-arrow-collapse-right</v-icon> </v-btn>
     </v-card>
     <v-card>
-      <v-btn x-small block @click="displayAttributes()">Display Attributes</v-btn>
-      <v-btn x-small block @click="exportSTL()">Export STL</v-btn>
+      <v-container class="pa-0">
+        <v-row no-gutters>
+          <v-col><v-btn x-small block @click="displayAttributes()">Display</v-btn></v-col>
+          <v-col>
+            <v-menu offset-y>
+              <template v-slot:activator="{ on, attrs }">
+                <v-btn x-small block v-bind="attrs" v-on="on" >
+                  Export
+                </v-btn>
+              </template>
+              <v-list class="pa-0">
+                <v-list-item style="min-height:20px"><v-btn x-small block @click="exportSTL()">STL</v-btn></v-list-item>
+                <v-list-item style="min-height:20px"><v-btn x-small block @click="exportEXO()">EXO</v-btn></v-list-item>
+              </v-list>
+            </v-menu>
+          </v-col>
+        </v-row>
+      </v-container>
     </v-card>
   </v-card>
 </template>
-
 <script>
-
-import { saveAs } from 'file-saver'
 
 export default {
   name: 'optimization-views',
@@ -32,23 +45,12 @@ export default {
       }
     }
   },
-  mounted () {
-    this.$store.commit('addEventListener', {
-      aName: 'exportSTL',
-      aFunction: function (event) {
-        const {data} = event
-        const dataObject = JSON.parse(data)
-        const fileName = dataObject.fileName
-        const stlData = dataObject.data
-        let blob = new Blob([stlData], {type: 'application/pdf'})
-        saveAs(blob, fileName)
-      }
-    })
-  },
   methods: {
     exportSTL: function () {
-      console.log("export STL")
-      this.$store.dispatch('getOptimizationSTL', {optimizationName: this.optimization.name})
+      this.$store.dispatch('getOptimizationFile', {optimizationName: this.optimization.name, remoteFileName: 'design.stl', localFileName: 'design.stl'})
+    },
+    exportEXO: function () {
+      this.$store.dispatch('getOptimizationFile', {optimizationName: this.optimization.name, remoteFileName: 'platomain.exo.1.0', localFileName: 'result.exo'})
     },
     displayAttributes: function () {
       this.$store.commit('setActiveOptimization', {optimizationName: this.optimization.name})

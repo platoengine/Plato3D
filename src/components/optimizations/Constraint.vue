@@ -7,10 +7,6 @@
         <v-checkbox dense class="ma-0 pa-0" v-model="perVolume" label="Per Volume"/>
         </v-card>
       </v-card-text>
-      <v-card-actions>
-        <v-spacer></v-spacer>
-        <v-btn block text @click="modify()">Modify</v-btn>
-      </v-card-actions>
       <delete-constraint :optimization="optimization" :constraint="constraint"/>
     </v-card>
   </v-card>
@@ -28,7 +24,6 @@ export default {
   data: function () {
     return {
       state: {target: 0.0, perVolume: true},
-      pending: false
     }
   },
   computed: {
@@ -38,7 +33,7 @@ export default {
       },
       set: function (newValue) {
         this.state.target = newValue
-        this.pending = true
+        this.modify()
       }
     },
     perVolume: {
@@ -47,13 +42,12 @@ export default {
       },
       set: function (newValue) {
         this.state.perVolume = newValue
-        this.pending = true
+        this.modify()
       }
     }
   },
   methods: {
     modify: function () {
-      this.pending = false
       this.$store.commit('modifyOptimizationConstraint', {
         optimization: this.optimization, constraint: this.constraint, target: this.state.target, perVolume: this.state.perVolume
       })

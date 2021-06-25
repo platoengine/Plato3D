@@ -4,6 +4,9 @@ class AnalyzeStaticThermal extends AnalyzeScenarioBase {
   constructor () {
     super()
     this.hostPhysics = 'Thermal'
+    this.availableViewTypes = {
+      'Temperature': 'pvdToPLY_temperature.py',
+    }
     this.modelviews = {
       'Problem': {
         'data': null,
