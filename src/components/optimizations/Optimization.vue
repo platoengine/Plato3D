@@ -124,6 +124,19 @@ export default {
       return `${criterion.scenario.name}: ${criterion.criterionName}`
     }
   },
+  mounted () {
+    const appThis = this
+    this.$store.commit('addEventListener', {
+      aName: 'optimizationExited',
+      aFunction: function (event) {
+        const {data} = event
+        const dataObject = JSON.parse(data)
+        const {code, name} = dataObject
+        console.log(`code: ${code}`)
+        appThis.$store.commit('setOptimizationAttribute', {name: name, key: 'computeStatus', value: 'done'})
+      }
+    })
+  },
   components: {
 //    Parameters,
     EditOptimization,

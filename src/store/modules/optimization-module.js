@@ -51,7 +51,7 @@ class Optimization extends ParBase {
     this.initialValue = 0.25 // default value
     this.applyFilter = true // default value 
     this.fixedBlocks = {}
-    this.run = {computeStatus: 'Idle', runDir: 'not set', iterations: [], activeIteration: 0}
+    this.run = {computeStatus: 'idle', runDir: 'not set', iterations: [], activeIteration: 0}
     this.display = {opacity: 1.0, wireframe: false, visible: true}
     this.convergenceData = [{x: [], y: [], type: 'scatter'}]
   }

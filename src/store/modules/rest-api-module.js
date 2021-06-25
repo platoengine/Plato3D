@@ -1,5 +1,7 @@
 import axios from 'axios'
 import ErrorHandler from './error-handler-module'
+//import { saveAs } from 'file-saver'
+
 
 const errorHandler = new ErrorHandler()
 
@@ -165,15 +167,31 @@ export class APIService {
       return axios.post(url, {
         token,
         username,
-        payload: {runDir: realization.simulation.runDir, useMPI: false, hostCode: hostCode}
+        payload: {
+          runDir: realization.simulation.runDir,
+          useMPI: false,
+          hostCode: hostCode,
+          name: realization.name
+        }
       }).then(() => {
-        commit('setSimulationAttribute', {name: realization.name, key: 'computeStatus', value: 'started'})
+        commit('setSimulationAttribute', {name: realization.name, key: 'computeStatus', value: 'running'})
       })
     }
   }
   //
   // optimization services
   //
+  cancelOptimization (optimization) {
+    const {token, username, server} = this.getSession()
+
+    const url = `${server}/jobs/cancel-optimization`
+
+    return axios.post(url, {
+      token,
+      username,
+      payload: {runDir: optimization.run.runDir}
+    })
+  }
   createOptimization (state, commit, optimization) {
     const {token, username, server} = this.getSession()
 
@@ -193,6 +211,31 @@ export class APIService {
         commit('setOptimizationAttribute', {name: optimization.name, key: 'runDir', value: response.data})
       })
   }
+  getOptimizationFile (optimization, remoteFileName, localFileName) {
+    const {token, username, server} = this.getSession()
+
+    const url = `${server}/jobs/get-optimization-file`
+
+    console.log(`token: ${token}`)
+    return axios.post(url, {
+      token,
+      username,
+      payload: {
+        runDir: optimization.run.runDir,
+        fileName: remoteFileName
+      }
+    }, { responseType: 'blob'}).then(
+      response => {
+        let blob = new Blob([response.data])
+        const link = document.createElement('a')
+        link.href = URL.createObjectURL(blob)
+        const label = localFileName
+        link.download = label
+        link.click()
+        URL.revokeObjectURL(link.href)
+      }
+    )
+  }
   startOptimization (commit, optimization) {
     const {token, username, server} = this.getSession()
 
@@ -201,9 +244,12 @@ export class APIService {
     return axios.post(url, {
       token,
       username,
-      payload: {runDir: optimization.run.runDir}
+      payload: {
+        runDir: optimization.run.runDir,
+        name: optimization.name
+      }
     }).then(() => {
-      commit('setOptimizationAttribute', {name: optimization.name, key: 'computeStatus', value: 'started'})
+      commit('setOptimizationAttribute', {name: optimization.name, key: 'computeStatus', value: 'running'})
     })
   }
   createOptimizationView (viewDefinition) {

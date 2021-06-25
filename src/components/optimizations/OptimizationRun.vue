@@ -1,8 +1,13 @@
 <template>
   <v-card class="ma-0 pa-0" color=green>
     <v-card class="pt-4 ml-2">
-      <v-text-field autocomplete="off" dense class="ml-2 ma-0 pa-0 caption" v-model="runStatus" label="Status"/>
-      <v-btn text block small @click="run()" :disabled="pending">{{buttonName}}</v-btn>
+      <v-card outlined class="ma-2">
+      <div class="text-center text-h7"> status: {{ runStatus }} </div>
+      <div v-if="runStatus==='running'" class="text-center">
+        <v-progress-linear height=8 indeterminate color="primary" ></v-progress-linear>
+      </div>
+      </v-card>
+      <v-card class="ma-2"><v-btn block small @click="run()">{{buttonName}}</v-btn></v-card>
       <optimization-views :optimization="optimization"/>
 <!-- plotly refuses to react to changing data.  The Vue plugin shows that data are
      being updated, but the plots aren't reacting.  Perhaps plotly just sucks.
@@ -40,19 +45,16 @@ export default {
   },*/
   computed: {
     buttonName: function () {
-      if (this.optimization.run.iterations.length === 0) {
+      if (this.runStatus === 'idle') {
         return "Run"
-      } else {
+      } else
+      if (this.runStatus === 'done') {
         return "Re-run"
+      } else
+      if (this.runStatus === 'running') {
+        return "Cancel"
       }
-    },
-    pending: {
-      get: function () {
-        return this.runStatus === "Running"
-      },
-      set: function () {
-        // no-op
-      }
+      return ''
     },
     runStatus: {
       get: function () {
@@ -65,7 +67,12 @@ export default {
   },
   methods: {
     run: function () {
-      this.$store.dispatch('conductOptimizationRun', {optimizationName: this.optimization.name, graphics: this.$graphics})
+      if (this.runStatus === 'idle' || this.runStatus === 'done') {
+        this.$store.dispatch('conductOptimizationRun', {optimizationName: this.optimization.name, graphics: this.$graphics})
+      } else
+      if (this.runStatus === 'running') {
+        this.$store.dispatch('cancelOptimizationRun', {optimizationName: this.optimization.name})
+      }
     }
   },
   mounted () {

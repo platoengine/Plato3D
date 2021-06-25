@@ -20,7 +20,7 @@
             <realization-solution :parentObject="realization"/>
           </v-expansion-panel-content>
         </v-expansion-panel>
-        <v-expansion-panel>
+        <v-expansion-panel v-if="solutionStatus==='done'">
           <v-expansion-panel-header>Views</v-expansion-panel-header>
           <v-expansion-panel-content>
             <realization-views :parentObject="realization"/>
@@ -52,6 +52,19 @@ export default {
       openSolution: false,
       solutionState: {pending: false}
     }
+  },
+  mounted () {
+    const appThis = this
+    this.$store.commit('addEventListener', {
+      aName: 'simulationExited',
+      aFunction: function (event) {
+        const {data} = event
+        const dataObject = JSON.parse(data)
+        const {code, name} = dataObject
+        console.log(`code: ${code}`)
+        appThis.$store.commit('setSimulationAttribute', {name: name, key: 'computeStatus', value: 'done'})
+      }
+    })
   },
   computed: {
     model: function () {

@@ -1,13 +1,15 @@
 <template>
   <v-app id="inspire">
     <item-detail/>
+    <p-important-info/>
     <opt-view-detail/>
 
     <v-app-bar app clipped-left >
-      <v-app-bar-nav-icon @click.stop="toggleDrawer()" />
+      <v-app-bar-nav-icon :disabled="loggedIn===false" @click.stop="toggleDrawer()" />
       <v-toolbar-title>Plato3D</v-toolbar-title>
       <v-spacer></v-spacer>
        
+      <div v-if="loggedIn">
       <p-menu>
         <template v-slot:button>
           <v-icon>mdi-help-circle-outline</v-icon>
@@ -23,8 +25,11 @@
           <v-icon>mdi-console</v-icon>
         </template>
           <v-card>
+          <v-card-text class="pa-0">
           <v-textarea outlined class="p-console" style="padding:12px;"
             :no-resize=true :reverse=true :readonly=true id="error-console" disabled/>
+          <v-btn x-small block @click="openConsole()">Open Console</v-btn>
+          </v-card-text>
           </v-card>
       </p-menu>
 
@@ -53,10 +58,11 @@
           <grid-settings/>
         </p-menu>
       </p-menu>
+      </div>
 
       <p-menu>
         <template v-slot:button>
-          <v-icon>mdi-login-variant</v-icon>
+          <v-icon>mdi-power</v-icon>
         </template>
         <login/>
       </p-menu>
@@ -83,6 +89,7 @@
 
 <script>
 import Login from './components/Login'
+import PImportantInfo from './components/ui/PImportantInfo'
 import GridSettings from './components/settings/GridSettings'
 import ThreeRenderer from './components/ThreeRenderer'
 import LightingSettings from './components/settings/LightingSettings'
@@ -96,6 +103,7 @@ export default {
   name: 'App',
     components: {
       GridSettings,
+      PImportantInfo,
       LightingSettings,
       ItemDetail,
       OptViewDetail,
@@ -112,6 +120,11 @@ export default {
     data: () => ({
       drawerOpen: false
     }),
+    computed: {
+      loggedIn: function () {
+        return this.$store.state.session.data.authenticated
+      }
+    },
     methods: {
       toggleHelpSetup(){
         this.disablehelp = !this.disablehelp
@@ -121,6 +134,9 @@ export default {
       },
       reset_scene: function () {
         this.$graphics.controls.reset()
+      },
+      openConsole: function () {
+        this.$store.commit('setSystemInfoModalState', true)
       }
     },
     created () {

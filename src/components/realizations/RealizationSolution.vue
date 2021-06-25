@@ -1,8 +1,13 @@
 <template>
   <v-card class="ma-0 pa-0" color=green>
     <v-card class="pt-4 ml-2">
-      <v-text-field autocomplete="off" dense class="ml-2 ma-0 pa-0 caption" v-model="solutionStatus" label="Status" disabled/>
-      <v-btn text block small @click="compute()" :disabled="pending==false">Compute</v-btn>
+      <v-card outlined class="ma-2">
+      <div class="text-center text-h7"> status: {{ solutionStatus }} </div>
+      <div v-if="solutionStatus==='running'" class="text-center">
+        <v-progress-linear indeterminate color="primary" ></v-progress-linear>
+      </div>
+      </v-card>
+      <v-card class="ma-2"><v-btn block small @click="compute()" :disabled="pending==false">Compute</v-btn></v-card>
     </v-card>
     <v-dialog v-model="showErrors" persistent max-width="600px">
       <v-card>

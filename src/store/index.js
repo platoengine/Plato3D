@@ -82,7 +82,8 @@ export default new Vuex.Store({
     session: { type: SessionContainer },
     uniqueID: { type: UniqueID },
     disabledByUser : false,
-    convergencePlotData : {}
+    convergencePlotData : {},
+    systemInfoModal: {State: false, Content: []}
   },
   mutations: {
     toggleTooltip(state){
@@ -172,7 +173,18 @@ export default new Vuex.Store({
     setModelRemoteData ({active}, payload) {
       active.model.remote = payload
     },
-    addObj ({active, sceneSettings}, payload) {
+    setSystemInfoModalState ({systemInfoModal}, value) {
+      systemInfoModal.State = value
+    },
+    clearSystemInfoModalContent ({systemInfoModal}) {
+      systemInfoModal.Content = []
+    },
+    addObj ({active, sceneSettings, systemInfoModal}, payload) {
+      if (payload.name.includes('unnamed_')) {
+        systemInfoModal.State = true
+        systemInfoModal.Content.push("Error: An exodus model was loaded that has unnamed entities.  This model cannot be used to define scenarios since entities are referred to by name.\n")
+        console.log(systemInfoModal)
+      }
       active.model.addPrimitive(payload)
       sceneSettings.grid.size = payload.graphics.getGridSize()
       payload.graphics.setGrid(sceneSettings.grid)
@@ -702,6 +714,16 @@ export default new Vuex.Store({
     //
     // optimization actions
     //
+    async cancelOptimizationRun ({state}, {optimizationName}) {
+      let optimizationIndex = state.optimizations.findIndex(optimization => optimization.name === optimizationName)
+      if (optimizationIndex !== -1) {
+        let optimization = state.optimizations[optimizationIndex]
+        const response = await apiService.cancelOptimization(optimization)
+        if (response === 'FAILURE') {
+          errorHandler.report('server request failed: cancel optimization')
+        }
+      }
+    },
     async conductOptimizationRun ({dispatch, state, commit}, {optimizationName, graphics}) {
       let optimizationIndex = state.optimizations.findIndex(optimization => optimization.name === optimizationName)
       if (optimizationIndex !== -1) {
@@ -718,6 +740,16 @@ export default new Vuex.Store({
       const response = await apiService.createOptimization(state, commit, optimization)
       if (response === 'FAILURE') {
         errorHandler.report('server request failed: create optimization')
+      }
+    },
+    async getOptimizationFile ({state}, {optimizationName, remoteFileName, localFileName}) {
+      let optimizationIndex = state.optimizations.findIndex(optimization => optimization.name === optimizationName)
+      if (optimizationIndex !== -1) {
+        let optimization = state.optimizations[optimizationIndex]
+        const response = await apiService.getOptimizationFile(optimization, remoteFileName, localFileName)
+        if (response === 'FAILURE') {
+          errorHandler.report('server request failed: get optimization file')
+        }
       }
     },
     async startOptimizationRun ({commit}, {optimization}) {
