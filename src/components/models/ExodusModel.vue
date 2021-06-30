@@ -142,6 +142,8 @@ export default {
       this.$store.commit('setActiveModel', this.model.name)
 
       this.$store.dispatch('fetchExodusModel', this.urlValue)
+
+      this.urlValue = ""
     },
     loadModel: function (eventData) {
       // change the model name to the filename of the loaded model

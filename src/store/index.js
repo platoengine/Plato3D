@@ -672,6 +672,10 @@ export default new Vuex.Store({
         errorHandler.report('server request failed: add view')
       }
     },
+    async fetchAnalyzeScenario ({commit}, {name, url}) {
+      const response = await apiService.fetchXML(url)
+      commit('loadScenario', {name: name, data: response, type: 'xml'})
+    },
     async fetchExodusModel ({state}, exodusURL) {
       state.active.model.fileName = exodusURL.split('/').pop();
       const response = await apiService.fetchExodusModel(exodusURL)
