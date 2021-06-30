@@ -12,6 +12,15 @@
       </div>
     </form>
     <ImportError @closeImportErrorDialog ="closeDialog()" :dialog = 'dialog'/>
+    <v-menu :close-on-content-click="false" offset-y>
+      <template v-slot:activator="{ on, attrs }">
+        <v-btn block text v-bind="attrs" v-on="on" > Load From URL </v-btn>
+      </template>
+      <v-card>
+        <v-text-field autocomplete="off" dense class="ml-2 ma-0 pt-4 body-2" v-model="urlValue" label="URL"/>
+        <v-btn small text block @click="loadFromURL()" :disabled="urlValue===''">Load</v-btn>
+      </v-card>
+    </v-menu>
   </v-card>
 </template>
 
@@ -38,7 +47,8 @@
         currentStatus: null,
         loadFieldName: 'scenarios',
         visibleImport: false,
-        dialog : false
+        dialog : false,
+        urlValue: ""
       }
     },
     computed: {
@@ -47,11 +57,16 @@
       }
     },
     methods: {
+      loadFromURL () {
+        this.$store.dispatch('fetchAnalyzeScenario', {name: this.name, url: this.urlValue})
+        this.urlValue = ""
+        this.$emit('close-panel')
+      },
       reset () {
         this.currentStatus = STATUS_INITIAL
         this.loadError = null
       },
-      closeDialog() {
+      closeDialog () {
         this.dialog = false
       },
       save (formData) {

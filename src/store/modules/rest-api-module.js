@@ -100,6 +100,26 @@ export class APIService {
       token
     }).then(response => response.data)
   }
+  fetchXML (fileURL) {
+    const {token, username, server} = this.getSession()
+
+    const url = `${server}/jobs/fetch-xml-file`
+    errorHandler.report('fetching xml file')
+    const request = {token: token, username: username, url: fileURL}
+    return axios.post(url,
+      request
+    ).then(response => response.data)
+  }
+  fetchExodusModel (exodusUrl) {
+    const {token, username, server} = this.getSession()
+
+    const url = `${server}/jobs/fetch-exodus-model`
+    errorHandler.report('fetching exodus model')
+    const request = {token: token, username: username, url: exodusUrl}
+    return axios.post(url,
+      request
+    ).then(response => response.data)
+  }
   uploadExodusModel (formData) {
     const {token, username, server} = this.getSession()
 
