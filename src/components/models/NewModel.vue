@@ -69,7 +69,7 @@ export default {
     },
     disabled: function () {
       let retval = false
-      retval = retval && this.type===''
+      retval = retval || this.type===''
       if (typeof this.type === 'string') {
         retval = retval || this.type.includes('coming soon')
       }

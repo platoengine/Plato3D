@@ -672,6 +672,13 @@ export default new Vuex.Store({
         errorHandler.report('server request failed: add view')
       }
     },
+    async fetchExodusModel ({state}, exodusURL) {
+      state.active.model.fileName = exodusURL.split('/').pop();
+      const response = await apiService.fetchExodusModel(exodusURL)
+      if (response === 'FAILURE') {
+        errorHandler.report('server request failed: fetch exodus model')
+      }
+    },
     async uploadExodusModel ({state}, formData) {
       state.active.model.file = formData.get('file')
 

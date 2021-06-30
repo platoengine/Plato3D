@@ -6,10 +6,19 @@
         <div><v-progress-linear indeterminate color="primary" ></v-progress-linear></div>
       </div>
     </div>
-    <div v-if ="!isLoading">
+    <v-container class="ma-0 pa-0" v-if ="!isLoading">
       <load-model v-if="!loaded" v-on:load-model='loadModel($event)'/>
-    </div>
-    <v-card :class="'d-flex justify-space-between'">
+      <v-menu :close-on-content-click="false" :nudge-width="200" offset-x>
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn block text v-bind="attrs" v-on="on" > Load From URL </v-btn>
+        </template>
+        <v-container>
+          <v-text-field autocomplete="off" dense class="ml-2 ma-0 pt-4 body-2" v-model="urlValue" label="URL"/>
+          <v-btn small text block @click="loadFromURL()" :disabled="urlValue===''">Load</v-btn>
+        </v-container>
+      </v-menu>
+    </v-container>
+    <v-card v-if="loaded" :class="'d-flex justify-space-between'">
       <v-container>
         <v-row>
           <v-col class="pa-0 ma-0">
@@ -59,7 +68,7 @@ export default {
     EditModel
   },
   data: function () {
-    return { isLoading: false}
+    return { isLoading: false, urlValue: ""}
   },
   computed: {
     primitives: function () {
@@ -114,6 +123,26 @@ export default {
     })
   },
   methods: {
+    loadFromURL: function () {
+      // change the model name to the filename of the loaded model
+      //
+      this.isLoading = true;
+      let tokens = this.urlValue.split('/');
+      let modelName = tokens.pop();
+
+      this.$store.commit('setModelAttributes', {
+        currentName: this.model.name,
+        modelAttributes: {
+          name: modelName,
+          description: null
+        }})
+
+      // set the newly loaded model as the active model.
+      //
+      this.$store.commit('setActiveModel', this.model.name)
+
+      this.$store.dispatch('fetchExodusModel', this.urlValue)
+    },
     loadModel: function (eventData) {
       // change the model name to the filename of the loaded model
       //
