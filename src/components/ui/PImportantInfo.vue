@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="dialogState" persistent max-width="400px" scrollable>
+  <v-snackbar v-model="dialogState" :timeout="-1" max-width="300px" :right="true">
     <v-card outlined class="ma-2 pa-2">
     <v-card class="ma-2 pa-2">
       <v-card-title>System Messages</v-card-title>
@@ -25,7 +25,7 @@
         <v-btn text @click="close()">Close</v-btn>
       </v-card-actions>
     </v-card>
-  </v-dialog>
+  </v-snackbar>
 </template>
 
 <script>

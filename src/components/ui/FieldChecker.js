@@ -1,9 +1,15 @@
 function checkForConditionalView(prefix, key){
   if('conditionalView' in prefix[key]){
-    const setView = prefix[key]['conditionalView']
-    if(prefix[setView[0]].value != setView[1]){
-      return true;
-    }   
+    const conditions = prefix[key]['conditionalView']
+    let satisfied = true
+    conditions.forEach(condition => {
+      if (Array.isArray(condition[1])) {
+        satisfied = satisfied && (condition[1].includes(prefix[condition[0]].value))
+      } else {
+        satisfied = satisfied && prefix[condition[0]].value === condition[1]
+      }
+    })
+    return !satisfied
   }
   return false
 }

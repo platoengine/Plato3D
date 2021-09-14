@@ -61,9 +61,6 @@ export default {
     getData: function () {
       return this.dataState
     },
-    setPending: function () {
-      this.savePending = true
-    },
     save: function () {
       let updatedListEntry = {}
       staticCopy(this.dataState, updatedListEntry)

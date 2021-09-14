@@ -4,6 +4,13 @@ class AnalyzeThermomechanics extends AnalyzeScenarioBase {
   constructor () {
     super()
     this.hostPhysics = 'Thermomechanical'
+    this.availableViewTypes = {
+      'Temperature': 'pvdToPLY_temperature.py',
+      'X Displacement': 'pvdToPLY_dispX.py',
+      'Y Displacement': 'pvdToPLY_dispY.py',
+      'Z Displacement': 'pvdToPLY_dispZ.py',
+      'Displacement Mag': 'pvdToPLY_dispMag.py'
+    }
     this.modelviews = {
       'Problem': {
         'data': null,

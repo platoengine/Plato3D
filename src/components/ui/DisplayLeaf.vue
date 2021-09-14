@@ -64,7 +64,6 @@ export default {
       Object.keys(this.data).forEach(k => { newValue[k] = this.data[k] }, this)
       newValue[entry] = value
       this.parameterValue = newValue
-      
     },
     isObject: function () {
       let value = this.data

@@ -13,15 +13,15 @@
       </span>   
     </v-expansion-panel-header>
     <v-expansion-panel-content>
-      <v-expansion-panel v-if="myList.length === 0">
+      <v-card class="ma-0 pa-0" v-if="myList.length === 0">
         <v-card-subtitle class="ma-2 pa-0 font-italic">
           None
         </v-card-subtitle>
-      </v-expansion-panel>
+      </v-card>
       <v-card class="ma-0 pa-0" color=green>
         <v-card class="ml-2">
           <new-list-entry :scenario="this.scenario" :modelviews="this.modelviews" :name="this.name"/>
-          <v-expansion-panels  accordion>
+          <v-expansion-panels accordion>
             <v-expansion-panel v-for="(item,index) in myList" :key="index">
               <list-entry :scenario="scenario" :data="item" :name="name" @change-color ="changeIndicatorColor(index, $event)"/>
             </v-expansion-panel>

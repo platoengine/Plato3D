@@ -224,17 +224,17 @@ class AnalyzeScenarioBase extends ParBase {
   }
   conditionMet (aVar, aContext) {
     if (this.isConditional(aVar)) {
-      let propName = aVar['conditionalView'][0]
-      let propValue = aVar['conditionalView'][1]
-      if (Object.prototype.hasOwnProperty.call(aContext, propName)) {
-        if (aContext[propName].value === propValue) {
-          return true
+      let conditions = aVar['conditionalView']
+      let satisfied = true
+      conditions.forEach( condition => {
+        let propName = condition[0]
+        let propValue = condition[1]
+        if (Object.prototype.hasOwnProperty.call(aContext, propName)) {
+          satisfied = satisfied && this.isEquivalent(aContext[propName].value, propValue)
         } else {
-          return false
+          satisfied = satisfied && false
         }
-      } else {
-        return false
-      }
+      })
     } else {
       return true
     }
@@ -414,10 +414,10 @@ class AnalyzeScenarioBase extends ParBase {
           if (this.isConditional(tVar)) {
             let propName = tVar['conditionalView'][0]
             let propValue = tVar['conditionalView'][1]
-            if (this.hasPropertyOfType(tFromObject, propName, 'object') && tFromObject[propName]['value'] === propValue) {
+            if (this.hasPropertyOfType(tFromObject, propName, 'object') && this.isEquivalent(tFromObject[propName]['value'], propValue) ) {
               return tToObject[key]
             } else
-            if (this.hasPropertyOfType(tToObject, propName, 'object') && tToObject[propName]['value'] === propValue) {
+            if (this.hasPropertyOfType(tToObject, propName, 'object') && this.isEquivalent(tToObject[propName]['value'], propValue) ) {
               return tToObject[key]
             }
           }
@@ -425,6 +425,13 @@ class AnalyzeScenarioBase extends ParBase {
       }
     }
     return null
+  }
+  isEquivalent (aVal, aListVal) {
+    if (Array.isArray(aListVal)) {
+      return aListVal.includes(aVal)
+    } else {
+      return aListVal === aVal
+    }
   }
   addToModelViews (dataBranch, fromLists) {
     fromLists.forEach( (p) => {

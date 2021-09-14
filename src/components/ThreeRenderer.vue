@@ -39,10 +39,17 @@ export default {
     },
     onContextMenu (event) {
       if (event.ctrlKey === true) {
+        // get click location
         this.$graphics.mouse.x = (event.clientX / this.$graphics.renderer.domElement.clientWidth) * 2 - 1
         this.$graphics.mouse.y = -(event.clientY / this.$graphics.renderer.domElement.clientHeight) * 2 + 1
+
+        // if it's not in the scene, return
         if (this.$graphics.mouse.x > 1.0) return
+
+        // set origin of raycast
         this.$graphics.raycaster.setFromCamera(this.$graphics.mouse, this.$graphics.camera)
+
+        // turn all primitives to 'unselected' color
         const models = this.$store.state.models
         models.forEach(function (model) {
           for (var j = 0; j < model.primitives.length; j++) {
@@ -50,23 +57,31 @@ export default {
             const primitiveObject = this.$graphics.scene.getObjectById(thisPrimitive.primitiveObjectID)
             primitiveObject.children.forEach(function (kid) { kid.material.color.set(0x999999) })
           }
-          const intersectables = model.primitives.map(a => this.$graphics.scene.getObjectById(a.primitiveObjectID), this)
-          const intersects = this.$graphics.raycaster.intersectObjects(intersectables, true)
-          if (intersects.length > 0) {
-            const intersected = intersects[ 0 ]
-            const pFace = intersected.object
-            const pGroup = pFace.parent
-            const tIndex = model.primitives.findIndex(p => p.primitiveObjectID === pGroup.id)
-            if (tIndex !== -1) {
-//              this.$store.commit('setActiveModel', model.name)
-              if (event.shiftKey === true) {
-                pFace.material.color.setHex(0x999999)
-                this.$store.commit('openSelected', {model: model, primitive: model.primitives[tIndex], surface: pFace})
-                this.$store.commit('setSelected', {model: model, group: pGroup, surface: pFace})
-              } else {
-                pGroup.children.forEach(function (kid) { kid.material.color.set(0xFFDA33) })
-                this.$store.commit('openSelected', {model: model, primitive: model.primitives[tIndex], surface: null})
-                this.$store.commit('setSelected', {model: model, group: pGroup, surface: null})
+        }, this)
+
+        // search the models for an intersection with the ray
+        models.forEach(function (model) {
+          // only search visible models
+          if (model.isVisible) {
+            const visiblePrimitives = model.primitives.filter(p => p.displayAttributes.visible)
+            const intersectables = visiblePrimitives.map(a => this.$graphics.scene.getObjectById(a.primitiveObjectID), this)
+            const intersects = this.$graphics.raycaster.intersectObjects(intersectables, true)
+            if (intersects.length > 0) {
+              const intersected = intersects[ 0 ]
+              const pFace = intersected.object
+              const pGroup = pFace.parent
+              const tIndex = model.primitives.findIndex(p => p.primitiveObjectID === pGroup.id)
+              if (tIndex !== -1) {
+//                this.$store.commit('setActiveModel', model.name)
+                if (event.shiftKey === true) {
+                  pFace.material.color.setHex(0x999999)
+                  this.$store.commit('openSelected', {model: model, primitive: model.primitives[tIndex], surface: pFace})
+                  this.$store.commit('setSelected', {model: model, group: pGroup, surface: pFace})
+                } else {
+                  pGroup.children.forEach(function (kid) { kid.material.color.set(0xFFDA33) })
+                  this.$store.commit('openSelected', {model: model, primitive: model.primitives[tIndex], surface: null})
+                  this.$store.commit('setSelected', {model: model, group: pGroup, surface: null})
+                }
               }
             }
           }

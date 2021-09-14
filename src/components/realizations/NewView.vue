@@ -1,9 +1,7 @@
 <template>
   <v-dialog v-model="dialog" persistent max-width="600px">
     <template v-slot:activator="{ on }">
-      <v-btn small block v-on="on" raised>
-          New View
-      </v-btn>
+      <v-btn text depressed small max-width=25px id="no-background-hover" v-on="on"><v-icon small>mdi-plus</v-icon></v-btn>
     </template>
     <v-card>
       <v-card-title>

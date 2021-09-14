@@ -1,9 +1,12 @@
 <template>
-  <v-card class="ml-2">
-    <v-checkbox dense class="ma-0 pa-0 v-label" v-model="isVisible" label="Visible"/>
-    <v-checkbox dense class="ma-0 pa-0 v-label" v-model="isWireframe" label="Wireframe"/>
-    <v-btn block small @click="apply()" type="button">Apply</v-btn>
-    <v-btn block small @click="remove()" type="button">Remove</v-btn>
+  <v-card class="ml-0">
+    <v-card class="d-flex justify-space-between">
+      <v-btn small min-width=20px @click="remove()"><v-icon medium>$vuetify.icons.discard</v-icon></v-btn>
+      <v-btn small min-width=20px @click="toggleWireframe()">
+        <v-icon v-if="isWireframe" medium>$vuetify.icons.wireframe</v-icon>
+        <v-icon v-else medium>$vuetify.icons.solid</v-icon>
+      </v-btn>
+    </v-card>
   </v-card>
 </template>
 
@@ -11,7 +14,7 @@
 
 export default {
   name: 'modify-view',
-  props: ['parentObject', 'viewID'],
+  props: ['parentObject', 'viewID', 'panelIsOpen'],
   data: function () {
     return {stateIsVisible: '', stateIsWireframe: ''}
   },
@@ -19,6 +22,11 @@ export default {
     let thisView = this.parentObject.simulation.views.find(p => p.viewID === this.viewID)
     this.stateIsVisible = thisView.isVisible
     this.stateIsWireframe = thisView.isWireframe
+  },
+  watch: {
+    panelIsOpen: function(newVal) {
+      this.isVisible = newVal
+    }
   },
   computed: {
     isVisible: {
@@ -28,6 +36,7 @@ export default {
       },
       set: function (newValue) {
         this.stateIsVisible = newValue
+        this.apply()
       }
     },
     isWireframe: {
@@ -37,10 +46,17 @@ export default {
       },
       set: function (newValue) {
         this.stateIsWireframe = newValue
+        this.apply()
       }
     }
   },
   methods: {
+    toggleVisible: function () {
+      this.isVisible = !(this.isVisible)
+    },
+    toggleWireframe: function () {
+      this.isWireframe = !(this.isWireframe)
+    },
     apply: function () {
       this.$store.commit('modifyView',
         {

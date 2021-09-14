@@ -21,7 +21,11 @@
           </v-expansion-panel-content>
         </v-expansion-panel>
         <v-expansion-panel v-if="solutionStatus==='done'">
-          <v-expansion-panel-header>Views</v-expansion-panel-header>
+          <v-expansion-panel-header>
+            <span class="d-flex justify-space-between" tile>
+            <span class="pt-2">Views</span><new-view :parentObject="realization"/>
+            </span>
+          </v-expansion-panel-header>
           <v-expansion-panel-content>
             <realization-views :parentObject="realization"/>
           </v-expansion-panel-content>
@@ -42,6 +46,8 @@ import DeleteRealization from './DeleteRealization'
 import RealizationResources from './RealizationResources'
 import RealizationSolution from './RealizationSolution'
 import RealizationViews from './RealizationViews'
+import NewView from './NewView'
+
 
 export default {
   name: 'realization',
@@ -126,6 +132,7 @@ export default {
     }
   },
   components: {
+    NewView,
     Parameters,
     EditRealization,
     DeleteRealization,
