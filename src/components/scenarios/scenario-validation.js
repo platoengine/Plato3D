@@ -65,7 +65,11 @@ function checkForConditionalView(prefix, parentObject){
     const conditionalViewPrefix = prefix['conditionalView']
     const setDataView = parentObject[conditionalViewPrefix[0]].value
     const setView = conditionalViewPrefix[1]
-    if(setDataView != setView){ return true}
+    if(Array.isArray(setView)) {
+      return !(setView.includes(setDataView))
+    } else {
+      return (setDataView != setView)
+    }
   }
   return false
 }    

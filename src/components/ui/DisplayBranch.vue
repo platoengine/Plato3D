@@ -46,8 +46,14 @@ export default {
       if (Object.prototype.hasOwnProperty.call(this.data[param], 'conditionalView')) {
         let condition = this.data[param]['conditionalView']
         if (Array.isArray(condition)) {
-          if (Object.prototype.hasOwnProperty.call(this.data, condition[0])) {
-            return this.data[condition[0]].value === condition[1]
+          const tKey = condition[0]
+          const tVal = condition[1]
+          if (Object.prototype.hasOwnProperty.call(this.data, tKey)) {
+            if (Array.isArray(tVal)) {
+              return tVal.includes(this.data[tKey].value)
+            } else {
+              return this.data[tKey].value === tVal
+            }
           }
         }
       }
