@@ -62,18 +62,10 @@ function isLoadZero(prefix, fieldSpecifier){
 
 function checkForConditionalView(prefix, parentObject){
   if('conditionalView' in prefix){
-    const conditions = prefix['conditionalView']
-    let satisfied = true
-    conditions.forEach(condition => {
-      const target = parentObject[condition[0]].value
-      const value = condition[1]
-      if (Array.isArray(value)) {
-        satisfied = satisfied && (value.includes(target))
-      } else {
-        satisfied = satisfied && (target === value)
-      }
-    })
-    return satisfied
+    const conditionalViewPrefix = prefix['conditionalView']
+    const setDataView = parentObject[conditionalViewPrefix[0]].value
+    const setView = conditionalViewPrefix[1]
+    if(setDataView != setView){ return true}
   }
   return false
 }    
