@@ -5,14 +5,6 @@
     </v-card>
     <v-card :class="'d-flex justify-space-between'">
 
-<!--
-      <import-scenario-component :scenario="scenario" v-on:close-panel="openFile=false"></import-scenario-component>
-      <import-model @load-model="loadScenario($event)"/>
--->
-      <v-btn small>
-        <v-icon>mdi-folder-upload</v-icon>
-      </v-btn>
-
       <delete-scenario :scenario="scenario"/>
 
       <edit-scenario :scenario="scenario"/>
@@ -24,7 +16,6 @@
 </template>
 
 <script>
-// import ImportScenarioComponent from './ImportScenarioComponent'
 import ExportScenario from './ExportScenario'
 import DeleteScenario from './DeleteScenario'
 import EditScenario from './EditScenario'
@@ -55,7 +46,6 @@ export default {
     EditScenario,
     AnalyzeScenario,
     ExportScenario
-//    ImportScenarioComponent,
   }
 }
 </script>

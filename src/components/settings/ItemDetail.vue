@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="isOpen" persistent max-width="300px" origin='top left'>
+  <v-snackbar v-model="isOpen" :timeout="-1" :max-width="300" :height="100" :right="true" scrollable>
     <v-card v-if="displayedPrimitive !== null" outlined>
       <v-card-title class="ma-0 pa-0 pl-2"> <span class="headline">Volume</span> </v-card-title>
       <v-card-text class="ma-0 pa-0 pl-4">Type: {{displayedPrimitive.definition.Type}}</v-card-text>
@@ -27,8 +27,8 @@
         </v-container>
       </v-card-text>
     </v-card>
-    <v-btn text @click.stop="isOpen = false">Okay</v-btn>
-  </v-dialog>
+    <v-btn block text @click.stop="isOpen = false">Close</v-btn>
+  </v-snackbar>
 </template>
 
 

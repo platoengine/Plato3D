@@ -22,7 +22,8 @@ class Optimization extends ParBase {
           'LimitedMemoryStorage': { type: 'int', value: '8', alias: 'Limited Memory Storage' },
           'HessianType': { type: 'string', value: 'disabled', alias: 'Hessian Type' },
           'KSOuterGradientTolerance': { type: 'double', value: '0.5', alias: 'Outer Gradient Tolerance' },
-          'AugLagPenaltyParam': { type: 'double', value: '1.0', alias: 'Augmented Lagrangian Penalty' }
+          'AugLagPenaltyParam': { type: 'double', value: '1.0', alias: 'Augmented Lagrangian Penalty' },
+          'MaxIterations': { type: 'int', value: '10', alias: 'Maximum Iterations' }
         },
         MMA: {
           'MaxNumOuterIterations': { type: 'int', value: '25', alias: 'Maximum Outer Iterations' },

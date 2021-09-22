@@ -40,8 +40,9 @@
       <import-model @load-model="loadModel($event)"/>
       <delete-model :model="model"/>
       <edit-model :model="model"/>
-      <v-btn small>
-        <v-icon>mdi-folder-download</v-icon>
+      <v-btn small @click="toggleVisibility()">
+        <v-icon v-if="isVisible" large>$vuetify.icons.visible</v-icon>
+        <v-icon v-else large>$vuetify.icons.invisible</v-icon>
       </v-btn>
     </v-card>
   </v-card>
@@ -68,7 +69,7 @@ export default {
     EditModel
   },
   data: function () {
-    return { isLoading: false, urlValue: ""}
+    return { isLoading: false, urlValue: "", isVisible: true}
   },
   computed: {
     primitives: function () {
@@ -123,6 +124,15 @@ export default {
     })
   },
   methods: {
+    toggleVisibility: function () {
+      const appThis = this
+      this.isVisible = !(this.isVisible)
+      this.$store.commit('setModelVisibility', {
+        modelName: this.model.name,
+        isVisible: this.isVisible,
+        graphics: appThis.$graphics
+      })
+    },
     loadFromURL: function () {
       // change the model name to the filename of the loaded model
       //

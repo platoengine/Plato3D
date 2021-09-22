@@ -10,6 +10,25 @@ class ExodusModel extends ParBase {
     this.primitives = []
 
     this.type = 'ExodusModel'
+
+    this.isVisible = true
+    this.subIsVisible = []
+  }
+
+  setIsVisible (newVal, graphics) {
+    this.isVisible = newVal
+    if (newVal === false) {
+      this.subIsVisible = this.primitives.map( p => p.displayAttributes.visible )
+      this.primitives.forEach( p => {
+        let primitiveObject = graphics.scene.getObjectById(p.primitiveObjectID)
+        primitiveObject.children.forEach(kid => {kid.visible = false})
+      })
+    } else {
+      this.primitives.forEach( (p,index) => {
+        let primitiveObject = graphics.scene.getObjectById(p.primitiveObjectID)
+        primitiveObject.children.forEach(kid => {kid.visible = this.subIsVisible[index]})
+      })
+    }
   }
 
   range () {

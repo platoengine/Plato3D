@@ -37,10 +37,10 @@ export default new Vuex.Store({
       grid: {
         size: 10.0,
         divs: 10,
-        showX: false,
-        showY: false,
+        showX: true,
+        showY: true,
         showZ: true,
-        AtCenter: true
+        AtCenter: false
       },
       lighting: {
         directional: {
@@ -166,6 +166,12 @@ export default new Vuex.Store({
     },
     setEventSource ({events}, server) {
       events.setSource(server)
+    },
+    setModelVisibility ({models}, {modelName, isVisible, graphics}) {
+      let modelIndex = models.findIndex(model => model.name === modelName)
+      if (modelIndex !== -1) {
+        models[modelIndex].setIsVisible(isVisible, graphics)
+      }
     },
     setDisplayAttributes (state, {model, payload}) {
       model.setDisplayAttributes(payload)
