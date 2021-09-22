@@ -1,8 +1,12 @@
-function checkForConditionalView(prefix, key){
-  if('conditionalView' in prefix[key]){
-    const setView = prefix[key]['conditionalView']
-    if(prefix[setView[0]].value != setView[1]){
-      return true;
+function checkForConditionalView(aContext, aKey){
+  if('conditionalView' in aContext[aKey]){
+    const condition = aContext[aKey]['conditionalView']
+    const tKey = condition[0]
+    const tVal = condition[1]
+    if(Array.isArray(tVal)) {
+      return !(tVal.includes(aContext[tKey].value))
+    } else {
+      return aContext[tKey].value != tVal
     }   
   }
   return false

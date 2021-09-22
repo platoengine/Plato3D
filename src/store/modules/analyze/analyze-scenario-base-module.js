@@ -227,11 +227,7 @@ class AnalyzeScenarioBase extends ParBase {
       let propName = aVar['conditionalView'][0]
       let propValue = aVar['conditionalView'][1]
       if (Object.prototype.hasOwnProperty.call(aContext, propName)) {
-        if (aContext[propName].value === propValue) {
-          return true
-        } else {
-          return false
-        }
+        return this.isEquivalent(aContext[propName].value, propValue)
       } else {
         return false
       }
@@ -425,6 +421,13 @@ class AnalyzeScenarioBase extends ParBase {
       }
     }
     return null
+  }
+  isEquivalent (aVal, aListVal) {
+    if (Array.isArray(aListVal)) {
+      return aListVal.includes(aVal)
+    } else {
+      return aListVal === aVal
+    }
   }
   addToModelViews (dataBranch, fromLists) {
     fromLists.forEach( (p) => {

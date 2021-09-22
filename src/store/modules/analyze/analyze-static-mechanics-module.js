@@ -100,9 +100,9 @@ class AnalyzeStaticMechanics extends AnalyzeScenarioBase {
         'view': {
           'type': 'list-view',
           '<Template>': {
-            'Type': { type: 'string', value: 'Uniform', options: ['Uniform', 'Uniform Component'] },
+            'Type': { type: 'string', value: 'Uniform', options: ['Uniform', 'Uniform Component', 'Uniform Pressure'] },
             'Values': { type: 'double', value: {'X': '0.0', 'Y': '0.0', 'Z': '0.0'}, conditionalView: ['Type', 'Uniform'] },
-            'Value': { type: 'double', value: '0.0', conditionalView: ['Type', 'Uniform Component'] },
+            'Value': { type: 'double', value: '0.0', conditionalView: ['Type', ['Uniform Component', 'Uniform Pressure']] },
             'Component': { type: 'string', value: 'X', options: ['X', 'Y', 'Z'], conditionalView: ['Type', 'Uniform Component'] },
             'Sides': { type: 'string', value: '', options: () => { return this.selectables['sidesets'] } }
           }
