@@ -4,6 +4,13 @@ class AnalyzeStaticThermomechanics extends AnalyzeScenarioBase {
   constructor () {
     super()
     this.hostPhysics = 'Thermomechanical'
+    this.availableViewTypes = {
+      'Temperature': 'pvdToPLY_temperature.py',
+      'X Displacement': 'pvdToPLY_dispX.py',
+      'Y Displacement': 'pvdToPLY_dispY.py',
+      'Z Displacement': 'pvdToPLY_dispZ.py',
+      'Displacement Mag': 'pvdToPLY_dispMag.py'
+    }
     this.modelviews = {
       'Problem': {
         'data': null,
@@ -115,9 +122,10 @@ class AnalyzeStaticThermomechanics extends AnalyzeScenarioBase {
             'Scalar Function Type': {
               type: 'string',
               value: 'Internal Thermoelastic Energy',
-              options: ['Internal Thermoelastic Energy'],
+              options: ['Internal Thermoelastic Energy', 'Stress P-Norm'],
               conditionalView: ['Linear', 'false']
             },
+            'Exponent': { type: 'double', value: '6.0', conditionalView: ['Scalar Function Type', 'Stress P-Norm']},
             'Penalty Function': {
               'Type': { type: 'string', value: 'SIMP', options: ['SIMP', 'RAMP', 'Heaviside'] },
               'Exponent': { type: 'double', value: '3.0' },
@@ -131,9 +139,9 @@ class AnalyzeStaticThermomechanics extends AnalyzeScenarioBase {
         'view': {
           'type': 'list-view',
           '<Template>': {
-            'Type': { type: 'string', value: 'Uniform', options: ['Uniform', 'Uniform Component'] },
+            'Type': { type: 'string', value: 'Uniform', options: ['Uniform', 'Uniform Component', 'Uniform Pressure'] },
             'Values': { type: 'double', value: {'X': '0.0', 'Y': '0.0', 'Z': '0.0'}, conditionalView: ['Type', 'Uniform'] },
-            'Value': { type: 'double', value: '0.0', conditionalView: ['Type', 'Uniform Component'] },
+            'Value': { type: 'double', value: '0.0', conditionalView: ['Type', ['Uniform Component', 'Uniform Pressure']] },
             'Component': { type: 'string', value: 'X', options: ['X', 'Y', 'Z'], conditionalView: ['Type', 'Uniform Component'] },
             'Sides': { type: 'string', value: '', options: () => { return this.selectables['sidesets'] } }
           }

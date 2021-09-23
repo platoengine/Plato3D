@@ -32,7 +32,11 @@ class Optimization extends ParBase {
           'AsymptoteContraction': { type: 'double', value: '0.7', alias: 'Asymptote Contraction' },
           'MaxNumSubProblemIter': { type: 'int', value: '100', alias: 'Max Sub-problem Iterations' },
           'ControlStagnationTolerance': { type: 'double', value: '1e-6', alias: 'Control Stagnation Tolerance' },
-          'ObjectiveStagnationTolerance': { type: 'double', value: '1e-8', alias: 'Objective Stagnation Tolerance' }
+          'ObjectiveStagnationTolerance': { type: 'double', value: '1e-8', alias: 'Objective Stagnation Tolerance' },
+          'SubProblemInitialPenalty': { type: 'double', value: '0.0015', alias: 'Sub-problem Initial Penalty' },
+          'SubProblemPenaltyMultiplier': { type: 'double', value: '1.025', alias: 'Sub-problem Penalty Multiplier' },
+          'SubProblemFeasibilityTolerance': { type: 'double', value: '1.0e-8', alias: 'Sub-problem Feasibility Tolerance' },
+          'UseIpoptForMMASubproblem': { type: 'bool', value: 'true', options: ['false', 'true' ], alias: 'Use Ipopt For MMA Sub-problem' }
         },
         OC: {
           'MaxIterations': { type: 'int', value: '25', alias: 'Maximum Iterations' }
