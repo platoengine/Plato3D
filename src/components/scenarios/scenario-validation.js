@@ -60,38 +60,43 @@ function isLoadZero(prefix, fieldSpecifier){
   return []
 }
 
-function checkForConditionalView(prefix, parentObject){
-  if('conditionalView' in prefix){
-    const conditionalViewPrefix = prefix['conditionalView']
-    const setDataView = parentObject[conditionalViewPrefix[0]].value
-    const setView = conditionalViewPrefix[1]
-    if(Array.isArray(setView)) {
-      return !(setView.includes(setDataView))
-    } else {
-      return (setDataView != setView)
-    }
+function checkForUnmetConditionalView(aLocalObject, aParentObject){
+  if('conditionalView' in aLocalObject){
+    const conditions = aLocalObject['conditionalView']
+    let conditionsMet = true
+    conditions.forEach( condition => {
+      const tKey = condition[0]
+      const tVal = condition[1]
+      if(Array.isArray(tVal)) {
+        conditionsMet = conditionsMet && (tVal.includes(aParentObject[tKey].value))
+      } else {
+        conditionsMet = conditionsMet && (aParentObject[tKey].value === tVal)
+      }
+    })
+    return !conditionsMet
+  } else {
+    return false
   }
-  return false
 }    
 
-function automateValidation(prefix, key, dataPrefix, fieldSpecifier, parentObject) {   
-  if(typeof prefix[key] !== 'object') {
+function automateValidation(aTemplateObject, aKey, aDataObject, aFieldSpecifier, aParentObject) {   
+  if(typeof aTemplateObject[aKey] !== 'object') {
     return []
   }
-  if(!('value' in prefix[key]) && prefix[key] instanceof Object){
-    if(checkForConditionalView(prefix, parentObject)){return []}
-    const keysIn = getKeys(prefix[key]) 
-    if(key === 'conditionalView' || key === 'conditionalValue') {return []}
+  if(!('value' in aTemplateObject[aKey]) && aTemplateObject[aKey] instanceof Object){
+    if(checkForUnmetConditionalView(aTemplateObject, aParentObject)){return []}
+    const keysIn = getKeys(aTemplateObject[aKey]) 
+    if(aKey === 'conditionalView' || aKey === 'conditionalValue') {return []}
     return keysIn.flatMap(
-      keyIn => automateValidation(prefix[key], keyIn, dataPrefix[key], fieldSpecifier, dataPrefix)
+      keyIn => automateValidation(aTemplateObject[aKey], keyIn, aDataObject[aKey], aFieldSpecifier, aDataObject)
     )
-  } else  if('value' in prefix[key] ){  
-    if(checkForConditionalView(prefix, parentObject)){return []}
-    if(key === 'Poissons Ratio'){
-      return poissonsRatioCheck(dataPrefix, key)
+  } else  if('value' in aTemplateObject[aKey] ){  
+    if(checkForUnmetConditionalView(aTemplateObject, aParentObject)){return []}
+    if(aKey === 'Poissons Ratio'){
+      return poissonsRatioCheck(aDataObject, aKey)
     }
-    if(!dataPrefix[key].value || dataPrefix[key].value === ""){
-      return['Must specify '+key+' in '+ fieldSpecifier ]
+    if(!aDataObject[aKey].value || aDataObject[aKey].value === ""){
+      return['Must specify '+aKey+' in '+ aFieldSpecifier ]
     } 
   }
   return []
@@ -110,49 +115,49 @@ export function validateScenario(scenario){
   let errors = []
   errors = errors.concat(validateModel(scenario))
   mainKeys.forEach(key => {
-    const viewPrefix = infoIn[key].view
-    const dataPrefix = infoIn[key].data
-    const reqPrefix = infoIn[key].required
-    const viewPrefixTemplate = viewPrefix['<Template>']
-    if(!dataPrefix || (JSON.stringify(dataPrefix) === JSON.stringify({})) ||
-      (getKeys(dataPrefix).length === 0 && dataPrefix.constructor === Object)||
-      (dataPrefix.length == 0 && Array.isArray(dataPrefix) && reqPrefix===true)){
+    const tViewObject = infoIn[key].view
+    const tDataObject = infoIn[key].data
+    const tIsRequired = infoIn[key].required
+    const tViewObjectTemplate = tViewObject['<Template>']
+    if(!tDataObject || (JSON.stringify(tDataObject) === JSON.stringify({})) ||
+      (getKeys(tDataObject).length === 0 && tDataObject.constructor === Object)||
+      (tDataObject.length == 0 && Array.isArray(tDataObject) && tIsRequired===true)){
         errors.push('Must specify '+key)
     } else {
-      if(viewPrefix.type === 'single-view'){      
-        const subKeys = getKeys(viewPrefixTemplate)
+      if(tViewObject.type === 'single-view'){      
+        const subKeys = getKeys(tViewObjectTemplate)
         subKeys.forEach(subKey => {
-          errors = errors.concat(automateValidation(viewPrefixTemplate, subKey, dataPrefix, key, {}))
+          errors = errors.concat(automateValidation(tViewObjectTemplate, subKey, tDataObject, key, {}))
         })  
-      } else if(viewPrefix.type === 'list-view'){
-        let subKeys = getKeys(viewPrefixTemplate)
+      } else if(tViewObject.type === 'list-view'){
+        let subKeys = getKeys(tViewObjectTemplate)
         subKeys.forEach(subKey => {
-          const userGeneratedFieldNames = getUserGeneratedFieldNames(dataPrefix)
+          const userGeneratedFieldNames = getUserGeneratedFieldNames(tDataObject)
           
           if(userGeneratedFieldNames.length > 0){
             for(var index in userGeneratedFieldNames){ 
               const userGeneratedFieldName = userGeneratedFieldNames[index]
               errors = errors.concat(
-                automateValidation(viewPrefixTemplate
-                , subKey, dataPrefix[index][userGeneratedFieldName]
+                automateValidation(tViewObjectTemplate
+                , subKey, tDataObject[index][userGeneratedFieldName]
                 , userGeneratedFieldName, {})
               )
               
               if(key.includes('Loads') && subKey === 'Value'){
-                errors = errors.concat(isLoadZero(dataPrefix[index][userGeneratedFieldName], userGeneratedFieldName))
+                errors = errors.concat(isLoadZero(tDataObject[index][userGeneratedFieldName], userGeneratedFieldName))
               }
             }
           }
         })
-      } else if (viewPrefix.type === 'option-view'){
-        const optionSet = getKeys(dataPrefix)[0]
-        const optionInfo = viewPrefix['<Options>'][optionSet]
+      } else if (tViewObject.type === 'option-view'){
+        const optionSet = getKeys(tDataObject)[0]
+        const optionInfo = tViewObject['<Options>'][optionSet]
         let subKeys = getKeys(optionInfo)
         /*errors = subKeys.flatMap(subKey => 
-          automateValidation(viewPrefix['<Options>'][optionSet], subKey, dataPrefix[optionSet], infoIn[key], key)
+          automateValidation(tViewObject['<Options>'][optionSet], subKey, tDataObject[optionSet], infoIn[key], key)
         ) */
         subKeys.forEach(subKey =>
-          errors = errors.concat(automateValidation(optionInfo, subKey, dataPrefix[optionSet], key, {}))
+          errors = errors.concat(automateValidation(optionInfo, subKey, tDataObject[optionSet], key, {}))
         )       
       }
     } 

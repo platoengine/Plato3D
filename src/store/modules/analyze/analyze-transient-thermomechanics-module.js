@@ -44,25 +44,25 @@ class AnalyzeTransientThermomechanics extends AnalyzeScenarioBase {
               'Specific Heat|false': {
                 type: 'double',
                 value: '900.0',
-                conditionalView: ['Temperature Dependent', 'false'],
+                conditionalView: [['Temperature Dependent', 'false']],
                 alias: 'Specific Heat'
               },
               'Specific Heat|true': {
                 'c0': { type: 'double', value: '900.0'},
                 'c1': { type: 'double', value: '5.0e-4'},
-                conditionalView: ['Temperature Dependent', 'true'],
+                conditionalView: [['Temperature Dependent', 'true']],
                 alias: 'Specific Heat'
               },
               'Mass Density|false': {
                 type: 'double',
                 value: '2700.0',
-                conditionalView: ['Temperature Dependent', 'false'],
+                conditionalView: [['Temperature Dependent', 'false']],
                 alias: 'Mass Density'
               },
               'Mass Density|true': {
                 'c0': { type: 'double', value: '2700.0'},
                 'c1': { type: 'double', value: '0.0'},
-                conditionalView: ['Temperature Dependent', 'true'],
+                conditionalView: [['Temperature Dependent', 'true']],
                 alias: 'Mass Density'
               }
             },
@@ -75,27 +75,27 @@ class AnalyzeTransientThermomechanics extends AnalyzeScenarioBase {
               'Thermal Conductivity|false': {
                 type: 'double',
                 value: '210.0',
-                conditionalView: ['Temperature Dependent', 'false'],
+                conditionalView: [['Temperature Dependent', 'false']],
                 alias: 'Thermal Conductivity'
               },
               'Thermal Conductivity|true': {
                 'c011': { type: 'double', value: '205.0'},
                 'c111': { type: 'double', value: '0.0'},
                 'c211': { type: 'double', value: '0.0'},
-                conditionalView: ['Temperature Dependent', 'true'],
+                conditionalView: [['Temperature Dependent', 'true']],
                 alias: 'Thermal Conductivity'
               },
               'Thermal Expansivity|false': {
                 type: 'double',
                 value: '22.06e-6',
-                conditionalView: ['Temperature Dependent', 'false'],
+                conditionalView: [['Temperature Dependent', 'false']],
                 alias: 'Thermal Expansivity'
               },
               'Thermal Expansivity|true': {
                 'c011': { type: 'double', value: '22.06e-6'},
                 'c111': { type: 'double', value: '0.0'},
                 'c211': { type: 'double', value: '0.0'},
-                conditionalView: ['Temperature Dependent', 'true'],
+                conditionalView: [['Temperature Dependent', 'true']],
                 alias: 'Thermal Expansivity'
               },
               'Elastic Stiffness|false': {
@@ -104,7 +104,7 @@ class AnalyzeTransientThermomechanics extends AnalyzeScenarioBase {
                   value: '6.90342e10',
                 },
                 'Poissons Ratio': { type: 'double', value: '0.35' },
-                conditionalView: ['Temperature Dependent', 'false'],
+                conditionalView: [['Temperature Dependent', 'false']],
                 alias: 'Elastic Stiffness'
               },
               'Elastic Stiffness|true': {
@@ -114,7 +114,7 @@ class AnalyzeTransientThermomechanics extends AnalyzeScenarioBase {
                   'c2': { type: 'double', value: '0.0'}
                 },
                 'Poissons Ratio': { type: 'double', value: '0.35' },
-                conditionalView: ['Temperature Dependent', 'true'],
+                conditionalView: [['Temperature Dependent', 'true']],
                 alias: 'Elastic Stiffness'
               }
             }
@@ -164,7 +164,7 @@ class AnalyzeTransientThermomechanics extends AnalyzeScenarioBase {
               value: 'Volume',
               options: ['Volume', 'Internal Thermal Energy', 'Flux P-Norm']
             },
-            'Exponent': { type: 'double', value: '6.0', conditionalView: ['Scalar Function Type', 'Flux P-Norm'] },
+            'Exponent': { type: 'double', value: '6.0', conditionalView: [['Scalar Function Type', 'Flux P-Norm']] },
             'Penalty Function': {
               'Type': { type: 'string', value: 'SIMP', options: ['SIMP', 'RAMP', 'Heaviside'] },
               'Exponent': { type: 'double', value: '3.0' },
@@ -179,9 +179,9 @@ class AnalyzeTransientThermomechanics extends AnalyzeScenarioBase {
           'type': 'list-view',
           '<Template>': {
             'Type': { type: 'string', value: 'Uniform', options: ['Uniform', 'Uniform Component'] },
-            'Values': { type: 'double', value: {'X': '0.0', 'Y': '0.0', 'Z': '0.0'}, conditionalView: ['Type', 'Uniform'] },
-            'Value': { type: 'double', value: '0.0', conditionalView: ['Type', 'Uniform Component'] },
-            'Component': { type: 'string', value: 'X', options: ['X', 'Y', 'Z'], conditionalView: ['Type', 'Uniform Component'] },
+            'Values': { type: 'double', value: {'X': '0.0', 'Y': '0.0', 'Z': '0.0'}, conditionalView: [['Type', 'Uniform']] },
+            'Value': { type: 'double', value: '0.0', conditionalView: [['Type', 'Uniform Component']] },
+            'Component': { type: 'string', value: 'X', options: ['X', 'Y', 'Z'], conditionalView: [['Type', 'Uniform Component']] },
             'Sides': { type: 'string', value: '', options: () => { return this.selectables['sidesets'] } }
           }
         }
@@ -204,7 +204,7 @@ class AnalyzeTransientThermomechanics extends AnalyzeScenarioBase {
           '<Template>': {
             'Type': { type: 'string', value: 'Zero Value', options: ['Zero Value', 'Fixed Value'] },
             'Index': { type: 'int', value: '0', options: ['0', '1', '2', '3'] },
-            'Value': { type: 'double', value: '0.0', conditionalView: ['Type', 'Fixed Value'] },
+            'Value': { type: 'double', value: '0.0', conditionalView: [['Type', 'Fixed Value']] },
             'Sides': { type: 'string', value: '', options: () => { return this.selectables['nodesets'].concat(this.selectables['sidesets']) } }
           }
         }
