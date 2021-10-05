@@ -24,7 +24,16 @@ function poissonsRatioCheck(prefix, key){
   }
   return []
 }
-function loadCheck(prefix, view, fieldSpecifier){
+
+//******************************************************************************/
+// Tested: true
+//
+// Description: determine if a load is specified that has zero value(s)
+//
+// returns a list of errors
+// 
+//******************************************************************************/
+export function loadCheck(prefix, view, fieldSpecifier){
   if(view === "Value"){
     if(prefix['Value'].value == 0){
       return ['Load value in '+fieldSpecifier+' must not be 0']
@@ -43,24 +52,39 @@ function loadCheck(prefix, view, fieldSpecifier){
   return []
 }
     
-function isLoadZero(prefix, fieldSpecifier){   
-  const value = "Value"
-  const values = "Values" 
-  const prefixValue = prefix[value]
-  const prefixValues = prefix[values] 
-  if(!(prefixValue === undefined) && 'conditionalView' in prefixValue && prefixValue['conditionalView'][1] === prefix.Type.value) {
-    return loadCheck(prefix, value, fieldSpecifier)
-  } else if(!(prefixValues === undefined) && 'conditionalView' in prefixValues && prefixValues['conditionalView'][1] === prefix.Type.value){
-    return loadCheck(prefix, values, fieldSpecifier)
-  } else if(!(prefixValue === undefined)){
-    return loadCheck(prefix, value, fieldSpecifier)
-  } else if(!(prefixValues === undefined)) {
-    return loadCheck(prefix, values, fieldSpecifier)
+//******************************************************************************/
+// Tested: true
+//
+// Description: determine if a load is specified that has zero value(s)
+// considering the 'conditionalView' fields.
+//
+// returns a list of errors
+// 
+//******************************************************************************/
+export function isLoadZero(aLocalObject, aFieldSpecifier){   
+  // check 'Value'
+  if(!checkForUnmetConditionalView(aLocalObject["Value"], aLocalObject)){
+    return loadCheck(aLocalObject, "Value", aFieldSpecifier)
+  } else
+  // check 'Values'
+  if(!checkForUnmetConditionalView(aLocalObject["Values"], aLocalObject)){
+    return loadCheck(aLocalObject, "Values", aFieldSpecifier)
   }
   return []
 }
 
-function checkForUnmetConditionalView(aLocalObject, aParentObject){
+//******************************************************************************/
+// Tested: true
+//
+// Description: determine if aLocalObject has an unmet conditional view based on
+// data in aParentObject.
+//
+// returns true if aLocalObject is conditional and those conditions aren't met.
+// returns false if aLocalObject is conditional and those conditions are met.
+// returns false if aLocalObject is not conditional
+// 
+//******************************************************************************/
+export function checkForUnmetConditionalView(aLocalObject, aParentObject){
   if('conditionalView' in aLocalObject){
     const conditions = aLocalObject['conditionalView']
     let conditionsMet = true

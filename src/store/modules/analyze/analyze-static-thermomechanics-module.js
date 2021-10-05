@@ -50,26 +50,26 @@ class AnalyzeStaticThermomechanics extends AnalyzeScenarioBase {
               'Thermal Conductivity Constant': {
                 type: 'double',
                 value: '210.0',
-                conditionalView: ['Temperature Dependent', 'false'],
+                conditionalView: [['Temperature Dependent', 'false']],
                 alias: 'Thermal Conductivity'
               },
               'Thermal Conductivity': {
                 'c011': { type: 'double', value: '205.0'},
                 'c111': { type: 'double', value: '0.0'},
                 'c211': { type: 'double', value: '0.0'},
-                conditionalView: ['Temperature Dependent', 'true']
+                conditionalView: [['Temperature Dependent', 'true']]
               },
               'Thermal Expansivity Constant': {
                 type: 'double',
                 value: '22.06e-6',
-                conditionalView: ['Temperature Dependent', 'false'],
+                conditionalView: [['Temperature Dependent', 'false']],
                 alias: 'Thermal Expansivity'
               },
               'Thermal Expansivity': {
                 'c011': { type: 'double', value: '22.06e-6'},
                 'c111': { type: 'double', value: '0.0'},
                 'c211': { type: 'double', value: '0.0'},
-                conditionalView: ['Temperature Dependent', 'true']
+                conditionalView: [['Temperature Dependent', 'true']]
               },
               'Elastic Stiffness Constant': {
                 'Youngs Modulus': {
@@ -77,7 +77,7 @@ class AnalyzeStaticThermomechanics extends AnalyzeScenarioBase {
                   value: '6.90342e10',
                 },
                 'Poissons Ratio': { type: 'double', value: '0.35' },
-                conditionalView: ['Temperature Dependent', 'false'],
+                conditionalView: [['Temperature Dependent', 'false']],
                 alias: 'Elastic Stiffness'
               },
               'Elastic Stiffness': {
@@ -87,7 +87,7 @@ class AnalyzeStaticThermomechanics extends AnalyzeScenarioBase {
                   'c2': { type: 'double', value: '0.0'},
                 },
                 'Poissons Ratio': { type: 'double', value: '0.35' },
-                conditionalView: ['Temperature Dependent', 'true']
+                conditionalView: [['Temperature Dependent', 'true']]
               }
             }
           }
@@ -116,16 +116,16 @@ class AnalyzeStaticThermomechanics extends AnalyzeScenarioBase {
               type: 'string',
               value: 'Volume',
               options: ['Volume'],
-              conditionalView: ['Linear', 'true'],
+              conditionalView: [['Linear', 'true']],
               alias: 'Scalar Function Type'
             },
             'Scalar Function Type': {
               type: 'string',
               value: 'Internal Thermoelastic Energy',
               options: ['Internal Thermoelastic Energy', 'Stress P-Norm'],
-              conditionalView: ['Linear', 'false']
+              conditionalView: [['Linear', 'false']]
             },
-            'Exponent': { type: 'double', value: '6.0', conditionalView: ['Scalar Function Type', 'Stress P-Norm']},
+            'Exponent': { type: 'double', value: '6.0', conditionalView: [['Scalar Function Type', 'Stress P-Norm']]},
             'Penalty Function': {
               'Type': { type: 'string', value: 'SIMP', options: ['SIMP', 'RAMP', 'Heaviside'] },
               'Exponent': { type: 'double', value: '3.0' },
@@ -140,9 +140,9 @@ class AnalyzeStaticThermomechanics extends AnalyzeScenarioBase {
           'type': 'list-view',
           '<Template>': {
             'Type': { type: 'string', value: 'Uniform', options: ['Uniform', 'Uniform Component', 'Uniform Pressure'] },
-            'Values': { type: 'double', value: {'X': '0.0', 'Y': '0.0', 'Z': '0.0'}, conditionalView: ['Type', 'Uniform'] },
-            'Value': { type: 'double', value: '0.0', conditionalView: ['Type', ['Uniform Component', 'Uniform Pressure']] },
-            'Component': { type: 'string', value: 'X', options: ['X', 'Y', 'Z'], conditionalView: ['Type', 'Uniform Component'] },
+            'Values': { type: 'double', value: {'X': '0.0', 'Y': '0.0', 'Z': '0.0'}, conditionalView: [['Type', 'Uniform']] },
+            'Value': { type: 'double', value: '0.0', conditionalView: [['Type', ['Uniform Component', 'Uniform Pressure']]] },
+            'Component': { type: 'string', value: 'X', options: ['X', 'Y', 'Z'], conditionalView: [['Type', 'Uniform Component']] },
             'Sides': { type: 'string', value: '', options: () => { return this.selectables['sidesets'] } }
           }
         }
@@ -165,7 +165,7 @@ class AnalyzeStaticThermomechanics extends AnalyzeScenarioBase {
           '<Template>': {
             'Type': { type: 'string', value: 'Zero Value', options: ['Zero Value', 'Fixed Value'] },
             'Index': { type: 'int', value: '0', options: ['0', '1', '2', '3'] },
-            'Value': { type: 'double', value: '0.0', conditionalView: ['Type', 'Fixed Value'] },
+            'Value': { type: 'double', value: '0.0', conditionalView: [['Type', 'Fixed Value']] },
             'Sides': { type: 'string', value: '', options: () => { return this.selectables['nodesets'].concat(this.selectables['sidesets']) } }
           }
         }
