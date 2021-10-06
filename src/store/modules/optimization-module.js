@@ -56,6 +56,8 @@ class Optimization extends ParBase {
     this.initialValue = 0.25 // default value
     this.applyFilter = true // default value 
     this.fixedBlocks = {}
+    this.symmetry = {}
+    this.useEngineFilter = false // hardwired to use the filter in PlatoAnalyze (not PlatoEngine)
     this.run = {computeStatus: 'idle', runDir: 'not set', iterations: [], activeIteration: 0}
     this.display = {opacity: 1.0, wireframe: false, visible: true}
     this.convergenceData = [{x: [], y: [], type: 'scatter'}]
@@ -153,34 +155,80 @@ class Optimization extends ParBase {
     mpirun_source += `analyze_MPMD --input-config=${this.inputFileName(uniqueScenarios[0].name)}`
     return mpirun_source
   }
-  setupFilter({platoApp}) {
-    this.addBranch({
-      Filter: {
-        Name: "Kernel",
-        Scale: this.filterRadius,
-        Absolute: -1
-      }
-    }, platoApp)
+  setupFilter({platoApp, analyzeApp}) {
+    if (this.useEngineFilter) {
+      this.addBranch({
+        Filter: {
+          Name: "Kernel",
+          Scale: this.filterRadius,
+          Absolute: -1
+        }
+      }, platoApp)
 
-    this.addBranch({
-      Operation: {
-        Function: "Filter",
-        Name: "FilterControl",
-        Input: { ArgumentName: "Field"},
-        Output: { ArgumentName: "Filtered Field"},
-        Gradient: "False"
-      }
-    }, platoApp)
+      this.addBranch({
+        Operation: {
+          Function: "Filter",
+          Name: "FilterControl",
+          Input: { ArgumentName: "Field"},
+          Output: { ArgumentName: "Filtered Field"},
+          Gradient: "False"
+        }
+      }, platoApp)
 
-    this.addBranch({
-      Operation: {
-        Function: "Filter",
-        Name: "FilterGradient",
-        Input: { ArgumentName: "Gradient"},
-        Output: { ArgumentName: "Filtered Gradient"},
-        Gradient: "True"
+      this.addBranch({
+        Operation: {
+          Function: "Filter",
+          Name: "FilterGradient",
+          Input: { ArgumentName: "Gradient"},
+          Output: { ArgumentName: "Filtered Gradient"},
+          Gradient: "True"
+        }
+      }, platoApp)
+    } else {
+      let tMeshMap = {
+        MeshMap: {
+          FilterFirst: "false",
+          Filter: { Type: "Linear", Radius: this.filterRadius }
+        }
       }
-    }, platoApp)
+      const tSym = this.getSymmetry()
+      if (tSym.X || tSym.Y || tSym.Z) {
+        let tSearchTolerance = this.filterRadius/2.0 // TODO: add input for this?  use default based on average element size?
+        let tOriginX = 0.0 // TODO: add input for this? 
+        let tOriginY = 0.0 // TODO: add input for this? 
+        let tOriginZ = 0.0 // TODO: add input for this? 
+        // TODO: below assumes symmetry on coordinate planes only, the actual implementation in PA is more general.
+        tMeshMap['MeshMap']['LinearMap'] = {
+          Type: 'SymmetryPlane',
+          SearchTolerance: tSearchTolerance,
+          Origin: { X: tOriginX, Y: tOriginY, Z: tOriginZ },
+        }
+        if (tSym.X) {
+          tMeshMap['MeshMap']['LinearMap']['Normal'] = {X: 1.0, Y: 0.0, Z: 0.0}
+        } else
+        if (tSym.Y) {
+          tMeshMap['MeshMap']['LinearMap']['Normal'] = {X: 0.0, Y: 1.0, Z: 0.0}
+        } else
+        if (tSym.Z) {
+          tMeshMap['MeshMap']['LinearMap']['Normal'] = {X: 0.0, Y: 0.0, Z: 1.0}
+        }
+      } else {
+        tMeshMap['MeshMap']['LinearMap'] = ""
+      }
+      this.addBranch(tMeshMap, analyzeApp)
+    }
+  }
+  // currently, optimizations only support one model.  return the symmetry object
+  // associated with that one model.  Generalize this when multiple models are supported
+  getSymmetry() {
+    let tKeys = Object.keys(this.symmetry)
+    if (tKeys.length > 1) {
+      throw "Optimization: More that one model entry found in the symmetry object"
+    } else 
+    if (tKeys.length === 0) {
+      throw "Optimization: No model entry found in the symmetry object"
+    }
+    return this.symmetry[tKeys[0]]
   }
   isObject (aVar) {
     return typeof aVar === 'object' && !Array.isArray(aVar)
@@ -265,19 +313,22 @@ class Optimization extends ParBase {
       }
     }
     if (this.normalizeObjectives) {
-      newStage["Stage"]["Operation__Normalize"] = {
-        Name: "FilterControl",
-        PerformerName: "PlatoMain",
-        Input: {
-          ArgumentName: "Field",
-          SharedDataName: "Optimization DOFs"
-        },
-        Output: {
-          ArgumentName: "Filtered Field",
-          SharedDataName: "Topology"
+      if (this.useEngineFilter) {
+        newStage["Stage"]["Operation__Normalize"] = {
+          Name: "FilterControl",
+          PerformerName: "PlatoMain",
+          Input: {
+            ArgumentName: "Field",
+            SharedDataName: "Optimization DOFs"
+          },
+          Output: {
+            ArgumentName: "Filtered Field",
+            SharedDataName: "Topology"
+          }
         }
       }
       
+      let tTopologyName = (this.useEngineFilter) ? 'Topology' : 'Optimization DOFs'
       this.objectives.forEach((obj) => {
         let tObjName = `${obj.scenario.name}:${obj.criterionName}`
         let tSharedDataName = `Initial ${tObjName} Value`
@@ -287,7 +338,7 @@ class Optimization extends ParBase {
           PerformerName: "Analyze",
           Input: {
             ArgumentName: "Topology",
-            SharedDataName: "Topology"
+            SharedDataName: tTopologyName
           },
           Output: {
             ArgumentName: `${tObjName} Value`,
@@ -362,7 +413,7 @@ class Optimization extends ParBase {
   writePlatoInputFile(xw) {
 
     if (this.objectives.length === 0) {
-      throw "Attempted to optimization with no objectives defined."
+      throw "Attempted optimization with no objectives defined."
     }
 
     let meshFileName = ""
@@ -416,7 +467,11 @@ class Optimization extends ParBase {
     this.addBranch({SharedData: tArg}, xw)
   }
   setupSharedData({interfaceFile}) {
-    this.addSharedData({Name: "Topology", Type: "Scalar", Layout: "Nodal Field", OwnerName: "PlatoMain", UserName__1: "PlatoMain", UserName__2: "Analyze"}, interfaceFile)
+    if (this.useEngineFilter) {
+      this.addSharedData({Name: "Topology", Type: "Scalar", Layout: "Nodal Field", OwnerName: "PlatoMain", UserName__1: "PlatoMain", UserName__2: "Analyze"}, interfaceFile)
+    } else {
+      this.addSharedData({Name: "Mapped Topology", Type: "Scalar", Layout: "Nodal Field", OwnerName: "Analyze", UserName: "PlatoMain"}, interfaceFile)
+    }
     this.addSharedData({Name: "Optimization DOFs", Type: "Scalar", Layout: "Nodal Field", OwnerName: "PlatoMain", UserName__1: "PlatoMain", UserName__2: "Analyze"}, interfaceFile)
   }
   writeInterfaceFile() {
@@ -560,27 +615,30 @@ class Optimization extends ParBase {
           Name: conName,
           Input: {
             SharedDataName: "Optimization DOFs"
-          },
-          Operation: {
-            Name: "FilterControl",
-            PerformerName: "PlatoMain",
-            Input: {
-              ArgumentName: "Field",
-              SharedDataName: "Optimization DOFs"
-            },
-            Output: {
-              ArgumentName: "Filtered Field",
-              SharedDataName: "Topology"
-            }
           }
         }
       }
+      if (this.useEngineFilter) {
+        newStage['Stage']['Operation'] = {
+          Name: "FilterControl",
+          PerformerName: "PlatoMain",
+          Input: {
+            ArgumentName: "Field",
+            SharedDataName: "Optimization DOFs"
+          },
+          Output: {
+            ArgumentName: "Filtered Field",
+            SharedDataName: "Topology"
+          }
+        }
+      }
+      let tTopologyName = (this.useEngineFilter) ? 'Topology' : 'Optimization DOFs'
       newStage["Stage"][`Operation__${conName}`] = {
         Name: `Compute ${conName} Value`,
         PerformerName: "Analyze",
         Input: {
           ArgumentName: "Topology",
-          SharedDataName: "Topology"
+          SharedDataName: tTopologyName
         },
         Output: {
           ArgumentName: `${conName} Value`,
@@ -603,55 +661,71 @@ class Optimization extends ParBase {
           Name: `${conName} Gradient`,
           Input: {
             SharedDataName: "Optimization DOFs"
-          },
-          Operation: {
-            Name: "FilterControl",
-            PerformerName: "PlatoMain",
-            Input: {
-              ArgumentName: "Field",
-              SharedDataName: "Optimization DOFs"
-            },
-            Output: {
-              ArgumentName: "Filtered Field",
-              SharedDataName: "Topology"
-            }
           }
         }
       }
+      if (this.useEngineFilter) {
+        newStage['Stage']['Operation'] = {
+          Name: "FilterControl",
+          PerformerName: "PlatoMain",
+          Input: {
+            ArgumentName: "Field",
+            SharedDataName: "Optimization DOFs"
+          },
+          Output: {
+            ArgumentName: "Filtered Field",
+            SharedDataName: "Topology"
+          }
+        }
+      }
+      let tTopologyName = (this.useEngineFilter) ? 'Topology' : 'Optimization DOFs'
       newStage["Stage"][`Operation__${conName}`] = {
         Name: `Compute ${conName} Gradient`,
         PerformerName: "Analyze",
         Input: {
           ArgumentName: "Topology",
-          SharedDataName: "Topology"
-        },
-        Output: {
+          SharedDataName: tTopologyName
+        }
+      }
+      if (this.useEngineFilter) {
+        newStage["Stage"][`Operation__${conName}`]['Output'] = {
           ArgumentName: `${conName} Gradient`,
           SharedDataName: `Unfiltered ${conName} Gradient`
         }
-      }
-      newStage["Stage"]["Operation__Filter"] = {
-        Name: "FilterGradient",
-        PerformerName: "PlatoMain",
-        Input__0: {
-          ArgumentName: "Field",
-          SharedDataName: "Optimization DOFs"
-        },
-        Input__1: {
-          ArgumentName: "Gradient",
-          SharedDataName: `Unfiltered ${conName} Gradient`
-        },
-        Output: {
-          ArgumentName: "Filtered Gradient",
+      } else {
+        newStage["Stage"][`Operation__${conName}`]['Output'] = {
+          ArgumentName: `${conName} Gradient`,
           SharedDataName: `${conName} Gradient`
+        }
+      }
+      if (this.useEngineFilter) {
+        newStage["Stage"]["Operation__Filter"] = {
+          Name: "FilterGradient",
+          PerformerName: "PlatoMain",
+          Input__0: {
+            ArgumentName: "Field",
+            SharedDataName: "Optimization DOFs"
+          },
+          Input__1: {
+            ArgumentName: "Gradient",
+            SharedDataName: `Unfiltered ${conName} Gradient`
+          },
+          Output: {
+            ArgumentName: "Filtered Gradient",
+            SharedDataName: `${conName} Gradient`
+          }
         }
       }
       newStage["Stage"]["Output"] = {
         SharedDataName: `${conName} Gradient`
       }
       this.addBranch(newStage, interfaceFile)
-      this.addSharedData({Name: `${conName} Gradient`, Type: "Scalar", Layout: "Nodal Field", OwnerName: "PlatoMain", UserName: "PlatoMain"}, interfaceFile)
-      this.addSharedData({Name: `Unfiltered ${conName} Gradient`, Type: "Scalar", Layout: "Nodal Field", OwnerName: "Analyze", UserName: "PlatoMain"}, interfaceFile)
+      if (this.useEngineFilter) {
+        this.addSharedData({Name: `${conName} Gradient`, Type: "Scalar", Layout: "Nodal Field", OwnerName: "PlatoMain", UserName: "PlatoMain"}, interfaceFile)
+        this.addSharedData({Name: `Unfiltered ${conName} Gradient`, Type: "Scalar", Layout: "Nodal Field", OwnerName: "Analyze", UserName: "PlatoMain"}, interfaceFile)
+      } else {
+        this.addSharedData({Name: `${conName} Gradient`, Type: "Scalar", Layout: "Nodal Field", OwnerName: "Analyze", UserName: "PlatoMain"}, interfaceFile)
+      }
     }, this)
   }
   setupObjectiveCriteria({analyzeApp}){
@@ -667,21 +741,24 @@ class Optimization extends ParBase {
         Name: "Objective",
         Input: {
           SharedDataName: "Optimization DOFs"
-        },
-        Operation: {
-          Name: "FilterControl",
-          PerformerName: "PlatoMain",
-          Input: {
-            ArgumentName: "Field",
-            SharedDataName: "Optimization DOFs"
-          },
-          Output: {
-            ArgumentName: "Filtered Field",
-            SharedDataName: "Topology"
-          }
         }
       }
     }
+    if (this.useEngineFilter) {
+      newStage['Stage']['Operation'] = {
+        Name: "FilterControl",
+        PerformerName: "PlatoMain",
+        Input: {
+          ArgumentName: "Field",
+          SharedDataName: "Optimization DOFs"
+        },
+        Output: {
+          ArgumentName: "Filtered Field",
+          SharedDataName: "Topology"
+        }
+      }
+    }
+    let tTopologyName = (this.useEngineFilter) ? 'Topology' : 'Optimization DOFs'
     this.objectives.forEach((obj) => {
       let objName = `${obj.scenario.name}:${obj.criterionName}`
       newStage["Stage"][`Operation__${objName}`] = {
@@ -689,7 +766,7 @@ class Optimization extends ParBase {
         PerformerName: "Analyze",
         Input: {
           ArgumentName: "Topology",
-          SharedDataName: "Topology"
+          SharedDataName: tTopologyName
         },
         Output: {
           ArgumentName: `${objName} Value`,
@@ -766,21 +843,24 @@ class Optimization extends ParBase {
         Name: "Objective Gradient",
         Input: {
           SharedDataName: "Optimization DOFs"
-        },
-        Operation: {
-          Name: "FilterControl",
-          PerformerName: "PlatoMain",
-          Input: {
-            ArgumentName: "Field",
-            SharedDataName: "Optimization DOFs"
-          },
-          Output: {
-            ArgumentName: "Filtered Field",
-            SharedDataName: "Topology"
-          }
         }
       }
     }
+    if (this.useEngineFilter) {
+      newStage['Stage']['Operation'] = {
+        Name: "FilterControl",
+        PerformerName: "PlatoMain",
+        Input: {
+          ArgumentName: "Field",
+          SharedDataName: "Optimization DOFs"
+        },
+        Output: {
+          ArgumentName: "Filtered Field",
+          SharedDataName: "Topology"
+        }
+      }
+    }
+    let tTopologyName = (this.useEngineFilter) ? 'Topology' : 'Optimization DOFs'
     this.objectives.forEach((obj) => {
       let objName = `${obj.scenario.name}:${obj.criterionName}`
       newStage["Stage"][`Operation__${objName}`] = {
@@ -788,7 +868,7 @@ class Optimization extends ParBase {
         PerformerName: "Analyze",
         Input: {
           ArgumentName: "Topology",
-          SharedDataName: "Topology"
+          SharedDataName: tTopologyName
         },
         Output: {
           ArgumentName: `${objName} Gradient`,
@@ -818,20 +898,22 @@ class Optimization extends ParBase {
       ArgumentName: "Field",
       SharedDataName: "Objective Gradient"
     }
-    newStage["Stage"]["Operation__Filter"] = {
-      Name: "FilterGradient",
-      PerformerName: "PlatoMain",
-      Input__0: {
-        ArgumentName: "Field",
-        SharedDataName: "Optimization DOFs"
-      },
-      Input__1: {
-        ArgumentName: "Gradient",
-        SharedDataName: "Objective Gradient"
-      },
-      Output: {
-        ArgumentName: "Filtered Gradient",
-        SharedDataName: "Objective Gradient"
+    if (this.useEngineFilter) {
+      newStage["Stage"]["Operation__Filter"] = {
+        Name: "FilterGradient",
+        PerformerName: "PlatoMain",
+        Input__0: {
+          ArgumentName: "Field",
+          SharedDataName: "Optimization DOFs"
+        },
+        Input__1: {
+          ArgumentName: "Gradient",
+          SharedDataName: "Objective Gradient"
+        },
+        Output: {
+          ArgumentName: "Filtered Gradient",
+          SharedDataName: "Objective Gradient"
+        }
       }
     }
     newStage["Stage"]["Output"] = {
@@ -874,18 +956,30 @@ class Optimization extends ParBase {
     }
     this.addBranch(tAggregator, platoApp)
   }
-  setupOutputStage({interfaceFile, platoApp}){
+  setupOutputStage({interfaceFile, platoApp, analyzeApp}){
       let newStage = {
         Stage: {
           Name: "Output To File",
-          Operation: {
-            Name: "PlatoMainOutput",
-            PerformerName: "PlatoMain",
-            Input: {
-              ArgumentName: "Topology",
-              SharedDataName: "Topology"
-            }
+        }
+      }
+      let tMappedTopologyName = "Topology"
+      if (this.useEngineFilter === false) {
+        newStage['Stage']['Operation__PA'] = {
+          Name: "Write Output",
+          PerformerName: "Analyze",
+          Output: {
+            ArgumentName: "Topology",
+            SharedDataName: "Mapped Topology"
           }
+        }
+        tMappedTopologyName = "Mapped Topology"
+      }
+      newStage['Stage']['Operation'] = {
+        Name: "PlatoMainOutput",
+        PerformerName: "PlatoMain",
+        Input: {
+          ArgumentName: "Topology",
+          SharedDataName: tMappedTopologyName
         }
       }
       this.addBranch(newStage, interfaceFile)
@@ -910,6 +1004,19 @@ class Optimization extends ParBase {
         }
       }
       this.addBranch(newOperation, platoApp)
+
+      if (this.useEngineFilter === false) {
+        let newOperation = {
+          Operation: {
+            Function: "WriteOutput",
+            Name: "Write Output",
+            Output: {
+              ArgumentName: "Topology"
+            }
+          }
+        }
+        this.addBranch(newOperation, analyzeApp)
+      }
   }
   setupCacheStateStage({interfaceFile}){
       let newStage = {
@@ -934,10 +1041,11 @@ class Optimization extends ParBase {
     optData["Output"] = {
         OutputStage: "Output To File"
     }
+    let tFilteredTopologyName = (this.useEngineFilter) ? 'Topology' : 'Mapped Topology'
     optData["OptimizationVariables"] = {
         ValueName: "Optimization DOFs",
         InitializationStage: "Initialize Optimization",
-        FilteredName: "Topology",
+        FilteredName: tFilteredTopologyName,
         LowerBoundValueName: "Lower Bound Value",
         LowerBoundVectorName: "Lower Bound Vector",
         UpperBoundValueName: "Upper Bound Value",
@@ -997,6 +1105,17 @@ class Optimization extends ParBase {
       }
     })
     return uniqueModels
+  }
+  setSymmetry(model, direction, isSym) {
+    if (model in this.symmetry) {
+      if (direction in this.symmetry[model]) {
+        this.symmetry[model][direction] = isSym
+      } else {
+        throw "setSymmetry: attempted to set symmetry in unknown direction"
+      }
+    } else {
+      throw "setSymmetry: model not found"
+    }
   }
   setFixedBlock(model, block, isFixed) {
     if (isFixed) {
@@ -1133,6 +1252,9 @@ class Optimization extends ParBase {
       if (!(modelName in this.fixedBlocks)){
         this.fixedBlocks[modelName] = []
       }
+      if (!(modelName in this.symmetry)){
+        this.symmetry[modelName] = {X: false, Y: false, Z: false}
+      }
     })
   }
   addConstraint(scenario, criterionName, target, perVolume) {
@@ -1142,6 +1264,9 @@ class Optimization extends ParBase {
     uniqueModels.forEach(modelName => {
       if (!(modelName in this.fixedBlocks)){
         this.fixedBlocks[modelName] = []
+      }
+      if (!(modelName in this.symmetry)){
+        this.symmetry[modelName] = {X: false, Y: false, Z: false}
       }
     })
   }

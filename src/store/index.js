@@ -564,6 +564,12 @@ export default new Vuex.Store({
         optimizations[optimizationIndex].setFixedBlock(model, block, isFixed)
       }
     },
+    setOptimizationSymmetry({optimizations}, {optimizationName, model, direction, isSymmetric}) {
+      let optimizationIndex = optimizations.findIndex(optimization => optimization.name === optimizationName)
+      if (optimizationIndex !== -1) {
+        optimizations[optimizationIndex].setSymmetry(model, direction, isSymmetric)
+      }
+    },
     setModelData(state, modelData) {
       let newModel = null
       if (modelData.type === 'ExodusModel') {
