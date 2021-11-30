@@ -1,4 +1,4 @@
-"use strict"; 
+"use strict";
 
 function getKeys(prefixObject){
   return Object.keys(prefixObject)
@@ -9,7 +9,7 @@ function getUserGeneratedFieldNames(prefix){
   prefix.forEach(function(prefix_item){
     functionNames.push(getKeys(prefix_item))
   });
-  return functionNames   
+  return functionNames
 }
 
 function poissonsRatioCheck(prefix, key){
@@ -31,7 +31,7 @@ function poissonsRatioCheck(prefix, key){
 // Description: determine if a load is specified that has zero value(s)
 //
 // returns a list of errors
-// 
+//
 //******************************************************************************/
 export function loadCheck(prefix, view, fieldSpecifier){
   if(view === "Value"){
@@ -51,7 +51,7 @@ export function loadCheck(prefix, view, fieldSpecifier){
   }
   return []
 }
-    
+
 //******************************************************************************/
 // Tested: true
 //
@@ -59,9 +59,9 @@ export function loadCheck(prefix, view, fieldSpecifier){
 // considering the 'conditionalView' fields.
 //
 // returns a list of errors
-// 
+//
 //******************************************************************************/
-export function isLoadZero(aLocalObject, aFieldSpecifier){   
+export function isLoadZero(aLocalObject, aFieldSpecifier){
   // check 'Value'
   if(!checkForUnmetConditionalView(aLocalObject["Value"], aLocalObject)){
     return loadCheck(aLocalObject, "Value", aFieldSpecifier)
@@ -82,7 +82,7 @@ export function isLoadZero(aLocalObject, aFieldSpecifier){
 // returns true if aLocalObject is conditional and those conditions aren't met.
 // returns false if aLocalObject is conditional and those conditions are met.
 // returns false if aLocalObject is not conditional
-// 
+//
 //******************************************************************************/
 export function checkForUnmetConditionalView(aLocalObject, aParentObject){
   if('conditionalView' in aLocalObject){
@@ -101,27 +101,31 @@ export function checkForUnmetConditionalView(aLocalObject, aParentObject){
   } else {
     return false
   }
-}    
+}
 
-function automateValidation(aTemplateObject, aKey, aDataObject, aFieldSpecifier, aParentObject) {   
-  if(typeof aTemplateObject[aKey] !== 'object') {
-    return []
-  }
+function automateValidation(aTemplateObject, aKey, aDataObject, aFieldSpecifier) {
+  // ignore non-objects
+  if(typeof aTemplateObject[aKey] !== 'object') {return []}
+
+  // ignore conditional blocks that aren't active
+  if(checkForUnmetConditionalView(aTemplateObject[aKey], aDataObject)){return []}
+
+  // follow branches (nested blocks)
   if(!('value' in aTemplateObject[aKey]) && aTemplateObject[aKey] instanceof Object){
-    if(checkForUnmetConditionalView(aTemplateObject, aParentObject)){return []}
-    const keysIn = getKeys(aTemplateObject[aKey]) 
+    const keysIn = getKeys(aTemplateObject[aKey])
     if(aKey === 'conditionalView' || aKey === 'conditionalValue') {return []}
     return keysIn.flatMap(
-      keyIn => automateValidation(aTemplateObject[aKey], keyIn, aDataObject[aKey], aFieldSpecifier, aDataObject)
+      keyIn => automateValidation(aTemplateObject[aKey], keyIn, aDataObject[aKey], aFieldSpecifier)
     )
-  } else  if('value' in aTemplateObject[aKey] ){  
-    if(checkForUnmetConditionalView(aTemplateObject, aParentObject)){return []}
+  } else
+  // check individual leaves (terminal blocks)
+  if('value' in aTemplateObject[aKey] ){
     if(aKey === 'Poissons Ratio'){
       return poissonsRatioCheck(aDataObject, aKey)
     }
     if(!aDataObject[aKey].value || aDataObject[aKey].value === ""){
       return['Must specify '+aKey+' in '+ aFieldSpecifier ]
-    } 
+    }
   }
   return []
 }
@@ -132,7 +136,7 @@ function validateModel(prefix){
     return []
   }
 }
-  
+
 export function validateScenario(scenario){
   const infoIn = scenario.modelviews
   const mainKeys = Object.keys(infoIn)
@@ -148,25 +152,25 @@ export function validateScenario(scenario){
       (tDataObject.length == 0 && Array.isArray(tDataObject) && tIsRequired===true)){
         errors.push('Must specify '+key)
     } else {
-      if(tViewObject.type === 'single-view'){      
+      if(tViewObject.type === 'single-view'){
         const subKeys = getKeys(tViewObjectTemplate)
         subKeys.forEach(subKey => {
-          errors = errors.concat(automateValidation(tViewObjectTemplate, subKey, tDataObject, key, {}))
-        })  
+          errors = errors.concat(automateValidation(tViewObjectTemplate, subKey, tDataObject, key))
+        })
       } else if(tViewObject.type === 'list-view'){
         let subKeys = getKeys(tViewObjectTemplate)
         subKeys.forEach(subKey => {
           const userGeneratedFieldNames = getUserGeneratedFieldNames(tDataObject)
-          
+
           if(userGeneratedFieldNames.length > 0){
-            for(var index in userGeneratedFieldNames){ 
+            for(var index in userGeneratedFieldNames){
               const userGeneratedFieldName = userGeneratedFieldNames[index]
               errors = errors.concat(
                 automateValidation(tViewObjectTemplate
                 , subKey, tDataObject[index][userGeneratedFieldName]
-                , userGeneratedFieldName, {})
+                , userGeneratedFieldName)
               )
-              
+
               if(key.includes('Loads') && subKey === 'Value'){
                 errors = errors.concat(isLoadZero(tDataObject[index][userGeneratedFieldName], userGeneratedFieldName))
               }
@@ -177,14 +181,11 @@ export function validateScenario(scenario){
         const optionSet = getKeys(tDataObject)[0]
         const optionInfo = tViewObject['<Options>'][optionSet]
         let subKeys = getKeys(optionInfo)
-        /*errors = subKeys.flatMap(subKey => 
-          automateValidation(tViewObject['<Options>'][optionSet], subKey, tDataObject[optionSet], infoIn[key], key)
-        ) */
         subKeys.forEach(subKey =>
-          errors = errors.concat(automateValidation(optionInfo, subKey, tDataObject[optionSet], key, {}))
-        )       
+          errors = errors.concat(automateValidation(optionInfo, subKey, tDataObject[optionSet], key))
+        )
       }
-    } 
+    }
   })
   return errors
 }

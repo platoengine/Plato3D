@@ -92,13 +92,9 @@ class AnalyzeStaticMechanics extends AnalyzeScenarioBase {
               'Minimum Value': { type: 'double', value: '1.0e-3' },
               conditionalView: [['Type', 'Scalar Function']]
             },
-            'Solution Function Settings': {
-              'Magnitude': { type: 'bool', value: 'false', options: ['true', 'false'] },
-              'Normal': { type: 'double', value: {'X': '0.0', 'Y': '0.0', 'Z': '0.0'} },
-              'Domain': { type: 'string', value: '', options: () => { return this.selectables['sidesets'] } },
-              conditionalView: [['Type', 'Solution']],
-              alias: 'Function Settings'
-            }
+            'Magnitude': { type: 'bool', value: 'false', options: ['true', 'false'], conditionalView: [['Type', 'Solution']] },
+            'Normal': { type: 'double', value: {'X': '0.0', 'Y': '0.0', 'Z': '0.0'}, conditionalView: [['Type', 'Solution']] },
+            'Domain': { type: 'string', value: '', options: () => { return this.selectables['sidesets'] }, conditionalView: [['Type', 'Solution']] },
           }
         }
       },

@@ -47,7 +47,7 @@ class AnalyzeTransientMechanics extends AnalyzeScenarioBase {
               'Mass Density': { type: 'double', value: '2700.0' },
               'Poissons Ratio': { type: 'double', value: '0.33' },
               'Youngs Modulus': { type: 'double', value: '1e11' },
-               conditionalView: ['Model', 'Isotropic Linear Elastic'],
+               conditionalView: [['Model', 'Isotropic Linear Elastic']],
                conditionalValue: ['Model', 'Isotropic Linear Elastic']
             },
             'Cubic Linear Elastic': {
@@ -55,7 +55,7 @@ class AnalyzeTransientMechanics extends AnalyzeScenarioBase {
               'C11': { type: 'double', value: '1e11' },
               'C22': { type: 'double', value: '1e11' },
               'C33': { type: 'double', value: '1e11' },
-               conditionalView: ['Model', 'Cubic Linear Elastic'],
+               conditionalView: [['Model', 'Cubic Linear Elastic']],
                conditionalValue: ['Model', 'Cubic Linear Elastic']
             }
           }
@@ -100,11 +100,21 @@ class AnalyzeTransientMechanics extends AnalyzeScenarioBase {
           'type': 'list-view',
           '<Template>': {
             'Type': { type: 'string', value: 'Scalar Function', options: ['Scalar Function'] },
-            'Scalar Function Type': {
+            'Linear': { type: 'bool', value: 'false', options: ['true', 'false'] },
+            'Linear Scalar Function Type': {
               type: 'string',
               value: 'Volume',
-              options: ['Volume', 'Internal Elastic Energy']
+              options: ['Volume'],
+              conditionalView: [['Linear', 'true']],
+              alias: 'Scalar Function Type'
             },
+            'Scalar Function Type': {
+              type: 'string',
+              value: 'Internal Elastic Energy',
+              options: ['Internal Elastic Energy', 'Stress P-Norm'],
+              conditionalView: [['Linear', 'false']],
+            },
+            'Exponent': { type: 'double', value: '6.0', conditionalView: [['Scalar Function Type', 'Stress P-Norm']]},
             'Penalty Function': {
               'Type': { type: 'string', value: 'SIMP', options: ['SIMP', 'RAMP', 'Heaviside'] },
               'Exponent': { type: 'double', value: '3.0' },
@@ -120,9 +130,9 @@ class AnalyzeTransientMechanics extends AnalyzeScenarioBase {
           'type': 'list-view',
           '<Template>': {
             'Type': { type: 'string', value: 'Uniform', options: ['Uniform', 'Uniform Component'] },
-            'Values': { type: 'double', value: {'X': '0.0', 'Y': '0.0', 'Z': '0.0'}, conditionalView: ['Type', 'Uniform'] },
-            'Value': { type: 'double', value: '0.0', conditionalView: ['Type', 'Uniform Component'] },
-            'Component': { type: 'string', value: 'X', options: ['X', 'Y', 'Z'], conditionalView: ['Type', 'Uniform Component'] },
+            'Values': { type: 'double', value: {'X': '0.0', 'Y': '0.0', 'Z': '0.0'}, conditionalView: [['Type', 'Uniform']] },
+            'Value': { type: 'double', value: '0.0', conditionalView: [['Type', 'Uniform Component']] },
+            'Component': { type: 'string', value: 'X', options: ['X', 'Y', 'Z'], conditionalView: [['Type', 'Uniform Component']] },
             'Sides': { type: 'string', value: '', options: () => { return this.selectables['sidesets'] } }
           }
         }
@@ -135,8 +145,8 @@ class AnalyzeTransientMechanics extends AnalyzeScenarioBase {
           '<Template>': {
             'Type': { type: 'string', value: 'Zero Value', options: ['Zero Value', 'Fixed Value, Time Dependent'] },
             'Index': { type: 'int', value: '0', options: ['0', '1', '2'] },
-            'Value': { type: 'double', value: '0.0', conditionalView: ['Type', 'Fixed Value'] },
-            'Function': { type: 'string', value: '0.0', conditionalView: ['Type', 'Time Dependent'] },
+            'Value': { type: 'double', value: '0.0', conditionalView: [['Type', 'Fixed Value']] },
+            'Function': { type: 'string', value: '0.0', conditionalView: [['Type', 'Time Dependent']] },
             'Sides': { type: 'string', value: '', options: () => { return this.selectables['nodesets'].concat(this.selectables['sidesets']) } }
           }
         }
