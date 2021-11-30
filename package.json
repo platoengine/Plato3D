@@ -5,7 +5,9 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "lint": "vue-cli-service lint",
+    "test": "jest",
+    "test-dbg": "jest --watch"
   },
   "dependencies": {
     "axios": "^0.21.1",
@@ -28,11 +30,13 @@
     "babel-eslint": "^10.0.3",
     "eslint": "^6.7.2",
     "eslint-plugin-vue": "^6.1.2",
+    "jest": "^27.2.2",
     "sass": "^1.32.6",
     "sass-loader": "^8.0.0",
     "vue-cli-plugin-vuetify": "^2.1.0",
     "vue-template-compiler": "^2.6.12",
-    "vuetify-loader": "^1.7.2"
+    "vuetify-loader": "^1.7.2",
+    "xmldom": "^0.6.0"
   },
   "eslintConfig": {
     "root": true,

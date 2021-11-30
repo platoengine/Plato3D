@@ -145,6 +145,16 @@ class AnalyzeScenarioBase extends ParBase {
       return aVar
     }
   }
+
+  //**************************************************************************//
+  //  Tested: true
+  //
+  //  Description: returns 'alias' property if present in aObject, otherwise
+  //  returns aDefalt
+  //
+  //  See the tests for example use cases.
+  //
+  //**************************************************************************//
   getAlias (aObject, aDefault) {
     if (this.hasPropertyOfType(aObject, 'alias', 'string') ) {
       return aObject['alias']
@@ -222,15 +232,34 @@ class AnalyzeScenarioBase extends ParBase {
     }
     return false
   }
+  //**************************************************************************//
+  //  Tested: true
+  //
+  //  Description: returns true for
+  //
+  //    aVar.conditionalView = [[key1, [opt11, opt12, ...]], [key2, [opt21, opt22, ...]], ...]
+  //  
+  //  if    ((aContext.key1.value === opt11) || (aContext.key1.value === opt12) || ...)
+  //     && ((aContext.key2.value === opt21) || (aContext.key2.value === opt22) || ...)
+  //     && ( ... )
+  //
+  //  See the tests for example use cases.
+  //
+  //**************************************************************************//
   conditionMet (aVar, aContext) {
     if (this.isConditional(aVar)) {
-      let propName = aVar['conditionalView'][0]
-      let propValue = aVar['conditionalView'][1]
-      if (Object.prototype.hasOwnProperty.call(aContext, propName)) {
-        return this.isEquivalent(aContext[propName].value, propValue)
-      } else {
-        return false
-      }
+      const tConditions = aVar.conditionalView
+      let tConditionsMet = true
+      tConditions.forEach( tCondition => {
+        let propName = tCondition[0]
+        let propValue = tCondition[1]
+        if (Object.prototype.hasOwnProperty.call(aContext, propName)) {
+          tConditionsMet = tConditionsMet && this.isEquivalent(aContext[propName].value, propValue)
+        } else {
+          tConditionsMet = false
+        }
+      })
+      return tConditionsMet
     } else {
       return true
     }
@@ -392,35 +421,74 @@ class AnalyzeScenarioBase extends ParBase {
       }
     })
   }
+
+  //**************************************************************************//
+  //  Tested: true
+  //
+  // Description:  Returns true if the argument is an object with a property
+  // named 'conditionalView' that is of type Array.  Returns false otherwise.
+  //
+  //**************************************************************************//
   isConditional(aVar) {
-    if (this.hasPropertyOfType(aVar, 'conditionalView', 'object') && Array.isArray(aVar['conditionalView'])) {
-      return true
+    if (this.hasPropertyOfType(aVar, 'conditionalView', 'object')) {
+      return Array.isArray(aVar['conditionalView'])
     } else {
       return false
     }
   }
-  getConditionalSub (tFromObject, tToObject, tKey) {
-    let keys = Object.keys(tToObject)
-    for (let key of keys) {
-      let tokens = key.split('|')
+
+  //**************************************************************************//
+  //  Tested: true
+  //
+  //  Description:  returns the property from aToObject that satisfies the 
+  //  conditionalView in aFromObject, otherwise returns the property that 
+  //  satisfies the default condition in aToObject.
+  //
+  //  Note: this function is used during parsing.  The aFromObject argument
+  //  has been parsed from an input file, and the aToObject is the template
+  //  that the data will be synced into.
+  //
+  //  See the tests for example use cases.
+  //
+  //**************************************************************************//
+  getConditionalSub (aFromObject, aToObject, aKey) {
+    let tReturnKey = null
+
+    // see if the sub is conditional and the condition is explicitly met in aFromObject
+    Object.keys(aToObject).some( tKey => {
+      let tokens = tKey.split('|')
       if (tokens.length === 2) {
-        if (tokens[0] === tKey) {
-          // check the condition 
-          let tVar = tToObject[key]
-          if (this.isConditional(tVar)) {
-            let propName = tVar['conditionalView'][0]
-            let propValue = tVar['conditionalView'][1]
-            if (this.hasPropertyOfType(tFromObject, propName, 'object') && tFromObject[propName]['value'] === propValue) {
-              return tToObject[key]
-            } else
-            if (this.hasPropertyOfType(tToObject, propName, 'object') && tToObject[propName]['value'] === propValue) {
-              return tToObject[key]
-            }
+        if (tokens[0] === aKey) {
+          let tVar = aToObject[tKey]
+          if (this.conditionMet(tVar, aFromObject)) {
+            tReturnKey = tKey
+            return true
           }
         }
       }
+    })
+    if (tReturnKey !== null) {
+      return aToObject[tReturnKey]
     }
-    return null
+
+    // if the sub is conditional, return the default
+    Object.keys(aToObject).some( tKey => {
+      let tokens = tKey.split('|')
+      if (tokens.length === 2) {
+        if (tokens[0] === aKey) {
+          let tVar = aToObject[tKey]
+          if (this.conditionMet(aToObject, tVar)) {
+            tReturnKey = tKey
+            return true
+          }
+        }
+      }
+    })
+    if (tReturnKey !== null) {
+      return aToObject[tReturnKey]
+    } else {
+      return null
+    }
   }
   isEquivalent (aVal, aListVal) {
     if (Array.isArray(aListVal)) {
