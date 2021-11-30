@@ -1,15 +1,31 @@
-function checkForConditionalView(aContext, aKey){
+//******************************************************************************/
+// Tested: true
+//
+// Description: determine if aContext[aKey] is conditional AND those conditions 
+// are unsatisfied.
+//
+// returns false if aContext[aKey] is not conditional or if it is conditional
+// and the conditions are met.
+// returns true if aContext[aKey] is conditional and the conditions are not met.
+// 
+//******************************************************************************/
+export function checkForUnmetConditionalView(aContext, aKey){
   if('conditionalView' in aContext[aKey]){
-    const condition = aContext[aKey]['conditionalView']
-    const tKey = condition[0]
-    const tVal = condition[1]
-    if(Array.isArray(tVal)) {
-      return !(tVal.includes(aContext[tKey].value))
-    } else {
-      return aContext[tKey].value != tVal
-    }   
+    const conditions = aContext[aKey]['conditionalView']
+    let conditionsMet = true
+    conditions.forEach( condition => {
+      const tKey = condition[0]
+      const tVal = condition[1]
+      if(Array.isArray(tVal)) {
+        conditionsMet = conditionsMet && (tVal.includes(aContext[tKey].value))
+      } else {
+        conditionsMet = conditionsMet && (aContext[tKey].value === tVal)
+      }
+    })
+    return !conditionsMet
+  } else {
+    return false
   }
-  return false
 }
   
 //
@@ -20,7 +36,7 @@ export function allFieldsSpecified(prefix, key, flag){
     return flag
   }
   if(prefix[key] instanceof Object && !('value' in prefix[key])){
-    if(checkForConditionalView(prefix, key) === false){
+    if(checkForUnmetConditionalView(prefix, key) === false){
       const keys = Object.keys(prefix[key])
       if( !(key === 'conditionalView' || key === 'conditionalValue')){
         keys.forEach(key_=> {   
@@ -29,7 +45,7 @@ export function allFieldsSpecified(prefix, key, flag){
       }
     }
   } else if ('value' in prefix[key]){
-    if(checkForConditionalView(prefix, key) === false){
+    if(checkForUnmetConditionalView(prefix, key) === false){
       if(!prefix[key].value || prefix[key].value ===""){
         flag = false
       }

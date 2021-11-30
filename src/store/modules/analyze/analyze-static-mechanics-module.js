@@ -40,14 +40,14 @@ class AnalyzeStaticMechanics extends AnalyzeScenarioBase {
             'Isotropic Linear Elastic': {
               'Poissons Ratio': { type: 'double', value: '0.33' },
               'Youngs Modulus': { type: 'double', value: '1e11' },
-               conditionalView: ['Model', 'Isotropic Linear Elastic'],
+               conditionalView: [['Model', 'Isotropic Linear Elastic']],
                conditionalValue: ['Model', 'Isotropic Linear Elastic']
             },
             'Cubic Linear Elastic': {
               'C11': { type: 'double', value: '1e11' },
               'C22': { type: 'double', value: '1e11' },
               'C33': { type: 'double', value: '1e11' },
-               conditionalView: ['Model', 'Cubic Linear Elastic'],
+               conditionalView: [['Model', 'Cubic Linear Elastic']],
                conditionalValue: ['Model', 'Cubic Linear Elastic']
             }
           }
@@ -70,27 +70,31 @@ class AnalyzeStaticMechanics extends AnalyzeScenarioBase {
         'view': {
           'type': 'list-view',
           '<Template>': {
-            'Type': { type: 'string', value: 'Scalar Function', options: ['Scalar Function'] },
+            'Type': { type: 'string', value: 'Scalar Function', options: ['Scalar Function', 'Solution'] },
             'Linear': { type: 'bool', value: 'false', options: ['true', 'false'] },
             'Linear Scalar Function Type': {
               type: 'string',
               value: 'Volume',
               options: ['Volume'],
-              conditionalView: ['Linear', 'true'],
+              conditionalView: [['Linear', 'true'], ['Type', 'Scalar Function']],
               alias: 'Scalar Function Type'
             },
             'Scalar Function Type': {
               type: 'string',
               value: 'Internal Elastic Energy',
               options: ['Internal Elastic Energy', 'Stress P-Norm'],
-              conditionalView: ['Linear', 'false']
+              conditionalView: [['Linear', 'false'], ['Type', 'Scalar Function']]
             },
-            'Exponent': { type: 'double', value: '6.0', conditionalView: ['Scalar Function Type', 'Stress P-Norm']},
+            'Exponent': { type: 'double', value: '6.0', conditionalView: [['Scalar Function Type', 'Stress P-Norm']]},
             'Penalty Function': {
               'Type': { type: 'string', value: 'SIMP', options: ['SIMP', 'RAMP', 'Heaviside'] },
               'Exponent': { type: 'double', value: '3.0' },
-              'Minimum Value': { type: 'double', value: '1.0e-3' }
-            }
+              'Minimum Value': { type: 'double', value: '1.0e-3' },
+              conditionalView: [['Type', 'Scalar Function']]
+            },
+            'Magnitude': { type: 'bool', value: 'false', options: ['true', 'false'], conditionalView: [['Type', 'Solution']] },
+            'Normal': { type: 'double', value: {'X': '0.0', 'Y': '0.0', 'Z': '0.0'}, conditionalView: [['Type', 'Solution']] },
+            'Domain': { type: 'string', value: '', options: () => { return this.selectables['sidesets'] }, conditionalView: [['Type', 'Solution']] },
           }
         }
       },
@@ -101,9 +105,9 @@ class AnalyzeStaticMechanics extends AnalyzeScenarioBase {
           'type': 'list-view',
           '<Template>': {
             'Type': { type: 'string', value: 'Uniform', options: ['Uniform', 'Uniform Component', 'Uniform Pressure'] },
-            'Values': { type: 'double', value: {'X': '0.0', 'Y': '0.0', 'Z': '0.0'}, conditionalView: ['Type', 'Uniform'] },
-            'Value': { type: 'double', value: '0.0', conditionalView: ['Type', ['Uniform Component', 'Uniform Pressure']] },
-            'Component': { type: 'string', value: 'X', options: ['X', 'Y', 'Z'], conditionalView: ['Type', 'Uniform Component'] },
+            'Values': { type: 'double', value: {'X': '0.0', 'Y': '0.0', 'Z': '0.0'}, conditionalView: [['Type', 'Uniform']] },
+            'Value': { type: 'double', value: '0.0', conditionalView: [['Type', ['Uniform Component', 'Uniform Pressure']]] },
+            'Component': { type: 'string', value: 'X', options: ['X', 'Y', 'Z'], conditionalView: [['Type', 'Uniform Component']] },
             'Sides': { type: 'string', value: '', options: () => { return this.selectables['sidesets'] } }
           }
         }
@@ -116,7 +120,7 @@ class AnalyzeStaticMechanics extends AnalyzeScenarioBase {
           '<Template>': {
             'Type': { type: 'string', value: 'Zero Value', options: ['Zero Value', 'Fixed Value'] },
             'Index': { type: 'int', value: '0', options: ['0', '1', '2'] },
-            'Value': { type: 'double', value: '0.0', conditionalView: ['Type', 'Fixed Value'] },
+            'Value': { type: 'double', value: '0.0', conditionalView: [['Type', 'Fixed Value']] },
             'Sides': { type: 'string', value: '', options: () => { return this.selectables['nodesets'].concat(this.selectables['sidesets']) } }
           }
         }
