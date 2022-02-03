@@ -7,7 +7,7 @@
       <v-card class="ma-0 pa-0" color=green>
         <v-card class="pt-4 ml-2">
           <display-branch :data="getData()" v-on:pending="setPending();"/>
-          <v-btn block small @click="save(); printData()" :disabled="!savePending">Modify</v-btn>
+          <v-btn block small @click="save()" :disabled="!savePending">Modify</v-btn>
         </v-card>
       </v-card>
     </v-expansion-panel-content>

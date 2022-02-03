@@ -7,6 +7,7 @@ import Models from '@/icons/Models.vue'
 import Scenarios from '@/icons/Scenarios.vue'
 import Realize from '@/icons/Realize.vue'
 import Optimize from '@/icons/Optimize.vue'
+import Explore from '@/icons/Explore.vue'
 import Wireframe from '@/icons/Wireframe.vue'
 import Solid from '@/icons/Solid.vue'
 import Discard from '@/icons/Discard.vue'
@@ -43,6 +44,9 @@ export default new Vuetify({
       },
       invisible: {
         component: Invisible,
+      },
+      explore: {
+        component: Explore,
       },
     },
   },

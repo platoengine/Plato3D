@@ -57,10 +57,10 @@ class Optimization extends ParBase {
     this.applyFilter = true // default value 
     this.fixedBlocks = {}
     this.symmetry = {}
-    this.useEngineFilter = false // hardwired to use the filter in PlatoAnalyze (not PlatoEngine)
+    this.useEngineFilter = false // hardwired (false) to use the filter in PlatoAnalyze (not PlatoEngine)
     this.run = {computeStatus: 'idle', runDir: 'not set', iterations: [], activeIteration: 0}
     this.display = {opacity: 1.0, wireframe: false, visible: true}
-    this.convergenceData = [{x: [], y: [], type: 'scatter'}]
+    this.convergenceData = {x: [], y: [], type: 'scatter'}
   }
   destructor (graphics) {
     this.run.iterations.forEach(iteration => {
@@ -143,7 +143,7 @@ class Optimization extends ParBase {
     this.run.activeIteration = 0
   }
   writeMpirunSourceFile(uniqueScenarios) {
-    let mpirun_source = "mpirun -np 1 --oversubscribe "
+    let mpirun_source = "mpirun -np 1 --oversubscribe --allow-run-as-root "
     mpirun_source += "-x PLATO_PERFORMER_ID=0 "
     mpirun_source += "-x PLATO_INTERFACE_FILE=interface.xml "
     mpirun_source += "-x PLATO_APP_FILE=platoApp.xml "

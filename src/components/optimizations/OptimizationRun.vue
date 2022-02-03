@@ -9,12 +9,9 @@
       </v-card>
       <v-card class="ma-2"><v-btn block small @click="run()">{{buttonName}}</v-btn></v-card>
       <optimization-views :optimization="optimization"/>
-<!-- plotly refuses to react to changing data.  The Vue plugin shows that data are
-     being updated, but the plots aren't reacting.  Perhaps plotly just sucks.
       <v-card>
         <plot :optimizationName="optimization.name"/>
       </v-card>
--->
     </v-card>
   </v-card>
 </template>
@@ -23,7 +20,7 @@
 import ErrorHandler from '../../store/modules/error-handler-module'
 import {PLYLoader} from '../../store/modules/ply-loader'
 import {PLYToMesh} from '../../store/modules/ply-to-mesh'
-// import plot from './ConvergencePlot'
+import plot from './ConvergencePlot'
 
 import * as THREE from 'three'
 
@@ -35,14 +32,8 @@ export default {
   props: ['optimization'],
   components: {
     OptimizationViews,
-    // plot
+    plot
   },
-  /*data : function() {
-    return {
-      fx : [],
-      iter : []
-    }
-  },*/
   computed: {
     buttonName: function () {
       if (this.runStatus === 'idle') {
