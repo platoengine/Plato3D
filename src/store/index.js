@@ -86,6 +86,11 @@ export default new Vuex.Store({
     disabledByUser : false,
     systemInfoModal: {State: false, Content: []}
   },
+  getters: {
+    explorerDataState (state) {
+      return state.explorerData.changed
+    }
+  },
   mutations: {
     setSessionDataState ({explorerData}, state) {
       explorerData.setChanged(state)
@@ -183,6 +188,12 @@ export default new Vuex.Store({
     },
     setEventSource ({events}, server) {
       events.setSource(server)
+    },
+    setOptimizationVisibility ({optimizations}, {optimizationName, isVisible, graphics}) {
+      let optimizationIndex = optimizations.findIndex(optimization => optimization.name === optimizationName)
+      if (optimizationIndex !== -1) {
+        optimizations[optimizationIndex].setOptimizationVisibility(graphics, isVisible)
+      }
     },
     setModelVisibility ({models}, {modelName, isVisible, graphics}) {
       let modelIndex = models.findIndex(model => model.name === modelName)
@@ -419,10 +430,13 @@ export default new Vuex.Store({
       optimizations.push(newOptimization)
       active.optimization = newOptimization
     },
-    deleteOptimization ({optimizations}, {name}) {
-      let optimizationIndex = optimizations.findIndex(optimization => optimization.name === name)
+    deleteOptimization (state, {name, graphics}) {
+      let optimizationIndex = state.optimizations.findIndex(optimization => optimization.name === name)
       if (optimizationIndex !== -1) {
-        optimizations.splice(optimizationIndex, 1)
+        let optimization = state.optimizations[optimizationIndex]
+        optimization.clear(graphics)
+        state.explorerData.removeResultsData(optimization)
+        state.optimizations.splice(optimizationIndex, 1)
       }
     },
     deleteOptimizationObjective ({optimizations}, {optimization, objective}) {
@@ -547,13 +561,10 @@ export default new Vuex.Store({
         })
       }
     },
-    optResultsData({optimizations, explorerData}, {optimizationName, resultsData}) {
-      let optimizationIndex = optimizations.findIndex(optimization => optimization.name === optimizationName)
+    optResultsData(state, {optimizationName, resultsData}) {
+      let optimizationIndex = state.optimizations.findIndex(optimization => optimization.name === optimizationName)
       if (optimizationIndex !== -1) {
-        explorerData.addResultsData(optimizations[optimizationIndex], resultsData)
-        // Note that if the 'changed' value is set in the ExplorerData module, Vue/Vuex doesn't react. So, set
-        // the value here:
-        explorerData.changed = true
+        state.explorerData.addResultsData(state.optimizations[optimizationIndex], resultsData)
       }
     },
     toFirstOptimizationIteration ({optimizations}, {optimizationName, graphics}) {

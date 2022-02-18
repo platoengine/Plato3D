@@ -64,6 +64,7 @@ import {
 import VChart, { THEME_KEY } from "vue-echarts";
 import PCheckbox from '../ui/PCheckbox'
 import PAxisControl from './PAxisControl'
+import {mapGetters} from 'vuex'
 
 use([
   CanvasRenderer,
@@ -166,9 +167,6 @@ export default {
     };
   },
   computed: {
-    updateState: function () {
-      return this.$store.state.explorerData.changed
-    },
     allData: {
       get: function () {
         return this.$store.state.explorerData.data
@@ -185,9 +183,10 @@ export default {
         // no-op
       }
     },
+    ...mapGetters(['explorerDataState'])
   },
   watch: {
-    updateState: function ( newState ) {
+    explorerDataState: function ( newState ) {
       if (newState === true) {
         this.$store.commit('setSessionDataState', false)
         this.sync()

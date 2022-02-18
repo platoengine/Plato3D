@@ -66,26 +66,16 @@
             <optimization-run :optimization="optimization"/>
           </v-expansion-panel-content>
         </v-expansion-panel>
-<!--
-        <v-expansion-panel>
-          <v-expansion-panel-header>Parameters</v-expansion-panel-header>
-          <v-expansion-panel-content>
-            <parameters :parentObject="realization.scenario"/>
-          </v-expansion-panel-content>
-        </v-expansion-panel>
-        <v-expansion-panel>
-          <v-expansion-panel-header>Resources</v-expansion-panel-header>
-          <v-expansion-panel-content>
-            <realization-resources :parentObject="realization"/>
-          </v-expansion-panel-content>
-        </v-expansion-panel>
--->
       </v-expansion-panels>
     </v-card>
     <v-card :class="'d-flex justify-space-between'">
       <edit-optimization :optimization="optimization"/>
       <delete-optimization :optimization="optimization"/>
       <export-optimization :optimization="optimization"/>
+      <v-btn small @click="toggleVisibility()">
+        <v-icon v-if="isVisible" large>$vuetify.icons.visible</v-icon>
+        <v-icon v-else large>$vuetify.icons.invisible</v-icon>
+      </v-btn>
     </v-card>
   </v-card>
 </template>
@@ -104,11 +94,12 @@ import OptimizationSolver from './OptimizationSolver'
 import OptimizationGeometry from './OptimizationGeometry'
 import OptimizationRun from './OptimizationRun'
 
-//import RealizationResources from './RealizationResources'
-
 export default {
   name: 'optimization',
   props: ['optimization'],
+  data: function () {
+    return { isVisible: true }
+  },
   computed: {
     normalizeObjectives: {
       get: function () {
@@ -122,6 +113,15 @@ export default {
   methods: {
     criterionName: function (criterion) {
       return `${criterion.scenario.name}: ${criterion.criterionName}`
+    },
+    toggleVisibility: function () {
+      const appThis = this
+      this.isVisible = !(this.isVisible)
+      this.$store.commit('setOptimizationVisibility', {
+        optimizationName: this.optimization.name,
+        isVisible: this.isVisible,
+        graphics: appThis.$graphics
+      })
     }
   },
   mounted () {
@@ -137,8 +137,8 @@ export default {
       }
     })
   },
+  
   components: {
-//    Parameters,
     EditOptimization,
     DeleteOptimization,
     ExportOptimization,

@@ -56,6 +56,26 @@ class ExplorerData {
     this.axes[index].max = newMax
   }
 
+  removeResultsData(optimization) {
+    // remove data
+    let dataIndex = this.data.findIndex( d => d.name === optimization.name )
+    this.data.splice(dataIndex, 1)
+
+    // see if there are any empty axes, if so remove them
+    let index = this.axes.length
+    while (index--) {
+      let isUsed = false
+      // any actual data in this column/axis?
+      this.data.forEach( (datum) => { if (datum[index] !== 'n/a') { isUsed = true } })
+      if (!isUsed) {
+        // remove the axis
+        this.axes.splice(index, 1)
+        // remove the column associated with the axis
+        this.data.forEach((datum) => { datum.splice(index, 1) })
+      }
+    }
+    this.changed = true
+  }
   addResultsData(optimization, resultsData) {
     let optimizationName = optimization.name
     let results = parseConsole(resultsData)
@@ -137,6 +157,8 @@ class ExplorerData {
         axis.min *= 0.5
       }
     }, this)
+
+    this.changed = true
   }
 }
 

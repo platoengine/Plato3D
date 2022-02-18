@@ -67,6 +67,12 @@ class Optimization extends ParBase {
       graphics.scene.remove(graphics.scene.getObjectById(iteration.geometryID))
     })
   }
+  setOptimizationVisibility(graphics, visibility) {
+    this.display.visible = visibility
+    let iteration = this.run.iterations[this.run.activeIteration]
+    let lastGeom = graphics.scene.getObjectById(iteration.geometryID)
+    lastGeom.visible = this.display.visible
+  }
   setDisplayAttributes(graphics, attribute, value) {
     this.display[attribute] = value
     if (this.run.iterations.length > 0) {
@@ -77,11 +83,18 @@ class Optimization extends ParBase {
       geom.material.wireframe = this.display.wireframe
     }
   }
+  clear(graphics) {
+    this.run.iterations.forEach( (it) => {
+      let geom = graphics.scene.getObjectById(it.geometryID)
+      graphics.scene.remove(geom)
+    })
+  }
   addIteration (payload) {
     let graphics = payload.graphics
     let iterations = this.run.iterations
 
-    // if the last iteration is the active iteration then add the new iteration visible and increment the active iteration
+    // if the last iteration is the active iteration then add the new iteration
+    // visible and increment the active iteration
     let addVisible = this.display.visible
     let lastIndex = iterations.length - 1
     if (this.run.activeIteration === lastIndex) {

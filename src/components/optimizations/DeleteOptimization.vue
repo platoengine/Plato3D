@@ -31,7 +31,8 @@ export default {
     deleteOptimization () {
       this.dialog = false
       this.$store.commit('deleteOptimization', {
-        name: this.optimization.name
+        name: this.optimization.name,
+        graphics: this.$graphics
       })
     }
   }
