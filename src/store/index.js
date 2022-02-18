@@ -2,6 +2,7 @@ import Vue from '../plugins/graphics'
 import Vuex from 'vuex'
 
 import ExodusModel from './modules/exodus-module'
+import ExplorerData from './modules/explorer-data'
 import UI from './modules/plato-ui-module'
 import SessionContainer from './modules/session-container'
 import {APIService} from './modules/rest-api-module'
@@ -81,11 +82,26 @@ export default new Vuex.Store({
     events: { type: EventsContainer },
     session: { type: SessionContainer },
     uniqueID: { type: UniqueID },
+    explorerData: { type: ExplorerData },
     disabledByUser : false,
-    convergencePlotData : {},
     systemInfoModal: {State: false, Content: []}
   },
   mutations: {
+    setSessionDataState ({explorerData}, state) {
+      explorerData.setChanged(state)
+    },
+    setDataVisibility ({explorerData}, {index, newState}) {
+      explorerData.setDataVisibility(index, newState)
+    },
+    setAxisState ({explorerData}, {index, newState}) {
+      explorerData.setAxisState(index, newState)
+    },
+    setAxisMin ({explorerData}, {index, newState}) {
+      explorerData.setAxisMin(index, newState)
+    },
+    setAxisMax ({explorerData}, {index, newState}) {
+      explorerData.setAxisMax(index, newState)
+    },
     toggleTooltip(state){
       state.disabledByUser = !state.disabledByUser
     },
@@ -94,6 +110,7 @@ export default new Vuex.Store({
       state.availableModelTypes = ['Exodus', 'OpenCSM (coming soon)', 'Cogent (coming soon)']
       state.events = new EventsContainer()
       state.session = new SessionContainer()
+      state.explorerData = new ExplorerData()
 
       state.availableScenarioTypes = new Map()
 
@@ -314,7 +331,7 @@ export default new Vuex.Store({
         scenarios[scenarioIndex].removeListData(dataName, entryName)
       }
     },
-    loadScenario ({scenarios}, definition) {
+    loadScenario ({scenarios, models}, definition) {
       // Scenarios are accessed by name, so if 'name' is empty, change it to 'Scenario N'.
       if (definition.name === '') {
         definition.name = 'Scenario ' + scenarios.length.toString()
@@ -324,6 +341,7 @@ export default new Vuex.Store({
       if (hostCode === 'Analyze') {
         let newScenarioFactory = new AnalyzeScenarioFactory()
         newScenario = newScenarioFactory.createFromFile(definition)
+        newScenario.fetchModel(models)
       }
       if (newScenario !== null) {
         scenarios.push(newScenario)
@@ -527,6 +545,15 @@ export default new Vuex.Store({
           Vue.set(opt.convergenceData.x, i, val)
           Vue.set(opt.convergenceData.y, i, plotData.y[i])
         })
+      }
+    },
+    optResultsData({optimizations, explorerData}, {optimizationName, resultsData}) {
+      let optimizationIndex = optimizations.findIndex(optimization => optimization.name === optimizationName)
+      if (optimizationIndex !== -1) {
+        explorerData.addResultsData(optimizations[optimizationIndex], resultsData)
+        // Note that if the 'changed' value is set in the ExplorerData module, Vue/Vuex doesn't react. So, set
+        // the value here:
+        explorerData.changed = true
       }
     },
     toFirstOptimizationIteration ({optimizations}, {optimizationName, graphics}) {

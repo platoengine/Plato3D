@@ -182,6 +182,9 @@ export default {
 #scene {
   background: linear-gradient(to bottom,  #111111 0%,#999999 100%);
 }
+.v-navigation-drawer {
+z-index: 999999 !important;
+}
 
 </style>
 

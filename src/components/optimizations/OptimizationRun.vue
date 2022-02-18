@@ -98,6 +98,18 @@ export default {
         appThis.$store.commit('plotConvergence', {optimizationName: optimizationName, plotData: dataIn})
       }
     });
+    this.$store.commit('addEventListener', {
+      aName: 'resultsData',
+      aFunction: function (event) {
+        const {isTrusted, data, origin} = event
+        errorHandler.report('source: ' + origin)
+        errorHandler.report('trusted source: ' + isTrusted)
+        const dataObject = JSON.parse(data)
+        const {name: optimizationName, data: dataIn} = dataObject
+        console.log("received results data.  committing.")
+        appThis.$store.commit('optResultsData', {optimizationName: optimizationName, resultsData: dataIn})
+      }
+    });
   }
 }
 </script>

@@ -459,6 +459,9 @@ class Optimization extends ParBase {
   addPerformer(tArg, xw) {
     this.addBranch({Performer: tArg}, xw)
   }
+  setupConsole({interfaceFile}) {
+    this.addBranch({Console: { Enabled: 'true'}}, interfaceFile)
+  }
   setupPerformers({interfaceFile}) {
     this.addPerformer({Name: "PlatoMain", Code: "Plato_Main", PerformerID: 0}, interfaceFile)
     this.addPerformer({Name: "Analyze", Code: "Analyze", PerformerID: 1}, interfaceFile)
@@ -808,6 +811,7 @@ class Optimization extends ParBase {
       Operation: {
         Function: "Aggregator",
         Name: "AggregateValue",
+        Report: "true",
         Aggregate: {
           Layout: "Value"
         }
@@ -1166,6 +1170,7 @@ class Optimization extends ParBase {
       retVal[this.inputFileName(scenario.name)] = scenario.toDOM()
     }, this)
 
+    this.setupConsole(config)
     this.setupPerformers(config)
     this.setupSharedData(config)
 
