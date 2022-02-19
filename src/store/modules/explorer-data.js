@@ -66,12 +66,12 @@ class ExplorerData {
     while (index--) {
       let isUsed = false
       // any actual data in this column/axis?
-      this.data.forEach( (datum) => { if (datum[index] !== 'n/a') { isUsed = true } })
+      this.data.forEach( (datum) => { if (datum.value[index] !== 'n/a') { isUsed = true } })
       if (!isUsed) {
         // remove the axis
         this.axes.splice(index, 1)
         // remove the column associated with the axis
-        this.data.forEach((datum) => { datum.splice(index, 1) })
+        this.data.forEach((datum) => { datum.value.splice(index, 1) })
       }
     }
     this.changed = true

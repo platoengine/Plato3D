@@ -1,6 +1,6 @@
 import ParBase from './par-base'
 import XMLWriter from 'xml-writer'
-//import * as THREE from 'three'
+import {staticCopy} from '../../components/ui/ByValue'
 
 // TODO: create a geometry object that hold all geometry related settings such as
 // filter, initial topology value, symmetry, fixed blocks, overhang constraints, etc.  
@@ -66,6 +66,15 @@ class Optimization extends ParBase {
     this.run.iterations.forEach(iteration => {
       graphics.scene.remove(graphics.scene.getObjectById(iteration.geometryID))
     })
+  }
+  copy () {
+    let myCopy = new Optimization()
+    staticCopy(this, myCopy)
+    myCopy.run.iterations.length=0
+    myCopy.run.activeIteration = 0
+    myCopy.run.computeStatus = 'idle'
+    myCopy.display.visible = true
+    return myCopy
   }
   setOptimizationVisibility(graphics, visibility) {
     this.display.visible = visibility

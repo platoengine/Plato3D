@@ -1,7 +1,7 @@
 <template>
   <v-dialog v-model="dialog" persistent max-width="600px">
     <template v-slot:activator="{ on }">
-      <v-btn small v-on="on" @click = "disableErrModalIfSet()">
+      <v-btn class="px-1" min-width=30px small v-on="on" @click = "disableErrModalIfSet()">
         <v-icon>mdi-folder-download</v-icon> 
       </v-btn>
     </template>

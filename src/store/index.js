@@ -17,6 +17,7 @@ import UniqueID from './modules/unique-id'
 
 import {OBJLoader} from 'three-obj-mtl-loader'
 
+import makeNameUnique from './modules/make-name-unique'
 
 const apiService = new APIService()
 const errorHandler = new ErrorHandler()
@@ -429,6 +430,15 @@ export default new Vuex.Store({
       newOptimization.description = description
       optimizations.push(newOptimization)
       active.optimization = newOptimization
+    },
+    duplicateOptimization (state, {name}) {
+      let optimizationIndex = state.optimizations.findIndex(optimization => optimization.name === name)
+      if (optimizationIndex !== -1) {
+        let optimization = state.optimizations[optimizationIndex]
+        let optCopy = optimization.copy()
+        optCopy.name = makeNameUnique(optCopy.name, state.uniqueID)
+        state.optimizations.push(optCopy)
+      }
     },
     deleteOptimization (state, {name, graphics}) {
       let optimizationIndex = state.optimizations.findIndex(optimization => optimization.name === name)

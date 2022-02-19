@@ -71,8 +71,9 @@
     <v-card :class="'d-flex justify-space-between'">
       <edit-optimization :optimization="optimization"/>
       <delete-optimization :optimization="optimization"/>
+      <duplicate-optimization :optimization="optimization"/>
       <export-optimization :optimization="optimization"/>
-      <v-btn small @click="toggleVisibility()">
+      <v-btn class="px-1" min-width=30px small @click="toggleVisibility()">
         <v-icon v-if="isVisible" large>$vuetify.icons.visible</v-icon>
         <v-icon v-else large>$vuetify.icons.invisible</v-icon>
       </v-btn>
@@ -81,9 +82,9 @@
 </template>
 
 <script>
-//import Parameters from '../parameters/Parameters'
 import EditOptimization from './EditOptimization'
 import DeleteOptimization from './DeleteOptimization'
+import DuplicateOptimization from './DuplicateOptimization'
 import ExportOptimization from './ExportOptimization'
 import AddObjective from './AddObjective'
 import AddConstraint from './AddConstraint'
@@ -141,6 +142,7 @@ export default {
   components: {
     EditOptimization,
     DeleteOptimization,
+    DuplicateOptimization,
     ExportOptimization,
     AddObjective,
     AddConstraint,
