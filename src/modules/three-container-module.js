@@ -35,6 +35,10 @@ function ThreeContainer () {
     }
   }
 
+  this.getMaterial = function () {
+    return new THREE.MeshPhysicalMaterial()
+  }
+
   this.setBoundingBox = function (primitives) {
     this.boundingbox = new THREE.Box3()
     primitives.forEach((p) => { this.boundingbox.expandByObject(this.scene.getObjectById(p.primitiveObjectID)) }, this)

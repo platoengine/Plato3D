@@ -47,10 +47,10 @@ export default {
   },
   methods: {
     exportSTL: function () {
-      this.$store.dispatch('getOptimizationFile', {optimizationName: this.optimization.name, remoteFileName: 'design.stl', localFileName: 'design.stl'})
+      this.$store.dispatch('downloadOptimizationFile', {optimizationName: this.optimization.name, remoteFileName: 'design.stl', localFileName: 'design.stl'})
     },
     exportEXO: function () {
-      this.$store.dispatch('getOptimizationFile', {optimizationName: this.optimization.name, remoteFileName: 'platomain.exo.1.0', localFileName: 'result.exo'})
+      this.$store.dispatch('downloadOptimizationFile', {optimizationName: this.optimization.name, remoteFileName: 'platomain.exo.1.0', localFileName: 'result.exo'})
     },
     displayAttributes: function () {
       this.$store.commit('setActiveOptimization', {optimizationName: this.optimization.name})

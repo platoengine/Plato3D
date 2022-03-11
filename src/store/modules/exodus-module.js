@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import ModelPrimitive from './model-primitive-module'
+import {dynamicCopy} from '../../components/ui/ByValue'
 import ParBase from './par-base'
 
 class ExodusModel extends ParBase {
@@ -8,9 +9,9 @@ class ExodusModel extends ParBase {
     this.displayAttributes = { opacity: 1.0, wireframe: false, visible: true }
 
     this.primitives = []
-
     this.type = 'ExodusModel'
-
+    this.file = null
+    this.fileName = ''
     this.isVisible = true
     this.subIsVisible = []
   }
@@ -35,9 +36,9 @@ class ExodusModel extends ParBase {
     return []
   }
 
-  importData (modelData) {
-    super.importData(modelData)
-    this.displayAttributes = modelData.displayAttributes
+  fromData (modelData) {
+    dynamicCopy(modelData, this)
+    this.primitives.length = 0 // primitives will be re-read from the server
   }
 
   addPrimitive (payload) {

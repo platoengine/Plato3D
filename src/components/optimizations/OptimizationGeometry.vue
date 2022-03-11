@@ -55,11 +55,21 @@ export default {
       })
     },
     getSymmetry: function (modelName, direction) {
-      return this.optimization.symmetry[modelName][direction]
+      let index = this.optimization.symmetry.findIndex( entry => entry.modelName === modelName )
+      if (index !== -1) {
+        return this.optimization.symmetry[index][direction]
+      } else {
+        return false
+      }
     },
     getFixedBlock: function (modelName, blockName) {
-      let fixedBlockNames = this.optimization.fixedBlocks[modelName]
-      return fixedBlockNames.filter(fixedBlockName => fixedBlockName === blockName).length === 0 ? false : true
+      let index = this.optimization.fixedBlocks.findIndex( entry => entry.modelName === modelName )
+      if (index !== -1) {
+        let fixedBlockNames = this.optimization.fixedBlocks[index].blockNames
+        return fixedBlockNames.filter(fixedBlockName => fixedBlockName === blockName).length === 0 ? false : true
+      } else {
+        return false
+      }
     },
     blockNames: function (modelName) {
       let names = []

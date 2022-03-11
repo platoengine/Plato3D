@@ -92,6 +92,9 @@ export default {
       plotOpen: false
     }
   },
+  mounted () {
+    this.replot()
+  },
   computed: {
     plotDataLength: function () {
       const optimizationIndex = this.$store.state.optimizations.findIndex(optimization => optimization.name === this.optimizationName)
@@ -100,15 +103,18 @@ export default {
   },
   watch: {
     plotDataLength: function () {
+      this.replot()
+    }
+  },
+  methods: {
+    replot: function () {
       this.option.series[0].data.length = 0
       const optimizationIndex = this.$store.state.optimizations.findIndex(optimization => optimization.name === this.optimizationName)
       const plotData = this.$store.state.optimizations[optimizationIndex].convergenceData
       plotData.x.forEach((datum, index) => {
         this.option.series[0].data.push([datum, plotData.y[index]])
       }, this)
-    }
-  },
-  methods: {
+    },
     togglePopOut: function(){
       this.plotOpen = !(this.plotOpen)
       this.option.toolbox.feature.dataView.show = this.plotOpen

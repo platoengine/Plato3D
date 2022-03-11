@@ -1,6 +1,6 @@
 import ParBase from './par-base'
 import XMLWriter from 'xml-writer'
-import {staticCopy} from '../../components/ui/ByValue'
+import {dynamicCopy, staticCopy} from '../../components/ui/ByValue'
 
 // TODO: create a geometry object that hold all geometry related settings such as
 // filter, initial topology value, symmetry, fixed blocks, overhang constraints, etc.  
@@ -55,8 +55,8 @@ class Optimization extends ParBase {
     this.filterRadius = 2.48 // default value 
     this.initialValue = 0.25 // default value
     this.applyFilter = true // default value 
-    this.fixedBlocks = {}
-    this.symmetry = {}
+    this.fixedBlocks = []
+    this.symmetry = []
     this.useEngineFilter = false // hardwired (false) to use the filter in PlatoAnalyze (not PlatoEngine)
     this.run = {computeStatus: 'idle', runDir: 'not set', iterations: [], activeIteration: 0}
     this.display = {opacity: 1.0, wireframe: false, visible: true}
@@ -65,6 +65,39 @@ class Optimization extends ParBase {
   destructor (graphics) {
     this.run.iterations.forEach(iteration => {
       graphics.scene.remove(graphics.scene.getObjectById(iteration.geometryID))
+    })
+  }
+  //**************************************************************************//
+  //  Tested: false
+  //
+  //  Description: Reinitializes this instance with the given data and points
+  //  the objectives and constraints members to the given scenarios.
+  // 
+  //  Usage: MongoDB doesn't store member functions.  Use this function to
+  //  initialize a new Optimization instance from data recalled from the
+  //  database.  Further, the objectives and constraints data members will
+  //  contain copies of scenarios that no longer exist.  This function
+  //  connects the objectives and constraints to the recalled scenarios.
+  //
+  //**************************************************************************//
+  fromData(data, scenarios) {
+    dynamicCopy(data, this)
+    this.run.activeIteration = this.run.iterations.length-1
+    this.objectives.forEach( obj => {
+      let scenarioIndex = scenarios.findIndex( scenario => scenario.name === obj.scenario.name )
+      if (scenarioIndex === -1) {
+        obj.scenario = {}
+      } else {
+        obj.scenario = scenarios[scenarioIndex]
+      }
+    })
+    this.constraints.forEach( con => {
+      let scenarioIndex = scenarios.findIndex( scenario => scenario.name === con.scenario.name )
+      if (scenarioIndex === -1) {
+        con.scenario = {}
+      } else {
+        con.scenario = scenarios[scenarioIndex]
+      }
     })
   }
   copy () {
@@ -98,8 +131,7 @@ class Optimization extends ParBase {
       graphics.scene.remove(geom)
     })
   }
-  addIteration (payload) {
-    let graphics = payload.graphics
+  newIterationAtEnd (payload) {
     let iterations = this.run.iterations
 
     // if the last iteration is the active iteration then add the new iteration
@@ -107,7 +139,7 @@ class Optimization extends ParBase {
     let addVisible = this.display.visible
     let lastIndex = iterations.length - 1
     if (this.run.activeIteration === lastIndex) {
-      this.setVisibility(graphics, lastIndex, false)
+      this.setVisibility(payload.graphics, lastIndex, false)
       this.run.activeIteration++
     } else {
       addVisible = false
@@ -116,13 +148,42 @@ class Optimization extends ParBase {
     payload.geometry.material.transparent = true
     payload.geometry.material.wireframe = this.display.wireframe
     payload.geometry.material.opacity = this.display.opacity
-    graphics.scene.add(payload.geometry)
-    this.run.iterations.push({
+    let newIteration = {
       geometryID: payload.geometry.id,
       iteration: payload.iteration,
       isVisible: this.display.visible,
       isWireframe: this.display.wireframe
-    })
+    }
+    return newIteration
+  }
+  newIteration (payload) {
+    let addVisible = this.display.visible
+    if (this.run.activeIteration === payload.index) {
+      addVisible = addVisible && true
+    } else {
+      addVisible = false
+    }
+    payload.geometry.visible = addVisible
+    payload.geometry.material.transparent = true
+    payload.geometry.material.wireframe = this.display.wireframe
+    payload.geometry.material.opacity = this.display.opacity
+    let newIteration = {
+      geometryID: payload.geometry.id,
+      iteration: payload.iteration,
+      isVisible: this.display.visible,
+      isWireframe: this.display.wireframe
+    }
+    return newIteration
+  }
+  addIteration (payload) {
+    let newIteration = this.newIterationAtEnd(payload)
+    this.run.iterations.push(newIteration)
+    payload.graphics.scene.add(payload.geometry)
+  }
+  setIteration (payload) {
+    let newIteration = this.newIteration(payload)
+    this.run.iterations[payload.index] = newIteration
+    payload.graphics.scene.add(payload.geometry)
   }
   toFirstIteration(graphics) {
     this.setVisibility(graphics, this.run.activeIteration, false)
@@ -152,9 +213,11 @@ class Optimization extends ParBase {
   setVisibility (graphics, index, visibility) {
     let iteration = this.run.iterations[index]
     let lastGeom = graphics.scene.getObjectById(iteration.geometryID)
-    lastGeom.visible = this.display.visible && visibility
-    lastGeom.material.wireframe = this.display.wireframe
-    lastGeom.material.opacity = this.display.opacity
+    if (lastGeom) {
+      lastGeom.visible = this.display.visible && visibility
+      lastGeom.material.wireframe = this.display.wireframe
+      lastGeom.material.opacity = this.display.opacity
+    }
   }
   resetRun (graphics) {
     this.run.iterations.forEach((iteration) => {
@@ -243,14 +306,13 @@ class Optimization extends ParBase {
   // currently, optimizations only support one model.  return the symmetry object
   // associated with that one model.  Generalize this when multiple models are supported
   getSymmetry() {
-    let tKeys = Object.keys(this.symmetry)
-    if (tKeys.length > 1) {
+    if (this.symmetry.length > 1) {
       throw "Optimization: More that one model entry found in the symmetry object"
     } else 
-    if (tKeys.length === 0) {
+    if (this.symmetry.length === 0) {
       throw "Optimization: No model entry found in the symmetry object"
     }
-    return this.symmetry[tKeys[0]]
+    return this.symmetry[0]
   }
   isObject (aVar) {
     return typeof aVar === 'object' && !Array.isArray(aVar)
@@ -1132,10 +1194,11 @@ class Optimization extends ParBase {
     })
     return uniqueModels
   }
-  setSymmetry(model, direction, isSym) {
-    if (model in this.symmetry) {
-      if (direction in this.symmetry[model]) {
-        this.symmetry[model][direction] = isSym
+  setSymmetry(modelName, direction, isSym) {
+    let index = this.symmetry.findIndex( entry => entry.modelName === modelName )
+    if (index !== -1) {
+      if (direction in this.symmetry[index]) {
+        this.symmetry[index][direction] = isSym
       } else {
         throw "setSymmetry: attempted to set symmetry in unknown direction"
       }
@@ -1143,26 +1206,29 @@ class Optimization extends ParBase {
       throw "setSymmetry: model not found"
     }
   }
-  setFixedBlock(model, block, isFixed) {
-    if (isFixed) {
-      let index = this.fixedBlocks[model].findIndex( name => name === block )
-      if (index === -1) {
-        this.fixedBlocks[model].push(block)
-      }
-    } else {
-      let index = this.fixedBlocks[model].findIndex( name => name === block )
-      if (index !== -1) {
-        this.fixedBlocks[model].splice(index, 1)
+  setFixedBlock(modelName, blockName, isFixed) {
+    let modelIndex = this.fixedBlocks.findIndex( model => model.modelName === modelName )
+    if (modelIndex !== -1) {
+      let modelFixedBlocks = this.fixedBlocks[modelIndex].blockNames
+      let index = modelFixedBlocks.findIndex( name => name === blockName )
+      if (isFixed) {
+        if (index === -1) {
+          modelFixedBlocks.push(blockName)
+        }
+      } else {
+        if (index !== -1) {
+          modelFixedBlocks.splice(index, 1)
+        }
       }
     }
   }
   indicesFromBlocks(blocks, models) {
     let indices = []
-    Object.keys(blocks).forEach( key => {
-      let modelIndex = models.findIndex( m => m.name === key )
+    blocks.forEach( entry => {
+      let modelIndex = models.findIndex( m => m.name === entry.modelName )
       if (modelIndex !== -1) {
         let model = models[modelIndex]
-        let blockNames = blocks[key]
+        let blockNames = entry.blockNames
         blockNames.forEach( blockName => {
           model.primitives.forEach( p => {
             if (p.type === 'block' && p.definition.Name === blockName) {
@@ -1276,11 +1342,13 @@ class Optimization extends ParBase {
 
     let uniqueModels = this.uniqueModels()
     uniqueModels.forEach(modelName => {
-      if (!(modelName in this.fixedBlocks)){
-        this.fixedBlocks[modelName] = []
+      let modelIndex = this.fixedBlocks.findIndex( model => model.modelName === modelName )
+      if (modelIndex === -1) {
+        this.fixedBlocks.push({modelName: modelName, blockNames: []})
       }
-      if (!(modelName in this.symmetry)){
-        this.symmetry[modelName] = {X: false, Y: false, Z: false}
+      let index = this.symmetry.findIndex( entry => entry.modelName === modelName )
+      if (index === -1 ){
+        this.symmetry.push({modelName: modelName, X: false, Y: false, Z: false})
       }
     })
   }
@@ -1289,11 +1357,13 @@ class Optimization extends ParBase {
 
     let uniqueModels = this.uniqueModels()
     uniqueModels.forEach(modelName => {
-      if (!(modelName in this.fixedBlocks)){
-        this.fixedBlocks[modelName] = []
+      let modelIndex = this.fixedBlocks.findIndex( model => model.modelName === modelName )
+      if (modelIndex === -1) {
+        this.fixedBlocks.push({modelName: modelName, blockNames: []})
       }
-      if (!(modelName in this.symmetry)){
-        this.symmetry[modelName] = {X: false, Y: false, Z: false}
+      let index = this.symmetry.findIndex( entry => entry.modelName === modelName )
+      if (index === -1 ){
+        this.symmetry.push({modelName: modelName, X: false, Y: false, Z: false})
       }
     })
   }

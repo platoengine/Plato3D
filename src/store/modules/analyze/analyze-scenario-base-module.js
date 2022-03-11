@@ -24,6 +24,10 @@ class AnalyzeScenarioBase extends ParBase {
     this.modelviews = {}
     this.outputData = {}
   }
+  fromData (data) {
+    dynamicCopy(data.modelviews, this.modelviews)
+    dynamicCopy(data.geometry, this.geometry)
+  }
   getViewData (viewname) {
     let data = this.modelviews[viewname]['data']
     if (Array.isArray(data)) {

@@ -7,6 +7,7 @@ import AnalyzeTransientMechanics from './analyze-transient-mechanics-module'
 import ErrorHandler from '../error-handler-module'
 import TeuchosParser from '../teuchos-parser-module'
 
+
 class AnalyzeScenarioFactory {
   constructor () {
     this.mPhysics = new Map([
@@ -36,6 +37,11 @@ class AnalyzeScenarioFactory {
       }
     }
     return null
+  }
+  createFromData (aData) {
+    const newScenario = this.create(aData.hostPhysics)
+    newScenario.fromData(aData)
+    return newScenario
   }
   createFromFile (aDefinition) {
     const required = true
