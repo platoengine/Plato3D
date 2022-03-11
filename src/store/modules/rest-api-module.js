@@ -70,12 +70,12 @@ export class APIService {
       token
     })
   }
-  deleteProject (projectId) {
+  deleteProject (projectName) {
     const {token, username, server} = this.getSession()
-    errorHandler.report(`deleting project: ${projectId}`)
+    errorHandler.report(`deleting project: ${projectName}`)
     const url = `${server}/api/deleteProject`
     return axios.post(url, {
-      projectId,
+      projectName,
       username,
       token
     }).then(response => response.data)
@@ -231,7 +231,7 @@ export class APIService {
         commit('setOptimizationAttribute', {name: optimization.name, key: 'runDir', value: response.data})
       })
   }
-  getOptimizationFile (optimization, remoteFileName, localFileName) {
+  downloadOptimizationFile (optimization, remoteFileName, localFileName) {
     const {token, username, server} = this.getSession()
 
     const url = `${server}/jobs/get-optimization-file`
@@ -255,6 +255,23 @@ export class APIService {
         URL.revokeObjectURL(link.href)
       }
     )
+  }
+  retrieveOptimizationIteration (optimization, iterationIndex) {
+    const {token, username, server} = this.getSession()
+
+    const url = `${server}/jobs/get-optimization-file`
+
+    const remoteFileName = `design${iterationIndex.toString().padStart(3,'0')}.ply`
+
+    console.log(`token: ${token}`)
+    return axios.post(url, {
+      token,
+      username,
+      payload: {
+        runDir: optimization.run.runDir,
+        fileName: remoteFileName
+      }
+    }, { responseType: 'blob'}).then(response => response.data).catch(() => "FAILURE")
   }
   startOptimization (commit, optimization) {
     const {token, username, server} = this.getSession()

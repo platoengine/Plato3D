@@ -19,21 +19,22 @@
       </v-row>
       <v-row no-gutters>
         <v-col class="px-1"> <v-btn small block @click="loadProject">Load</v-btn> </v-col>
-        <v-col class="px-1"> <v-btn small block @click="deleteProject">Delete</v-btn> </v-col>
+        <v-col class="px-1"> <delete-project :project="project" @close="this.$emit('closeAll')"/> </v-col>
         <v-col class="px-1"> <v-btn small block @click="archiveProject">Archive</v-btn> </v-col>
       </v-row>
   </v-card>
 </template>
 
 <script>
+import DeleteProject from './DeleteProject'
+
 export default {
   name: 'project',
   props: ['project'],
+  components: {
+    DeleteProject
+  },
   methods: {
-    deleteProject: function () {
-      this.$store.dispatch('deleteProject', {projectID: this.project._id})
-      this.$emit('closeAll')
-    },
     archiveProject: function () {
       console.log("todo")
       this.$emit('closeAll')

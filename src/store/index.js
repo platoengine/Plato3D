@@ -1,7 +1,9 @@
 import Vue from '../plugins/graphics'
 import Vuex from 'vuex'
 
+import {dynamicCopy} from '../components/ui/ByValue'
 import ExodusModel from './modules/exodus-module'
+import ExplorerData from './modules/explorer-data'
 import UI from './modules/plato-ui-module'
 import SessionContainer from './modules/session-container'
 import {APIService} from './modules/rest-api-module'
@@ -15,7 +17,11 @@ import Optimization from './modules/optimization-module'
 import UniqueID from './modules/unique-id'
 
 import {OBJLoader} from 'three-obj-mtl-loader'
+import {PLYLoader} from './modules/ply-loader'
+import {PLYToMesh} from './modules/ply-to-mesh'
 
+
+import makeNameUnique from './modules/make-name-unique'
 
 const apiService = new APIService()
 const errorHandler = new ErrorHandler()
@@ -65,10 +71,15 @@ export default new Vuex.Store({
       }
     },
     packProjectData: function (thumbnail) {
+      // Important: This function should mirror the unpackProjectData function.
+      // If you add data here, add unpacking as well.
       return {
         thumbnail: thumbnail,
         models: this.models,
-        scenarios: this.scenarios
+        scenarios: this.scenarios,
+        realizations: this.realizations,
+        optimizations: this.optimizations,
+        explorerData: this.explorerData
       }
     },
     active: {
@@ -81,11 +92,31 @@ export default new Vuex.Store({
     events: { type: EventsContainer },
     session: { type: SessionContainer },
     uniqueID: { type: UniqueID },
+    explorerData: { type: ExplorerData },
     disabledByUser : false,
-    convergencePlotData : {},
     systemInfoModal: {State: false, Content: []}
   },
+  getters: {
+    explorerDataState (state) {
+      return state.explorerData.changed
+    }
+  },
   mutations: {
+    setSessionDataState ({explorerData}, state) {
+      explorerData.setChanged(state)
+    },
+    setDataVisibility ({explorerData}, {index, newState}) {
+      explorerData.setDataVisibility(index, newState)
+    },
+    setAxisState ({explorerData}, {index, newState}) {
+      explorerData.setAxisState(index, newState)
+    },
+    setAxisMin ({explorerData}, {index, newState}) {
+      explorerData.setAxisMin(index, newState)
+    },
+    setAxisMax ({explorerData}, {index, newState}) {
+      explorerData.setAxisMax(index, newState)
+    },
     toggleTooltip(state){
       state.disabledByUser = !state.disabledByUser
     },
@@ -94,6 +125,7 @@ export default new Vuex.Store({
       state.availableModelTypes = ['Exodus', 'OpenCSM (coming soon)', 'Cogent (coming soon)']
       state.events = new EventsContainer()
       state.session = new SessionContainer()
+      state.explorerData = new ExplorerData()
 
       state.availableScenarioTypes = new Map()
 
@@ -162,10 +194,16 @@ export default new Vuex.Store({
       session.data.projects.splice(projectIndex, 1)
     },
     setProjectThumbnail ({active}, image) {
-      active.project.thumbnail = image
+      active.project.projectdata.thumbnail = image
     },
     setEventSource ({events}, server) {
       events.setSource(server)
+    },
+    setOptimizationVisibility ({optimizations}, {optimizationName, isVisible, graphics}) {
+      let optimizationIndex = optimizations.findIndex(optimization => optimization.name === optimizationName)
+      if (optimizationIndex !== -1) {
+        optimizations[optimizationIndex].setOptimizationVisibility(graphics, isVisible)
+      }
     },
     setModelVisibility ({models}, {modelName, isVisible, graphics}) {
       let modelIndex = models.findIndex(model => model.name === modelName)
@@ -314,7 +352,7 @@ export default new Vuex.Store({
         scenarios[scenarioIndex].removeListData(dataName, entryName)
       }
     },
-    loadScenario ({scenarios}, definition) {
+    loadScenario ({scenarios, models}, definition) {
       // Scenarios are accessed by name, so if 'name' is empty, change it to 'Scenario N'.
       if (definition.name === '') {
         definition.name = 'Scenario ' + scenarios.length.toString()
@@ -324,9 +362,24 @@ export default new Vuex.Store({
       if (hostCode === 'Analyze') {
         let newScenarioFactory = new AnalyzeScenarioFactory()
         newScenario = newScenarioFactory.createFromFile(definition)
+        newScenario.fetchModel(models)
       }
       if (newScenario !== null) {
         scenarios.push(newScenario)
+      }
+    },
+    setScenarioData(state, scenarioData) {
+      let newScenario = null
+      if (scenarioData.hostCode === 'Analyze') {
+        let newScenarioFactory = new AnalyzeScenarioFactory()
+        newScenario = newScenarioFactory.createFromData(scenarioData)
+        newScenario.fetchModel(state.models)
+      }
+      if (newScenario !== null) {
+        newScenario.name = scenarioData.name
+        state.scenarios.push(newScenario)
+      } else {
+        errorHandler.report(`error: Attempted to load a scenario with an unknown hostcode (${scenarioData.hostCode})`)
       }
     },
     addParameter (state, {parentObject, definition}) {
@@ -401,10 +454,22 @@ export default new Vuex.Store({
       optimizations.push(newOptimization)
       active.optimization = newOptimization
     },
-    deleteOptimization ({optimizations}, {name}) {
-      let optimizationIndex = optimizations.findIndex(optimization => optimization.name === name)
+    duplicateOptimization (state, {name}) {
+      let optimizationIndex = state.optimizations.findIndex(optimization => optimization.name === name)
       if (optimizationIndex !== -1) {
-        optimizations.splice(optimizationIndex, 1)
+        let optimization = state.optimizations[optimizationIndex]
+        let optCopy = optimization.copy()
+        optCopy.name = makeNameUnique(optCopy.name, state.uniqueID)
+        state.optimizations.push(optCopy)
+      }
+    },
+    deleteOptimization (state, {name, graphics}) {
+      let optimizationIndex = state.optimizations.findIndex(optimization => optimization.name === name)
+      if (optimizationIndex !== -1) {
+        let optimization = state.optimizations[optimizationIndex]
+        optimization.clear(graphics)
+        state.explorerData.removeResultsData(optimization)
+        state.optimizations.splice(optimizationIndex, 1)
       }
     },
     deleteOptimizationObjective ({optimizations}, {optimization, objective}) {
@@ -513,19 +578,41 @@ export default new Vuex.Store({
       }
     },
     addIterationToOptimization ({optimizations}, payload) {
-      let optimizationIndex = optimizations.findIndex(optimization => optimization.name === payload.optimizationName)
+      let graphics = payload.graphics
+      const dataObject = JSON.parse(payload.data)
+      const {optimizationName, iteration, data} = dataObject
+      let optimizationIndex = optimizations.findIndex(optimization => optimization.name === optimizationName)
       if (optimizationIndex !== -1) {
-        optimizations[optimizationIndex].addIteration(payload)
+        const loader = new PLYLoader()
+        const url = URL.createObjectURL(new Blob([data]))
+        loader.load(url,
+          (geometryData) => {
+            let geometry = PLYToMesh(geometryData)
+            geometry.material = graphics.getMaterial()
+            optimizations[optimizationIndex].addIteration({iteration, geometry, graphics})
+          },
+          undefined,
+          (error) => {
+            errorHandler.report(error)
+          }
+        )
       }
     },
     plotConvergence({optimizations}, {optimizationName, plotData}) {
       let optimizationIndex = optimizations.findIndex(optimization => optimization.name === optimizationName)
       if (optimizationIndex !== -1) {
         let opt = optimizations[optimizationIndex]
+        opt.convergenceData.x.length = 0
         plotData.x.forEach( (val, i) => {
-          Vue.set(opt.convergenceData[0].x, i, val)
-          Vue.set(opt.convergenceData[0].y, i, plotData.y[i])
+          Vue.set(opt.convergenceData.x, i, val)
+          Vue.set(opt.convergenceData.y, i, plotData.y[i])
         })
+      }
+    },
+    optResultsData(state, {optimizationName, resultsData}) {
+      let optimizationIndex = state.optimizations.findIndex(optimization => optimization.name === optimizationName)
+      if (optimizationIndex !== -1) {
+        state.explorerData.addResultsData(state.optimizations[optimizationIndex], resultsData)
       }
     },
     toFirstOptimizationIteration ({optimizations}, {optimizationName, graphics}) {
@@ -564,16 +651,28 @@ export default new Vuex.Store({
         optimizations[optimizationIndex].setFixedBlock(model, block, isFixed)
       }
     },
+    setOptimizationSymmetry({optimizations}, {optimizationName, model, direction, isSymmetric}) {
+      let optimizationIndex = optimizations.findIndex(optimization => optimization.name === optimizationName)
+      if (optimizationIndex !== -1) {
+        optimizations[optimizationIndex].setSymmetry(model, direction, isSymmetric)
+      }
+    },
     setModelData(state, modelData) {
       let newModel = null
       if (modelData.type === 'ExodusModel') {
         newModel = new ExodusModel()
-        newModel.importData(modelData)
+        newModel.fromData(modelData)
       }
       state.models.push(newModel)
     },
-    setScenarioData(state, scenarioData) {
-      console.log(scenarioData)
+    setOptimizationData(state, optimizationData) {
+      const newOptimization = new Optimization()
+      newOptimization.fromData(optimizationData, state.scenarios)
+      state.optimizations.push(newOptimization)
+    },
+    setExplorerData(state, explorerData) {
+      state.explorerData = new ExplorerData()
+      dynamicCopy(explorerData, state.explorerData)
     }
   },
   actions: {
@@ -581,18 +680,61 @@ export default new Vuex.Store({
       commit('setActiveProject', payload.project)
       dispatch('unpackProjectData', payload)
     },
-    async unpackProjectData ({dispatch}, payload) {
+    async unpackProjectData ({dispatch, commit, state}, payload) {
       let graphics = payload.graphics
       // load models
       let models = payload.project.projectdata.models
       models.forEach(model => { dispatch('loadExodusModel', {model, graphics}) })
 
-      // load scenarios
-      let scenarios = payload.project.projectdata.scenarios
-      scenarios.forEach(scenario => { dispatch('loadScenario', {scenario}) })
+      // load scenarios into state
+      let scenarioData = payload.project.projectdata.scenarios
+      scenarioData.forEach(scenarioDatum => { dispatch('loadScenario', scenarioDatum) })
+
+      // load realizations
+      //let realizations = payload.project.projectdata.realizations
+      //realizations.forEach(realization => { dispatch('loadRealizations', {realization}) })
+
+      // load optimizations
+      let optimizationData = payload.project.projectdata.optimizations
+      optimizationData.forEach(optimizationDatum => {
+        commit('setOptimizationData', optimizationDatum)
+        let optimizationIndex = state.optimizations.findIndex(optimization => optimization.name === optimizationDatum.name)
+        if (optimizationIndex !== -1) {
+          let optimization = state.optimizations[optimizationIndex]
+          dispatch('loadOptimizationScene', {optimization, graphics})
+        }
+      })
+
+      // load explorerData
+      commit('setExplorerData', payload.project.projectdata.explorerData)
     },
-    async loadScenario ({commit}, {scenario}) {
-      commit('setScenarioData', scenario)
+    async loadScenario ({commit}, scenarioData) {
+      commit('setScenarioData', scenarioData)
+    },
+    async loadOptimizationScene ({dispatch}, {optimization, graphics}) {
+      optimization.run.iterations.forEach( (iteration, index) => {
+        dispatch('loadOptimizationIteration', {optimization, graphics, iteration, index})
+      })
+    },
+    async loadOptimizationIteration (state, {optimization, graphics, iteration, index}) {
+      const response = await apiService.retrieveOptimizationIteration(optimization, index)
+      if (response === 'FAILURE') {
+        iteration.geometryID = -1
+      } else {
+        const loader = new PLYLoader()
+        const url = URL.createObjectURL(new Blob([response]))
+        loader.load(url,
+          (geometryData) => {
+            let geometry = PLYToMesh(geometryData)
+            geometry.material = graphics.getMaterial()
+            optimization.setIteration({iteration, index, geometry, graphics})
+          },
+          undefined,
+          (error) => {
+            errorHandler.report(error)
+          }
+        )
+      }
     },
     async loadExodusModel ({commit}, {model, graphics}) {
       commit('setModelData', model)
@@ -602,14 +744,15 @@ export default new Vuex.Store({
         aFunction: function (event) {
           const {data} = event
           const dataObject = JSON.parse(data)
-          const {modelName, name: geometryName, type: geometryType, data: geometryData} = dataObject
+          const {modelName, name: geometryName, type: geometryType, id: geometryID, data: geometryData} = dataObject
           const loader = new OBJLoader()
-          const url = URL.createObjectURL(new Blob([geometryData, 'application/object']))
+          const url = URL.createObjectURL(new Blob([geometryData]))
           loader.load(url, (geometry) => {
             this.showLoader = false;
             commit('addObj', {
               modelName: modelName,
               name: geometryName,
+              id: geometryID,
               type: geometryType,
               geometry: geometry,
               graphics: graphics
@@ -646,11 +789,12 @@ export default new Vuex.Store({
       }
     },
     async updateProject ({state, commit}, {thumbnail}) {
-      const projectdata = {thumbnail: thumbnail} // todo
+      const projectdata = state.packProjectData(thumbnail)
       const response = await apiService.updateProject(projectdata, state.active.project.name, state.session.data.username, state.active.project.DateCreated)
       if (response.success) {
         errorHandler.report('project saved')
         commit('updateUserProject', response.newproject)
+        commit('setProjectThumbnail', thumbnail)
       } else {
         errorHandler.report('error! project NOT saved')
       }
@@ -660,15 +804,15 @@ export default new Vuex.Store({
       await dispatch('updateProject', {thumbnail: screenshot})
       commit('closeUserProject', {graphics: graphics})
     },
-    async deleteProject ({session}, {projectID}) {
+    async deleteProject ({state, commit}, {projectName}) {
       // delete from server
-      let response = await apiService.deleteProject(projectID)
+      let response = await apiService.deleteProject(projectName)
   
       // delete from client
       if (response.success) {
-        let projectIndex = session.data.projects.findIndex(project => project._id === projectID)
+        let projectIndex = state.session.data.projects.findIndex(project => project.projectname === projectName)
         if (projectIndex !== -1) {
-          this.$store.commit('deleteUserProject', projectIndex)
+          commit('deleteUserProject', projectIndex)
         }
       }
     },
@@ -759,11 +903,11 @@ export default new Vuex.Store({
         errorHandler.report('server request failed: create optimization')
       }
     },
-    async getOptimizationFile ({state}, {optimizationName, remoteFileName, localFileName}) {
+    async downloadOptimizationFile ({state}, {optimizationName, remoteFileName, localFileName}) {
       let optimizationIndex = state.optimizations.findIndex(optimization => optimization.name === optimizationName)
       if (optimizationIndex !== -1) {
         let optimization = state.optimizations[optimizationIndex]
-        const response = await apiService.getOptimizationFile(optimization, remoteFileName, localFileName)
+        const response = await apiService.downloadOptimizationFile(optimization, remoteFileName, localFileName)
         if (response === 'FAILURE') {
           errorHandler.report('server request failed: get optimization file')
         }

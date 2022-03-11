@@ -24,6 +24,10 @@ class AnalyzeScenarioBase extends ParBase {
     this.modelviews = {}
     this.outputData = {}
   }
+  fromData (data) {
+    dynamicCopy(data.modelviews, this.modelviews)
+    dynamicCopy(data.geometry, this.geometry)
+  }
   getViewData (viewname) {
     let data = this.modelviews[viewname]['data']
     if (Array.isArray(data)) {
@@ -37,30 +41,41 @@ class AnalyzeScenarioBase extends ParBase {
       return data
     }
   }
+  fetchModel (models) {
+    const modelIndex = models.findIndex((m) => m.fileName === this.geometry.body.fileName)
+    if (modelIndex !== -1) {
+      const model = models[modelIndex]
+      this.setSelectables(model)
+      this.geometry.body.modelName = model.name
+    }
+  }
   setModel (modelName, models) {
     const entryIndex = models.findIndex((m) => m.name === modelName)
     if (entryIndex !== -1) {
       const model = models[entryIndex]
-      Vue.set(this.selectables, 'blocks', [])
-      Vue.set(this.selectables, 'nodesets', [])
-      Vue.set(this.selectables, 'sidesets', [])
-      model.primitives.forEach(
-        function (p) {
-          if (p.type === 'block') {
-            Vue.set(this.selectables['blocks'], this.selectables['blocks'].length, p.definition.Name)
-          } else
-          if (p.type === 'nodeset') {
-            Vue.set(this.selectables['nodesets'], this.selectables['nodesets'].length, p.definition.Name)
-          } else
-          if (p.type === 'sideset') {
-            Vue.set(this.selectables['sidesets'], this.selectables['sidesets'].length, p.definition.Name)
-          }
-        }, this)
+      this.setSelectables(model)
       this.geometry.body.modelName = modelName
       this.geometry.body.fileName = model.fileName
     } else {
       errorHandler.report("Error:  Requested a model that doesn't exist")
     }
+  }
+  setSelectables(model) {
+    Vue.set(this.selectables, 'blocks', [])
+    Vue.set(this.selectables, 'nodesets', [])
+    Vue.set(this.selectables, 'sidesets', [])
+    model.primitives.forEach(
+      function (p) {
+        if (p.type === 'block') {
+          Vue.set(this.selectables['blocks'], this.selectables['blocks'].length, p.definition.Name)
+        } else
+        if (p.type === 'nodeset') {
+          Vue.set(this.selectables['nodesets'], this.selectables['nodesets'].length, p.definition.Name)
+        } else
+        if (p.type === 'sideset') {
+          Vue.set(this.selectables['sidesets'], this.selectables['sidesets'].length, p.definition.Name)
+        }
+      }, this)
   }
   setOptionData (dataName, data) {
     this.modelviews[dataName]['data'] = data

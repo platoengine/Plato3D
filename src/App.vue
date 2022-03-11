@@ -77,12 +77,12 @@
       </v-row>
     </v-container>
 
-    <v-navigation-drawer v-model="drawerOpen" app clipped width=293>
-      <control/>
+    <v-navigation-drawer v-model="drawerOpen" app clipped :width="drawerWidth">
+      <control v-on:set-width="setWidth($event)"/>
     </v-navigation-drawer>
 
     <v-footer app>
-      <span>&copy; 2020</span>
+      <span>&copy; 2022</span>
     </v-footer>
   </v-app>
 </template>
@@ -118,7 +118,8 @@ export default {
       source: String,
     },
     data: () => ({
-      drawerOpen: false
+      drawerOpen: false,
+      drawerWidth: 293
     }),
     computed: {
       loggedIn: function () {
@@ -126,6 +127,9 @@ export default {
       }
     },
     methods: {
+      setWidth(newWidth){
+        this.drawerWidth = newWidth
+      },
       toggleHelpSetup(){
         this.disablehelp = !this.disablehelp
       },

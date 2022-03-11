@@ -110,27 +110,31 @@ class AnalyzeStaticThermomechanics extends AnalyzeScenarioBase {
         'view': {
           'type': 'list-view',
           '<Template>': {
-            'Type': { type: 'string', value: 'Scalar Function', options: ['Scalar Function'] },
+            'Type': { type: 'string', value: 'Scalar Function', options: ['Scalar Function', 'Solution'] },
             'Linear': { type: 'bool', value: 'false', options: ['true', 'false'] },
             'Linear Scalar Function Type': {
               type: 'string',
               value: 'Volume',
               options: ['Volume'],
-              conditionalView: [['Linear', 'true']],
+              conditionalView: [['Linear', 'true'], ['Type', 'Scalar Function']],
               alias: 'Scalar Function Type'
             },
             'Scalar Function Type': {
               type: 'string',
               value: 'Internal Thermoelastic Energy',
               options: ['Internal Thermoelastic Energy', 'Stress P-Norm'],
-              conditionalView: [['Linear', 'false']]
+              conditionalView: [['Linear', 'false'],['Type', 'Scalar Function']]
             },
             'Exponent': { type: 'double', value: '6.0', conditionalView: [['Scalar Function Type', 'Stress P-Norm']]},
             'Penalty Function': {
               'Type': { type: 'string', value: 'SIMP', options: ['SIMP', 'RAMP', 'Heaviside'] },
               'Exponent': { type: 'double', value: '3.0' },
-              'Minimum Value': { type: 'double', value: '1.0e-3' }
-            }
+              'Minimum Value': { type: 'double', value: '1.0e-3' },
+              conditionalView: [['Type', 'Scalar Function']]
+            },
+            'Magnitude': { type: 'bool', value: 'false', options: ['true', 'false'], conditionalView: [['Type', 'Solution']] },
+            'Normal': { type: 'double', value: {'X': '0.0', 'Y': '0.0', 'Z': '0.0', 'T': '0.0'}, conditionalView: [['Type', 'Solution']] },
+            'Domain': { type: 'string', value: '', options: () => { return this.selectables['sidesets'] }, conditionalView: [['Type', 'Solution']] },
           }
         }
       },

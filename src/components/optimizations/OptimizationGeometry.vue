@@ -8,18 +8,21 @@
         <v-checkbox label="Apply Filter" dense class="ml-2 ma-0 pa-0 body-2" v-model="applyFilter"/>
 -->
       </v-card>
-      <v-card>
-        <v-card-title class="ml-2 pa-0 subtitle-1">Fixed Blocks</v-card-title>
-        <v-card class="pa-0 ml-2" v-for="(modelName, modelIndex) in modelNames" :key="modelIndex">
-          <v-card-title class="ml-2 pa-0 caption">model: {{ modelName }}</v-card-title>
-<!--
-          <v-checkbox v-for="(blockName, blockIndex) in blockNames(modelName)" dense class="ma-0 pa-0" :label="blockName" v-model="fixBlock(blockIndex)" :key="blockIndex"/>
--->
+      <v-card class="pa-0 ml-2" v-for="(modelName, modelIndex) in modelNames" :key="modelIndex">
+        <v-card-title class="ml-2 pa-0 subtitle-1">model: {{ modelName }}</v-card-title>
+        <v-card>
+          <v-card-title class="ml-2 pa-0 caption">Fixed Blocks</v-card-title>
           <p-checkbox v-for="(blockName, blockIndex) in blockNames(modelName)"
             :key="blockIndex"
             :label="blockName"
             :state="getFixedBlock(modelName, blockName)"
             @change-state="setFixedBlock(modelName, blockName, $event)"/>
+        </v-card>
+        <v-card>
+          <v-card-title class="ml-2 pa-0 caption">Symmetry</v-card-title>
+          <p-checkbox label="X" :state="getSymmetry(modelName, 'X')" @change-state="setSymmetry(modelName, 'X', $event)"/>
+          <p-checkbox label="Y" :state="getSymmetry(modelName, 'Y')" @change-state="setSymmetry(modelName, 'Y', $event)"/>
+          <p-checkbox label="Z" :state="getSymmetry(modelName, 'Z')" @change-state="setSymmetry(modelName, 'Z', $event)"/>
         </v-card>
       </v-card>
     </v-card>
@@ -35,6 +38,14 @@ export default {
   props: ['optimization'],
   components: {PCheckbox},
   methods: {
+    setSymmetry: function (modelName, direction, isSym) {
+      this.$store.commit('setOptimizationSymmetry', {
+        optimizationName: this.optimization.name,
+        model: modelName,
+        direction: direction,
+        isSymmetric: isSym
+      })
+    },
     setFixedBlock: function (modelName, blockName, isFixed) {
       this.$store.commit('setOptimizationFixedBlock', {
         optimizationName: this.optimization.name,
@@ -43,9 +54,22 @@ export default {
         isFixed: isFixed
       })
     },
+    getSymmetry: function (modelName, direction) {
+      let index = this.optimization.symmetry.findIndex( entry => entry.modelName === modelName )
+      if (index !== -1) {
+        return this.optimization.symmetry[index][direction]
+      } else {
+        return false
+      }
+    },
     getFixedBlock: function (modelName, blockName) {
-      let fixedBlockNames = this.optimization.fixedBlocks[modelName]
-      return fixedBlockNames.filter(fixedBlockName => fixedBlockName === blockName).length === 0 ? false : true
+      let index = this.optimization.fixedBlocks.findIndex( entry => entry.modelName === modelName )
+      if (index !== -1) {
+        let fixedBlockNames = this.optimization.fixedBlocks[index].blockNames
+        return fixedBlockNames.filter(fixedBlockName => fixedBlockName === blockName).length === 0 ? false : true
+      } else {
+        return false
+      }
     },
     blockNames: function (modelName) {
       let names = []
